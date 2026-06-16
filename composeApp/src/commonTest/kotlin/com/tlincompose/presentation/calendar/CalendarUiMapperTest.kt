@@ -44,11 +44,53 @@ class CalendarUiMapperTest {
             entriesByDate = entriesByDate,
             today = date,
             language = AppLanguage.ITALIAN,
+            dailyLimitMinutes = 8 * 60,
         )
 
         assertEquals(
             listOf(EntryType.VACATION, EntryType.PERMIT),
             uiModels.single().activityItems.map(CalendarActivityUiModel::entryType),
         )
+    }
+
+    @Test
+    fun marksDayAsOverLimitWhenTotalMinutesExceedConfiguredDailyLimit() {
+        val date = LocalDate(2026, 6, 16)
+        val grid = listOf(
+            CalendarDay(
+                date = date,
+                inCurrentMonth = true,
+                isWeekend = false,
+                holiday = null,
+            ),
+        )
+        val entriesByDate = mapOf(
+            date to DailyEntry(
+                date = date,
+                activities = listOf(
+                    Activity(
+                        type = EntryType.PROJECT,
+                        title = "Analisi",
+                        minutes = 360,
+                    ),
+                    Activity(
+                        type = EntryType.PROJECT,
+                        title = "Supporto",
+                        minutes = 180,
+                    ),
+                ),
+            ),
+        )
+
+        val cell = grid.toUiModels(
+            entriesByDate = entriesByDate,
+            today = date,
+            language = AppLanguage.ITALIAN,
+            dailyLimitMinutes = 8 * 60,
+        ).single()
+
+        assertEquals(540, cell.totalMinutes)
+        assertEquals(8 * 60, cell.dailyLimitMinutes)
+        assertEquals(true, cell.isOverDailyLimit)
     }
 }

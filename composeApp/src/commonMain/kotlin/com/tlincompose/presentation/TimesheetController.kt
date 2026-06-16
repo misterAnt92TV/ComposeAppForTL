@@ -101,6 +101,7 @@ class TimesheetController(
             entriesByDate = entriesByDate,
             today = today,
             language = currentLanguage,
+            dailyLimitMinutes = standardWorkdayMinutes,
         ),
     )
         private set
@@ -550,6 +551,7 @@ class TimesheetController(
             entriesByDate = entriesByDate,
             today = today,
             language = currentLanguage,
+            dailyLimitMinutes = standardWorkdayMinutes,
             selectedRange = editorRange ?: activeDragRange ?: rangeSelectionState.selectedRange?.toDateRange(),
             pendingRange = if (editorRange == null && activeDragRange == null) {
                 rangeSelectionState.startMonth?.toDateRange()

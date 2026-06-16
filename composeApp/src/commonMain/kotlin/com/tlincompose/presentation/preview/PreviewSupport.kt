@@ -229,6 +229,8 @@ internal fun previewCalendarCells(strings: AppStrings): List<MonthCellUiModel> =
                 },
                 activityCount = summaries.size,
                 totalMinutes = totalMinutes,
+                dailyLimitMinutes = DefaultWorkdayMinutes,
+                isOverDailyLimit = totalMinutes > DefaultWorkdayMinutes,
                 isRangeStart = date == LocalDate(2026, 5, 12),
                 isRangeEnd = date == LocalDate(2026, 5, 16),
                 isInSelectedRange = date in LocalDate(2026, 5, 12)..LocalDate(2026, 5, 16),

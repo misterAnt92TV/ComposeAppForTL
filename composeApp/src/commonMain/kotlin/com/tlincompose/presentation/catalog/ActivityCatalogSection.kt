@@ -51,7 +51,9 @@ internal fun ActivityCatalogSection(
 ) {
     val strings = LocalAppStrings.current
     Card(
-        modifier = Modifier.testTag("activity-catalog-section"),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("activity-catalog-section"),
         shape = androidx.compose.foundation.shape.RoundedCornerShape(layoutSpec.cardCornerRadius),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
@@ -62,13 +64,12 @@ internal fun ActivityCatalogSection(
                 .padding(layoutSpec.contentPadding),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Column(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
@@ -82,13 +83,18 @@ internal fun ActivityCatalogSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                AppActionButton(
-                    text = strings.closeLabel,
-                    onClick = onClose,
-                    variant = AppButtonVariant.TERTIARY,
-                    minHeight = layoutSpec.buttonMinHeight,
-                    modifier = Modifier.testTag("activity-catalog-close-button"),
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    AppActionButton(
+                        text = strings.closeLabel,
+                        onClick = onClose,
+                        variant = AppButtonVariant.TERTIARY,
+                        minHeight = layoutSpec.buttonMinHeight,
+                        modifier = Modifier.testTag("activity-catalog-close-button"),
+                    )
+                }
             }
             AppActionButton(
                 text = strings.newExtEntity,

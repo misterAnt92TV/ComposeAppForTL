@@ -1611,6 +1611,23 @@ fun AppStrings.totalHoursPhrase(hours: String): String = when (language) {
     AppLanguage.SPANISH -> "$hours horas totales"
 }
 
+val AppStrings.dailyHoursExceededLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Daily hour overrun"
+        AppLanguage.ITALIAN -> "Sforamento ore giornaliere"
+        AppLanguage.GERMAN -> "Uberschreitung der Tagesstunden"
+        AppLanguage.FRENCH -> "Depassement des heures quotidiennes"
+        AppLanguage.SPANISH -> "Exceso de horas diarias"
+    }
+
+fun AppStrings.dailyHoursExceededMessage(totalHours: String, limitHours: String): String = when (language) {
+    AppLanguage.ENGLISH -> "Logged $totalHours h, above the configured daily limit of $limitHours h."
+    AppLanguage.ITALIAN -> "Registrate ${totalHours}h, oltre il limite giornaliero impostato di ${limitHours}h."
+    AppLanguage.GERMAN -> "${totalHours}h erfasst, uber dem eingestellten Tageslimit von ${limitHours}h."
+    AppLanguage.FRENCH -> "${totalHours}h enregistrees, au-dessus de la limite quotidienne configuree de ${limitHours}h."
+    AppLanguage.SPANISH -> "${totalHours}h registradas, por encima del limite diario configurado de ${limitHours}h."
+}
+
 fun AppStrings.activityCountPhrase(count: Int): String = when (language) {
     AppLanguage.ENGLISH -> "$count activities"
     AppLanguage.ITALIAN -> "$count attività"

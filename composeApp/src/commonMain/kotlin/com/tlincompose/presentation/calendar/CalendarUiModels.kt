@@ -16,6 +16,8 @@ data class MonthCellUiModel(
     val activityItems: List<CalendarActivityUiModel>,
     val activityCount: Int,
     val totalMinutes: Int,
+    val dailyLimitMinutes: Int,
+    val isOverDailyLimit: Boolean,
     val isRangeStart: Boolean,
     val isRangeEnd: Boolean,
     val isInSelectedRange: Boolean,

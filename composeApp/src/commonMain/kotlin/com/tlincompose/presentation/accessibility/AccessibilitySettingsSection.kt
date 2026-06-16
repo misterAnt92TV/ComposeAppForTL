@@ -2,6 +2,7 @@ package com.tlincompose.presentation.accessibility
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -92,53 +93,64 @@ internal fun AccessibilitySettingsSection(
     onClose: () -> Unit,
 ) {
     val strings = LocalAppStrings.current
-    Card(
-        modifier = Modifier.testTag("accessibility-settings-section"),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(layoutSpec.cardCornerRadius),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-    ) {
-        Column(
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val isCompactWidth = maxWidth < 720.dp
+        val isNarrowWidth = maxWidth < 560.dp
+        val chipMinWidth = if (isCompactWidth) 120.dp else 144.dp
+
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(layoutSpec.contentPadding)
-                .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+                .testTag("accessibility-settings-section"),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(layoutSpec.cardCornerRadius),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(layoutSpec.contentPadding)
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text(
-                        text = strings.settingsTitle,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                    Text(
-                        text = strings.settingsDescription,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Text(
+                            text = strings.settingsTitle,
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            text = strings.settingsDescription,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        AppActionButton(
+                            text = strings.closeLabel,
+                            onClick = onClose,
+                            variant = AppButtonVariant.TERTIARY,
+                            minHeight = layoutSpec.buttonMinHeight,
+                            modifier = Modifier.testTag("settings-close-button"),
+                        )
+                    }
                 }
-                AppActionButton(
-                    text = strings.closeLabel,
-                    onClick = onClose,
-                    variant = AppButtonVariant.TERTIARY,
-                    minHeight = layoutSpec.buttonMinHeight,
-                    modifier = Modifier.testTag("settings-close-button"),
+                Text(
+                    text = strings.themeTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                 )
-            }
-            Text(
-                text = strings.themeTitle,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            FlowRow(
+                FlowRow(
                 modifier = Modifier.testTag("theme-mode-group"),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -150,10 +162,15 @@ internal fun AccessibilitySettingsSection(
                         label = {
                             Text(
                                 text = option.label(strings),
+                                modifier = Modifier.fillMaxWidth(),
                                 maxLines = 2,
+                                textAlign = TextAlign.Center,
                             )
                         },
-                        modifier = Modifier.sizeIn(minHeight = layoutSpec.buttonMinHeight - 4.dp),
+                        modifier = Modifier.sizeIn(
+                            minWidth = chipMinWidth,
+                            minHeight = layoutSpec.buttonMinHeight - 4.dp,
+                        ),
                     )
                 }
             }
@@ -181,10 +198,15 @@ internal fun AccessibilitySettingsSection(
                         label = {
                             Text(
                                 text = option.label(strings),
+                                modifier = Modifier.fillMaxWidth(),
                                 maxLines = 2,
+                                textAlign = TextAlign.Center,
                             )
                         },
-                        modifier = Modifier.sizeIn(minHeight = layoutSpec.buttonMinHeight - 4.dp),
+                        modifier = Modifier.sizeIn(
+                            minWidth = chipMinWidth,
+                            minHeight = layoutSpec.buttonMinHeight - 4.dp,
+                        ),
                     )
                 }
             }
@@ -197,12 +219,12 @@ internal fun AccessibilitySettingsSection(
             Surface(
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     Text(
@@ -215,24 +237,9 @@ internal fun AccessibilitySettingsSection(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        AppActionButton(
-                            text = strings.decreaseWorkdayButtonLabel,
-                            onClick = {
-                                onStandardWorkdayChanged((state.standardWorkdayMinutes - 30).coerceAtLeast(60))
-                            },
-                            variant = AppButtonVariant.SECONDARY,
-                            minHeight = layoutSpec.buttonMinHeight,
-                            modifier = Modifier.semantics {
-                                contentDescription = strings.decreaseWorkdayHours
-                            },
-                        )
+                    if (isCompactWidth) {
                         Surface(
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.fillMaxWidth(),
                             shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
                             color = MaterialTheme.colorScheme.surface,
                         ) {
@@ -246,17 +253,82 @@ internal fun AccessibilitySettingsSection(
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                         }
-                        AppActionButton(
-                            text = strings.increaseWorkdayButtonLabel,
-                            onClick = {
-                                onStandardWorkdayChanged((state.standardWorkdayMinutes + 30).coerceAtMost(16 * 60))
-                            },
-                            variant = AppButtonVariant.SECONDARY,
-                            minHeight = layoutSpec.buttonMinHeight,
-                            modifier = Modifier.semantics {
-                                contentDescription = strings.increaseWorkdayHours
-                            },
-                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            AppActionButton(
+                                text = strings.decreaseWorkdayButtonLabel,
+                                onClick = {
+                                    onStandardWorkdayChanged((state.standardWorkdayMinutes - 30).coerceAtLeast(60))
+                                },
+                                variant = AppButtonVariant.SECONDARY,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .semantics {
+                                        contentDescription = strings.decreaseWorkdayHours
+                                    },
+                            )
+                            AppActionButton(
+                                text = strings.increaseWorkdayButtonLabel,
+                                onClick = {
+                                    onStandardWorkdayChanged((state.standardWorkdayMinutes + 30).coerceAtMost(16 * 60))
+                                },
+                                variant = AppButtonVariant.SECONDARY,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .semantics {
+                                        contentDescription = strings.increaseWorkdayHours
+                                    },
+                            )
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            AppActionButton(
+                                text = strings.decreaseWorkdayButtonLabel,
+                                onClick = {
+                                    onStandardWorkdayChanged((state.standardWorkdayMinutes - 30).coerceAtLeast(60))
+                                },
+                                variant = AppButtonVariant.SECONDARY,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                modifier = Modifier.semantics {
+                                    contentDescription = strings.decreaseWorkdayHours
+                                },
+                            )
+                            Surface(
+                                modifier = Modifier.weight(1f),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+                                color = MaterialTheme.colorScheme.surface,
+                            ) {
+                                Text(
+                                    text = strings.standardWorkday(formatHours(state.standardWorkdayMinutes)),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    textAlign = TextAlign.Center,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                            }
+                            AppActionButton(
+                                text = strings.increaseWorkdayButtonLabel,
+                                onClick = {
+                                    onStandardWorkdayChanged((state.standardWorkdayMinutes + 30).coerceAtMost(16 * 60))
+                                },
+                                variant = AppButtonVariant.SECONDARY,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                modifier = Modifier.semantics {
+                                    contentDescription = strings.increaseWorkdayHours
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -265,6 +337,7 @@ internal fun AccessibilitySettingsSection(
                 description = strings.highContrastDescription,
                 checked = state.highContrast,
                 layoutSpec = layoutSpec,
+                stackTrailingControl = isNarrowWidth,
                 onCheckedChange = onHighContrastChanged,
                 modifier = Modifier.testTag("high-contrast-toggle"),
             )
@@ -273,6 +346,7 @@ internal fun AccessibilitySettingsSection(
                 description = strings.comfortableLayoutDescription,
                 checked = state.comfortableSpacing,
                 layoutSpec = layoutSpec,
+                stackTrailingControl = isNarrowWidth,
                 onCheckedChange = onComfortableSpacingChanged,
                 modifier = Modifier.testTag("comfortable-spacing-toggle"),
             )
@@ -281,6 +355,7 @@ internal fun AccessibilitySettingsSection(
                 description = strings.focusModeDescription,
                 checked = state.focusMode,
                 layoutSpec = layoutSpec,
+                stackTrailingControl = isNarrowWidth,
                 onCheckedChange = onFocusModeChanged,
                 modifier = Modifier.testTag("focus-mode-toggle"),
             )
@@ -305,10 +380,15 @@ internal fun AccessibilitySettingsSection(
                         label = {
                             Text(
                                 text = strings.languageLabel(option),
+                                modifier = Modifier.fillMaxWidth(),
                                 maxLines = 2,
+                                textAlign = TextAlign.Center,
                             )
                         },
-                        modifier = Modifier.sizeIn(minHeight = layoutSpec.buttonMinHeight - 4.dp),
+                        modifier = Modifier.sizeIn(
+                            minWidth = chipMinWidth,
+                            minHeight = layoutSpec.buttonMinHeight - 4.dp,
+                        ),
                     )
                 }
             }
@@ -334,10 +414,15 @@ internal fun AccessibilitySettingsSection(
                         label = {
                             Text(
                                 text = option.label(strings),
+                                modifier = Modifier.fillMaxWidth(),
                                 maxLines = 2,
+                                textAlign = TextAlign.Center,
                             )
                         },
-                        modifier = Modifier.sizeIn(minHeight = layoutSpec.buttonMinHeight - 4.dp),
+                        modifier = Modifier.sizeIn(
+                            minWidth = chipMinWidth,
+                            minHeight = layoutSpec.buttonMinHeight - 4.dp,
+                        ),
                     )
                 }
             }
@@ -439,6 +524,7 @@ internal fun AccessibilitySettingsSection(
             }
         }
     }
+    }
 }
 
 @Composable
@@ -447,9 +533,58 @@ private fun AccessibilityOptionRow(
     description: String,
     checked: Boolean,
     layoutSpec: AccessibilityLayoutSpec,
+    stackTrailingControl: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    if (stackTrailingControl) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(22.dp))
+                .background(
+                    if (checked) {
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.78f)
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                    },
+                )
+                .toggleable(
+                    value = checked,
+                    role = Role.Switch,
+                    onValueChange = onCheckedChange,
+                )
+                .heightIn(min = layoutSpec.optionMinHeight)
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                Switch(
+                    checked = checked,
+                    onCheckedChange = null,
+                )
+            }
+        }
+        return
+    }
+
     Row(
         modifier = modifier
             .fillMaxWidth()

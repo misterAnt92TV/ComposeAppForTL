@@ -16,11 +16,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
@@ -41,6 +48,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import com.tlincompose.core.AppStrings
 import com.tlincompose.core.activityCountPhrase
 import com.tlincompose.core.calendarDescription
@@ -48,6 +57,8 @@ import com.tlincompose.core.calendarTitle
 import com.tlincompose.core.compactHours
 import com.tlincompose.core.currentDayPhrase
 import com.tlincompose.core.dayCellDescription
+import com.tlincompose.core.dailyHoursExceededLabel
+import com.tlincompose.core.dailyHoursExceededMessage
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.insideSelectedRangePhrase
 import com.tlincompose.core.moreActivities
@@ -192,7 +203,7 @@ private fun WeekdayHeader() {
 }
 
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 private fun DayCell(
     cell: MonthCellUiModel,
     accessibilityState: AccessibilitySettingsUiState,
@@ -212,9 +223,16 @@ private fun DayCell(
 ) {
     val strings = LocalAppStrings.current
     val cellTopLeft = remember(cell.date) { mutableStateOf(Offset.Zero) }
+    val totalHoursText = formatHours(cell.totalMinutes)
+    val dailyLimitText = formatHours(cell.dailyLimitMinutes)
+    val overLimitMessage = strings.dailyHoursExceededMessage(
+        totalHours = totalHoursText,
+        limitHours = dailyLimitText,
+    )
     val borderColor = when {
         cell.isActivityDropTarget -> MaterialTheme.colorScheme.primary
         cell.isActivityDragSource -> MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+        cell.isOverDailyLimit -> MaterialTheme.colorScheme.error
         cell.isRangeStart || cell.isRangeEnd -> MaterialTheme.colorScheme.tertiary
         cell.isToday -> MaterialTheme.colorScheme.secondary
         cell.holidayLabel != null -> MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
@@ -223,6 +241,9 @@ private fun DayCell(
     val backgroundColor = when {
         cell.isActivityDropTarget -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.88f)
         cell.isActivityDragSource -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
+        cell.isOverDailyLimit -> MaterialTheme.colorScheme.errorContainer.copy(
+            alpha = if (cell.inCurrentMonth) 0.72f else 0.48f,
+        )
         cell.isRangeStart || cell.isRangeEnd -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.82f)
         cell.isInSelectedRange -> MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f)
         !cell.inCurrentMonth -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.46f)
@@ -245,6 +266,8 @@ private fun DayCell(
             .heightIn(min = layoutSpec.dayCellMinHeight)
             .border(
                 width = if (accessibilityState.highContrast || cell.isToday || cell.isRangeStart || cell.isRangeEnd) {
+                    2.dp
+                } else if (cell.isOverDailyLimit) {
                     2.dp
                 } else {
                     1.dp
@@ -304,12 +327,48 @@ private fun DayCell(
                     fontWeight = if (cell.isToday) FontWeight.Bold else FontWeight.Medium,
                 )
                 if (cell.totalMinutes > 0) {
-                    Text(
-                        text = strings.compactHours(formatHours(cell.totalMinutes)),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.SemiBold,
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = strings.compactHours(totalHoursText),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (cell.isOverDailyLimit) {
+                                MaterialTheme.colorScheme.error
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            },
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        if (cell.isOverDailyLimit) {
+                            TooltipBox(
+                                positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                                tooltip = {
+                                    PlainTooltip {
+                                        Text(
+                                            text = overLimitMessage,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                },
+                                state = rememberTooltipState(),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Warning,
+                                    contentDescription = strings.dailyHoursExceededLabel,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .testTag("day-overlimit-alert-${cell.date}")
+                                        .semantics {
+                                            contentDescription = overLimitMessage
+                                        },
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -427,6 +486,12 @@ internal fun buildDayCellContentDescription(
     }
     if (cell.totalMinutes > 0) {
         parts += strings.totalHoursPhrase(formatHours(cell.totalMinutes))
+    }
+    if (cell.isOverDailyLimit) {
+        parts += strings.dailyHoursExceededMessage(
+            totalHours = formatHours(cell.totalMinutes),
+            limitHours = formatHours(cell.dailyLimitMinutes),
+        )
     }
     if (cell.activityCount > 0) {
         parts += strings.activityCountPhrase(cell.activityCount)

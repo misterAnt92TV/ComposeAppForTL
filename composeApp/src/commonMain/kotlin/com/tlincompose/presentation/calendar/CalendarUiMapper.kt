@@ -18,11 +18,13 @@ fun List<CalendarDay>.toUiModels(
     entriesByDate: Map<LocalDate, DailyEntry>,
     today: LocalDate,
     language: AppLanguage,
+    dailyLimitMinutes: Int,
     selectedRange: DateRange? = null,
     pendingRange: DateRange? = null,
 ): List<MonthCellUiModel> = map { day ->
     val strings = appStrings(language)
     val entry = entriesByDate[day.date]
+    val totalMinutes = entry?.activities?.sumOf { it.minutes } ?: 0
     val rangeStart = selectedRange?.startDate ?: pendingRange?.startDate
     val activeRange = selectedRange ?: pendingRange
     MonthCellUiModel(
@@ -42,7 +44,9 @@ fun List<CalendarDay>.toUiModels(
             )
         }.orEmpty(),
         activityCount = entry?.activities?.size ?: 0,
-        totalMinutes = entry?.activities?.sumOf { it.minutes } ?: 0,
+        totalMinutes = totalMinutes,
+        dailyLimitMinutes = dailyLimitMinutes,
+        isOverDailyLimit = totalMinutes > dailyLimitMinutes,
         isRangeStart = day.date == rangeStart,
         isRangeEnd = day.date == selectedRange?.endDate,
         isInSelectedRange = activeRange?.contains(day.date) == true,
