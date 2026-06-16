@@ -14,9 +14,11 @@
   - `domain`: model, repository contract, use case, regole di business.
   - `data`: datasource, repository implementation, DTO/entity, mapper, persistenza/export.
 - Non aggiungere nuova business logic direttamente in `App.kt` o nei composable.
-- Non far crescere `TimesheetController` come contenitore generico di logica:
-  - per nuove feature, estrai prima la logica in `use case`
-  - lascia al controller solo coordinazione dello state e chiamate ai use case
+- I state holder principali sono focalizzati per dominio:
+  - `TimesheetController`: coordinazione mese, calendario, export (attualmente 623 linee; valutare refactoring se cresce ulteriormente)
+  - `AccessibilitySettingsController`: gestione preferenze accessibilità (tema, scale, PDF style, branding)
+  - `ActivityCatalogController`: CRUD e validazione definizioni attività
+  - Criterio: per ogni nuovo dominio di UI, crea un nuovo controller focalizzato invece di aggiungere logica a `TimesheetController`
 - `domain` non deve dipendere da Compose, Android, Swing, file system, serialization o dettagli di persistenza.
 - Le interfacce dei repository stanno in `domain`; le implementazioni concrete stanno in `data`.
 
@@ -68,20 +70,26 @@
   - inviare eventi
   - delegare la logica ai use case/state holder
 - Evita accesso diretto a repository, storage, export writer o serializer dalla UI.
+- **State Holder Pattern**: ogni dominio UI ha il suo controller focalizzato
+  - `TimesheetController`: stato calendario, navigazione mese, export
+  - `AccessibilitySettingsController`: preferenze tema, scale, PDF styling, branding
+  - `ActivityCatalogController`: catalogo e CRUD attività
 - Mantieni gli state holder piccoli e focalizzati.
 - Mantieni classi, composable e file UI compatti: non lasciare crescere classi troppo lunghe o file monolitici.
 - Se una schermata o un componente supera una dimensione ragionevole o contiene piu responsabilita, estrai nuove classi/file e usa directory dedicate come `components`, `model`, `state` o equivalenti invece di accumulare tutto nello stesso file.
-- Ogni nuovo componente Compose deve includere preview in modalità chiara e scura con sample state/stub coerenti, preferibilmente tramite `@PreviewLightDark` o equivalente.
-- Le stringhe user-facing non devono mai essere cablate direttamente in composable, controller, exporter o adapter di piattaforma:
-  - definiscile in una API di localizzazione centralizzata come `AppStrings` o helper equivalenti dedicati
-  - prevedi sempre il testo per ogni lingua supportata con naming esplicito e criterio coerente
-  - evita `when(language)` sparsi nei file feature se la stringa puo vivere nel layer di localizzazione
+- **Preview Pattern**: ogni nuovo composable deve includere preview in modalità chiara e scura usando `@PreviewLightDark` (in `androidMain/...presentation/preview/ComponentPreviews.kt`), con state/stub coerenti.
+  - Esempio: `ActivityCatalogSection`, `DayEditorDialog`, `ExportDialog` hanno già preview light/dark funzionanti
+- **Localization with StringKey**: le stringhe user-facing vanno centralizzate come `StringKey` sealed class in `AppStrings`:
+  - Crea `data class KeyWithParams(val param: String)` per stringhe parametriche
+  - Usa `AppStrings[StringKey.MyKey]` nei composable tramite `LocalAppStrings` CompositionLocal
+  - Implementa traduzioni in `AppStringsCompat` o estensioni dedicate per lingua
+  - Evita `when(language)` sparsi nei file feature
 - Se una schermata cresce, estrai:
-  - `UiState`
-  - `UiEvent`
-  - `UiAction` o callback mirate
+  - `UiState` (con `data class` per immutabilità)
+  - `UiEvent` o callback mirate
+  - `UiAction` o callback specifiche
   - mapper da `domain` a `presentation`
-- Aggiungi `testTag` ai componenti chiave quando una feature può beneficiare di UI test futuri.
+- Aggiungi `testTag` ai componenti chiave quando una feature può beneficiare di UI test futuri (already in use: `previous-month-icon-button`, `next-month-icon-button`, `range-selection-button`, `export-button`, ecc.).
 
 ## Data Rules
 - Tutto ciò che parla con file system, JSON, PDF, CSV, XLSX o API di piattaforma appartiene a `data`.
@@ -140,25 +148,39 @@
   - test della validazione
   - test dei mapper
   - test dei repository con fake o storage in-memory quando possibile
-- Per logica pure Kotlin, usa `commonTest`.
+- Per logica pure Kotlin, usa `commonTest` (preferita per massima compatibilità).
 - Sposta i test platform-specific in `androidUnitTest` o `desktopTest` solo se necessario.
+- **Test pattern attuale**:
+  - `runTest` per coroutine (suspending operations)
+  - `TestDispatcherProvider` con singolo dispatcher per determinismo
+  - Mock repository con `mockk` e lambda stubbing
+  - `runCatching` per error path testing
 - Casi da coprire quando applicabili:
   - happy path
   - input invalidi
   - errori del repository o export
   - edge case di date, intervalli, festività, ore parziali
-  - regressioni sui raggruppamenti dell’export
+  - regressioni sui raggruppamenti dell'export
+- Test esistenti di riferimento:
+  - `AccessibilitySettingsControllerTest`: preferenze load/save con mock repository
+  - Use case di calendario, caricamento, salvataggio, validazione in `commonTest`
 
 ## Migration Guidance For Current Code
 - Stato attuale del progetto:
-  - la struttura principale e ora organizzata per layer `core`, `domain`, `data` e `presentation`
-  - `TimesheetController` deve restare uno state holder leggero di coordinazione
-  - repository, export, validazione e mapper sono gia separati per responsabilita
+  - la struttura principale è ora organizzata per layer `core`, `domain`, `data` e `presentation`
+  - **Tre controller di presentazione**: `TimesheetController` (calendario/export), `AccessibilitySettingsController` (preferenze), `ActivityCatalogController` (attività)
+  - repository, export, validazione e mapper sono già separati per responsabilità
+  - `core/AppStrings.kt` usa pattern `StringKey` sealed class con `AppLanguage` per localizzazione
+  - preview `@PreviewLightDark` ben implementati in `presentation/preview/ComponentPreviews.kt`
+  - `testTag` usati nei composable chiave per future UI testing
 - Per ogni modifica futura, segui questa priorità:
-  1. non aggiungere nuova logica business nei composable
-  2. non aggiungere nuova logica business in `TimesheetController` se può vivere in un use case
-  3. mantieni separati i model di `data`, `domain` e `presentation`
-  4. aggiungi test mentre sposti la logica
+  1. se è una nuova feature UI con dominio proprio, crea un nuovo controller focalizzato anziché espandere TimesheetController
+  2. non aggiungere nuova logica business nei composable
+  3. non aggiungere nuova logica business in controller se può vivere in un use case
+  4. mantieni separati i model di `data`, `domain` e `presentation`
+  5. aggiungi test mentre sposti la logica
+  6. includi preview light/dark per ogni nuovo composable
+  7. centralizza stringhe user-facing in `StringKey`
 
 ## Definition Of Done
 - Una modifica è completa solo se:
