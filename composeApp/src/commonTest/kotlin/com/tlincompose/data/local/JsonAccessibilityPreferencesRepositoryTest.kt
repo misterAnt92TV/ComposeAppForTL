@@ -7,10 +7,10 @@ import com.tlincompose.domain.model.AccessibilityTextSize
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.AppThemeMode
 import com.tlincompose.domain.model.PdfExportStyle
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class JsonAccessibilityPreferencesRepositoryTest {
     @Test

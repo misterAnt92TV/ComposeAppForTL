@@ -6,9 +6,9 @@ import com.tlincompose.data.local.ProjectIconPresetEntity
 import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ProjectIconPreset
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlinx.datetime.LocalDate
 
 class ActivityDefinitionMapperTest {
     @Test

@@ -1,13 +1,12 @@
 package com.tlincompose.presentation.calendar
 
-import com.tlincompose.core.DateMath
 import com.tlincompose.core.activitySummaryLabel
 import com.tlincompose.core.appStrings
 import com.tlincompose.core.displayLabel
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.label
-import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.ActivityDraftInput
+import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarDay
 import com.tlincompose.domain.model.DailyEntry
 import com.tlincompose.domain.model.DateRange

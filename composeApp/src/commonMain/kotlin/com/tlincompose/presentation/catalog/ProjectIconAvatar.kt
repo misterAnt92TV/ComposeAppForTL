@@ -17,7 +17,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.tlincompose.core.*
+import com.tlincompose.core.activityTypeIconContentDescription
+import com.tlincompose.core.displayLabel
+import com.tlincompose.core.displayName
+import com.tlincompose.core.projectIconContentDescription
+import com.tlincompose.core.projectPresetContentDescription
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ProjectIconPreset
 import com.tlincompose.presentation.LocalAppStrings

@@ -18,7 +18,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.caverock.androidsvg.SVG
-import com.tlincompose.core.*
+import com.tlincompose.core.BrandingLogoSize
+import com.tlincompose.core.BrandingRectangleLogoMaxHeightPx
+import com.tlincompose.core.BrandingRectangleLogoMaxWidthPx
+import com.tlincompose.core.MaxBrandingLogoBytes
+import com.tlincompose.core.appStrings
+import com.tlincompose.core.brandingLogoTargetSizeFor
+import com.tlincompose.core.computeBrandingLogoRenderSize
+import com.tlincompose.core.isSvgImageBytes
+import com.tlincompose.core.parseSvgViewportSize
+import com.tlincompose.core.unableToReadSelectedImage
 import com.tlincompose.data.local.StorageDriver
 import com.tlincompose.domain.model.AppLanguage
 import java.io.ByteArrayOutputStream
@@ -41,24 +50,24 @@ actual fun rememberPlatformServices(
         if (document == null) return@rememberLauncherForActivityResult
 
         if (result.resultCode != Activity.RESULT_OK) {
-            onMessage(strings.saveCancelledMessage)
+            onMessage(strings[com.tlincompose.core.StringKey.SaveCancelledMessage])
             return@rememberLauncherForActivityResult
         }
 
         val destination = result.data?.data
         if (destination == null) {
-            onMessage(strings.invalidDestinationMessage)
+            onMessage(strings[com.tlincompose.core.StringKey.InvalidDestinationMessage])
             return@rememberLauncherForActivityResult
         }
 
         runCatching {
             context.contentResolver.openOutputStream(destination)?.use { output ->
                 output.write(document.bytes)
-            } ?: error(strings.unableToOpenDestinationFile)
+            } ?: error(strings[com.tlincompose.core.StringKey.UnableToOpenDestinationFile])
         }.onSuccess {
-            onMessage(strings.fileSavedMessage(document.fileName))
+            onMessage(strings[com.tlincompose.core.StringKey.FileSavedMessage(document.fileName)])
         }.onFailure {
-            onMessage(strings.saveErrorMessage)
+            onMessage(strings[com.tlincompose.core.StringKey.SaveErrorMessage])
         }
     }
     val iconPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -73,11 +82,11 @@ actual fun rememberPlatformServices(
         runCatching {
             context.contentResolver.openInputStream(uri)?.use { input ->
                 input.readBytes()
-            } ?: error(strings.unableToReadSelectedImage)
+            } ?: error(strings[com.tlincompose.core.StringKey.UnableToReadSelectedImage])
         }.onSuccess {
             callback(it)
         }.onFailure {
-            onMessage(strings.unableToReadSelectedImage)
+            onMessage(strings[com.tlincompose.core.StringKey.UnableToReadSelectedImage])
             callback(null)
         }
     }

@@ -8,7 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import com.tlincompose.core.*
+import com.tlincompose.core.StringKey
 import com.tlincompose.presentation.BrandLogoPickerLauncher
 import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.ProjectIconPickerLauncher
@@ -66,7 +66,7 @@ private fun HeaderSectionWithBrandingLogoPreview() {
         HeaderSection(
             month = previewMonth,
             monthSummary = previewMonthSummary,
-            intervalMessage = strings.selectedMonthsReadyMessage("12/05/2026 - 16/05/2026"),
+            intervalMessage = strings[StringKey.SelectedMonthsReadyMessage("12/05/2026 - 16/05/2026")],
             isSelectingRange = true,
             isExportEnabled = true,
             accessibilityState = state,
@@ -78,6 +78,7 @@ private fun HeaderSectionWithBrandingLogoPreview() {
             onToggleRangeSelection = {},
             onExport = {},
             onToggleSettings = {},
+            onMonthSelected = {}
         )
     }
 }
@@ -91,7 +92,7 @@ private fun HeaderSectionWithoutBrandingLogoPreview() {
         HeaderSection(
             month = previewMonth,
             monthSummary = previewMonthSummary,
-            intervalMessage = strings.selectedMonthsReadyMessage("12/05/2026 - 16/05/2026"),
+            intervalMessage = strings[StringKey.SelectedMonthsReadyMessage("12/05/2026 - 16/05/2026")],
             isSelectingRange = false,
             isExportEnabled = true,
             accessibilityState = state,
@@ -103,6 +104,7 @@ private fun HeaderSectionWithoutBrandingLogoPreview() {
             onToggleRangeSelection = {},
             onExport = {},
             onToggleSettings = {},
+            onMonthSelected = {}
         )
     }
 }
@@ -274,8 +276,8 @@ private fun ExportDialogPreview() {
     TLInComposePreviewSurface(state = state) {
         val strings = LocalAppStrings.current
         ExportDialog(
-            title = strings.exportPeriodTitle("12/05/2026 - 16/05/2026"),
-            description = strings.exportSelectedMonthsDescription,
+            title = strings[StringKey.ExportPeriodTitle("12/05/2026 - 16/05/2026")],
+            description = strings[StringKey.ExportSelectedMonthsDescription],
             layoutSpec = previewLayoutSpec(state),
             onDismiss = {},
             onExport = { _, _ -> },
@@ -295,19 +297,19 @@ private fun ReusableComponentsPreview() {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                HeaderInfoPill(text = strings.weekStartsMonday)
-                HeaderInfoPill(text = strings.standardWorkday("8"))
+                HeaderInfoPill(text = strings[StringKey.WeekStartsMonday])
+                HeaderInfoPill(text = strings[StringKey.StandardWorkday("8")])
             }
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 StatusPill(
-                    text = strings.todayLabel,
+                    text = strings[StringKey.TodayLabel],
                     background = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 )
                 StatusPill(
-                    text = strings.activityCountPhrase(3),
+                    text = strings[StringKey.ActivityCount(3)],
                     background = MaterialTheme.colorScheme.tertiaryContainer,
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 )
@@ -352,7 +354,7 @@ private fun ReusableComponentsPreview() {
                     entryType = definitions.first().type,
                     projectIconPreset = definitions.first().projectIconPreset,
                     projectCustomIconBase64 = null,
-                    title = strings.activityCatalogTitle,
+                    title = strings[StringKey.ActivityCatalogTitle],
                     size = 36.dp,
                 )
                 ProjectIconAvatar(
@@ -373,14 +375,14 @@ private fun ReusableComponentsPreview() {
                     entryType = definitions.first().type,
                     projectIconPreset = null,
                     projectCustomIconBase64 = null,
-                    title = strings.activityCatalogTitle,
+                    title = strings[StringKey.ActivityCatalogTitle],
                     size = 36.dp,
                     showPlaceholderWhenEmpty = true,
                 )
             }
-            BrandingLogoPreview(
-                brandingLogoBase64 = previewBrandingLogoBase64,
-                contentDescription = strings.brandingLogoContentDescription(strings.appName),
+                BrandingLogoPreview(
+                    brandingLogoBase64 = previewBrandingLogoBase64,
+                    contentDescription = strings[StringKey.BrandingLogoDescription("TLInCompose")],
                 modifier = androidx.compose.ui.Modifier.sizeIn(minWidth = 160.dp, minHeight = 56.dp),
                 showPlaceholderWhenEmpty = true,
             )

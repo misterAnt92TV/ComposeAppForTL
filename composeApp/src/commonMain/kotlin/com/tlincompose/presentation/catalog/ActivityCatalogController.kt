@@ -17,12 +17,12 @@ import com.tlincompose.domain.usecase.LoadActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.SaveActivityDefinitionUseCase
 import com.tlincompose.domain.usecase.SyncActivitiesWithDefinitionUseCase
 import com.tlincompose.domain.usecase.ValidateActivityDefinitionUseCase
-import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 class ActivityCatalogController(
     private val loadActivityDefinitions: LoadActivityDefinitionsUseCase,

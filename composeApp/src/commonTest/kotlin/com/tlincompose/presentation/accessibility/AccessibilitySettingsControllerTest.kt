@@ -10,12 +10,12 @@ import com.tlincompose.domain.model.PdfExportStyle
 import com.tlincompose.domain.repository.AccessibilityPreferencesRepository
 import com.tlincompose.domain.usecase.LoadAccessibilityPreferencesUseCase
 import com.tlincompose.domain.usecase.SaveAccessibilityPreferencesUseCase
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AccessibilitySettingsControllerTest {

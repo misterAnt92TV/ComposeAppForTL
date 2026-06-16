@@ -1,9 +1,9 @@
 package com.tlincompose.domain.usecase
 
 import com.tlincompose.domain.model.DateRange
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlinx.datetime.LocalDate
 
 class CreateDateRangeUseCaseTest {
     private val useCase = CreateDateRangeUseCase()

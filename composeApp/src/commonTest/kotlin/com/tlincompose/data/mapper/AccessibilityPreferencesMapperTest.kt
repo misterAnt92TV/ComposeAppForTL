@@ -1,8 +1,8 @@
 package com.tlincompose.data.mapper
 
 import com.tlincompose.data.local.AccessibilityPreferencesStore
-import com.tlincompose.data.local.AppLanguageEntity
 import com.tlincompose.data.local.AccessibilityTextSizeEntity
+import com.tlincompose.data.local.AppLanguageEntity
 import com.tlincompose.data.local.AppThemeModeEntity
 import com.tlincompose.data.local.PdfExportStyleEntity
 import com.tlincompose.domain.model.AccessibilityPreferences

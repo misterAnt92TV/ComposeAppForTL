@@ -2,9 +2,31 @@ package com.tlincompose.presentation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.tlincompose.core.*
+import com.tlincompose.core.AppStrings
+import com.tlincompose.core.BrandingLogoSize
+import com.tlincompose.core.BrandingRectangleLogoMaxHeightPx
+import com.tlincompose.core.BrandingRectangleLogoMaxWidthPx
+import com.tlincompose.core.MaxBrandingLogoBytes
+import com.tlincompose.core.appFileLabel
+import com.tlincompose.core.appStrings
+import com.tlincompose.core.brandingLogoTargetSizeFor
+import com.tlincompose.core.chooseBrandLogoDialogTitle
+import com.tlincompose.core.chooseProjectIconDialogTitle
+import com.tlincompose.core.computeBrandingLogoRenderSize
+import com.tlincompose.core.exportFormatLabel
+import com.tlincompose.core.exportSaveDialogTitle
+import com.tlincompose.core.fileSavedMessage
+import com.tlincompose.core.imageFilesLabel
+import com.tlincompose.core.isSvgImageBytes
+import com.tlincompose.core.parseSvgViewportSize
+import com.tlincompose.core.saveCancelledMessage
+import com.tlincompose.core.saveErrorMessage
+import com.tlincompose.core.unableToReadSelectedImage
 import com.tlincompose.data.local.StorageDriver
 import com.tlincompose.domain.model.AppLanguage
+import org.apache.batik.transcoder.TranscoderInput
+import org.apache.batik.transcoder.TranscoderOutput
+import org.apache.batik.transcoder.image.PNGTranscoder
 import java.awt.Color
 import java.awt.RenderingHints
 import java.awt.image.BufferedImage
@@ -15,9 +37,6 @@ import java.nio.file.Path
 import javax.imageio.ImageIO
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileNameExtensionFilter
-import org.apache.batik.transcoder.TranscoderInput
-import org.apache.batik.transcoder.TranscoderOutput
-import org.apache.batik.transcoder.image.PNGTranscoder
 
 @Composable
 actual fun rememberPlatformServices(

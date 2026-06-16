@@ -10,10 +10,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tlincompose.core.AppStrings
-import com.tlincompose.core.appStrings
 import com.tlincompose.core.activitySummaryLabel
+import com.tlincompose.core.appStrings
 import com.tlincompose.core.entryTypeLabel
-import com.tlincompose.core.extEntityDisplayLabel
 import com.tlincompose.core.holidayName
 import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.AppLanguage

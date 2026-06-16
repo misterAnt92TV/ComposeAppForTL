@@ -1,7 +1,5 @@
 package com.tlincompose.presentation.calendar
 
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -11,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -32,13 +32,35 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.tlincompose.core.*
+import com.tlincompose.core.activityRowLabel
+import com.tlincompose.core.addActivityLabel
+import com.tlincompose.core.baseDuration
+import com.tlincompose.core.cancelLabel
+import com.tlincompose.core.chooseEntityForType
+import com.tlincompose.core.closeLabel
+import com.tlincompose.core.dayDialogDescription
+import com.tlincompose.core.dayDialogTitle
+import com.tlincompose.core.dayRangeDialogDescription
+import com.tlincompose.core.dayRangeDialogTitle
+import com.tlincompose.core.displayName
+import com.tlincompose.core.extEntityDisplayLabel
+import com.tlincompose.core.formatHours
+import com.tlincompose.core.hoursOrFractionsLabel
+import com.tlincompose.core.hoursPlaceholder
+import com.tlincompose.core.noEntitiesForType
+import com.tlincompose.core.noEntityAvailableForType
+import com.tlincompose.core.rangeWeekendDayDialogNote
+import com.tlincompose.core.removeLabel
+import com.tlincompose.core.saveLabel
+import com.tlincompose.core.saveSelectedDaysLabel
+import com.tlincompose.core.selectExtEntity
+import com.tlincompose.core.weekendDayDialogNote
 import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.presentation.LocalAppStrings
+import com.tlincompose.presentation.catalog.ProjectIconAvatar
 import com.tlincompose.presentation.components.AppActionButton
 import com.tlincompose.presentation.components.AppButtonVariant
-import com.tlincompose.presentation.catalog.ProjectIconAvatar
 import com.tlincompose.presentation.layout.AccessibilityLayoutSpec
 
 @OptIn(ExperimentalLayoutApi::class)

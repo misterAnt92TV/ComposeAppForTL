@@ -1,7 +1,28 @@
 package com.tlincompose.data.export
 
-import com.tlincompose.core.*
-import com.tlincompose.domain.model.AppLanguage
+import com.tlincompose.core.AppStrings
+import com.tlincompose.core.BrandingLogoPdfMaxHeightPt
+import com.tlincompose.core.BrandingLogoPdfMaxWidthPt
+import com.tlincompose.core.appStrings
+import com.tlincompose.core.computeBrandingLogoRenderSize
+import com.tlincompose.core.decodeBrandingLogoImage
+import com.tlincompose.core.exportActivitiesLabel
+import com.tlincompose.core.exportActivityCodeLabel
+import com.tlincompose.core.exportActivityLabel
+import com.tlincompose.core.exportDaysLabel
+import com.tlincompose.core.exportGeneratedAtLabel
+import com.tlincompose.core.exportGeneratedAtValue
+import com.tlincompose.core.exportHoursPerDayCompactLabel
+import com.tlincompose.core.exportHoursPerDayLabel
+import com.tlincompose.core.exportNoActivitiesForSelectedPeriod
+import com.tlincompose.core.exportPeriodLabel
+import com.tlincompose.core.exportPeriodsLabel
+import com.tlincompose.core.exportRecordedDaysLabel
+import com.tlincompose.core.exportTotalHoursCompactLabel
+import com.tlincompose.core.exportTotalHoursLabel
+import com.tlincompose.core.exportTypeLabel
+import com.tlincompose.core.formatHours
+import com.tlincompose.core.labeledValue
 import com.tlincompose.domain.model.PdfExportStyle
 
 object PdfReportWriter {

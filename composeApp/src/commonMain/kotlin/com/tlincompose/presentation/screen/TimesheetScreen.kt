@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -18,7 +17,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
-import com.tlincompose.core.*
+import androidx.compose.ui.unit.dp
+import com.tlincompose.core.APP_VERSION
+import com.tlincompose.core.checkDayFieldsBeforeSaving
+import com.tlincompose.core.checkEntityFieldsBeforeSaving
+import com.tlincompose.core.chooseLighterImage
+import com.tlincompose.core.hideActivityCatalog
+import com.tlincompose.core.showActivityCatalog
+import com.tlincompose.core.unableToCopyDraggedActivity
+import com.tlincompose.core.unableToDeleteEntity
+import com.tlincompose.core.unableToPrepareExport
+import com.tlincompose.core.unableToSaveEntity
+import com.tlincompose.core.unableToSaveSelectedDay
+import com.tlincompose.core.unableToSaveSelectedDays
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.presentation.BrandLogoPickerLauncher
 import com.tlincompose.presentation.FileSaveLauncher
@@ -95,6 +106,7 @@ internal fun TimesheetScreen(
             onToggleSettings = {
                 isSettingsVisible = !isSettingsVisible
             },
+            onMonthSelected = { month -> controller.goToMonth(month) }
         )
         if (isSettingsVisible) {
             Box(modifier = Modifier.testTag("settings-panel")) {
@@ -161,6 +173,15 @@ internal fun TimesheetScreen(
                 )
             },
             onActivityDragCancelled = controller::cancelActivityDrag,
+        )
+        Text(
+            text = APP_VERSION,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+            textAlign = TextAlign.Center,
         )
     }
 

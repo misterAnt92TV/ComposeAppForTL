@@ -28,11 +28,46 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.tlincompose.core.*
+import com.tlincompose.core.AppStrings
+import com.tlincompose.core.brandingDescription
+import com.tlincompose.core.brandingLogoContentDescription
+import com.tlincompose.core.brandingTitle
+import com.tlincompose.core.closeLabel
+import com.tlincompose.core.comfortableLayoutDescription
+import com.tlincompose.core.comfortableLayoutTitle
+import com.tlincompose.core.decreaseWorkdayButtonLabel
+import com.tlincompose.core.decreaseWorkdayHours
+import com.tlincompose.core.focusModeDescription
+import com.tlincompose.core.focusModeTitle
+import com.tlincompose.core.formatHours
+import com.tlincompose.core.highContrastDescription
+import com.tlincompose.core.highContrastTitle
+import com.tlincompose.core.increaseWorkdayButtonLabel
+import com.tlincompose.core.increaseWorkdayHours
+import com.tlincompose.core.languageDescription
+import com.tlincompose.core.languageLabel
+import com.tlincompose.core.languageTitle
+import com.tlincompose.core.pdfExportStyleDescription
+import com.tlincompose.core.pdfExportStyleLabel
+import com.tlincompose.core.pdfExportStyleOptionDescription
+import com.tlincompose.core.pdfExportStyleTitle
+import com.tlincompose.core.privacyBody
+import com.tlincompose.core.privacyDescription
+import com.tlincompose.core.privacyTitle
+import com.tlincompose.core.removeBrandingLogoLabel
+import com.tlincompose.core.replaceBrandingLogoLabel
+import com.tlincompose.core.settingsDescription
+import com.tlincompose.core.settingsTitle
+import com.tlincompose.core.standardWorkday
+import com.tlincompose.core.textSizeTitle
+import com.tlincompose.core.themeTitle
+import com.tlincompose.core.uploadBrandingLogoLabel
+import com.tlincompose.core.workdayHoursDescription
+import com.tlincompose.core.workdayHoursTitle
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.PdfExportStyle
-import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.BrandLogoPickerLauncher
+import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.components.AppActionButton
 import com.tlincompose.presentation.components.AppButtonVariant
 import com.tlincompose.presentation.components.BrandingLogoPreview
@@ -66,7 +101,8 @@ internal fun AccessibilitySettingsSection(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(layoutSpec.contentPadding),
+                .padding(layoutSpec.contentPadding)
+                .clip(androidx.compose.foundation.shape.RoundedCornerShape(12.dp)),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
             Row(
@@ -125,11 +161,13 @@ internal fun AccessibilitySettingsSection(
                 text = state.themeMode.description(strings),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
             )
             Text(
                 text = strings.textSizeTitle,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 12.dp),
             )
             FlowRow(
                 modifier = Modifier.testTag("accessibility-text-scale-group"),
@@ -154,10 +192,12 @@ internal fun AccessibilitySettingsSection(
                 text = state.textScale.description(strings),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
             )
             Surface(
                 shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
             ) {
                 Column(
                     modifier = Modifier

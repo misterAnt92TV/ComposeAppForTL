@@ -2,7 +2,6 @@ package com.tlincompose.presentation.accessibility
 
 import com.tlincompose.domain.model.AccessibilityPreferences
 import com.tlincompose.domain.model.AccessibilityTextSize
-import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.AppThemeMode
 import com.tlincompose.domain.model.PdfExportStyle
 

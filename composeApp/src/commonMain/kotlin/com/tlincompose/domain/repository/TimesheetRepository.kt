@@ -1,9 +1,9 @@
 package com.tlincompose.domain.repository
 
+import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DailyEntry
 import com.tlincompose.domain.model.DateRange
-import com.tlincompose.domain.model.ActivityDefinition
 import kotlinx.datetime.LocalDate
 
 interface TimesheetRepository {

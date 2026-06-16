@@ -5,10 +5,10 @@ import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ProjectIconPreset
 import com.tlincompose.domain.model.ValidatedActivityDefinitionDraft
 import com.tlincompose.domain.repository.ActivityDefinitionRepository
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SaveActivityDefinitionUseCaseTest {
     @Test

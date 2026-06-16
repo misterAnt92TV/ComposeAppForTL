@@ -4,9 +4,9 @@ import com.tlincompose.domain.model.Activity
 import com.tlincompose.domain.model.DailyEntry
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ExportActivityTypeFilter
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlinx.datetime.LocalDate
 
 class FilterExportEntriesUseCaseTest {
     private val useCase = FilterExportEntriesUseCase()

@@ -7,10 +7,10 @@ import com.tlincompose.domain.model.DailyEntry
 import com.tlincompose.domain.model.DateRange
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.repository.TimesheetRepository
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AddActivityToDayUseCaseTest {
     @Test

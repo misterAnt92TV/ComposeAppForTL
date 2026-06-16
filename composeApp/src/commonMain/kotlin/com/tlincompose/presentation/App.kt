@@ -25,8 +25,8 @@ import com.tlincompose.core.di.appModules
 import com.tlincompose.core.invalidBrandingLogoMessage
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsController
-import com.tlincompose.presentation.layout.appBackgroundBrush
 import com.tlincompose.presentation.catalog.ActivityCatalogController
+import com.tlincompose.presentation.layout.appBackgroundBrush
 import com.tlincompose.presentation.screen.TimesheetScreen
 import kotlinx.coroutines.launch
 import org.koin.compose.KoinApplication

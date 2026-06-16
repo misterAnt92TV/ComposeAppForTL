@@ -1,6 +1,7 @@
 package com.tlincompose.presentation.header
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,27 +12,62 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.tlincompose.core.*
+import com.tlincompose.core.BrandingLogoHeaderMaxHeightDp
+import com.tlincompose.core.BrandingLogoHeaderMaxWidthDp
+import com.tlincompose.core.appTagline
+import com.tlincompose.core.brandingLogoContentDescription
+import com.tlincompose.core.cancelRangeSelection
+import com.tlincompose.core.closeLabel
+import com.tlincompose.core.closeSettingsLabel
+import com.tlincompose.core.compactHours
+import com.tlincompose.core.displayLabel
+import com.tlincompose.core.exportFormatsInfo
+import com.tlincompose.core.exportSelectedRange
+import com.tlincompose.core.exportVisibleMonth
+import com.tlincompose.core.formatHours
+import com.tlincompose.core.highContrastActive
+import com.tlincompose.core.monthCompletionComplete
+import com.tlincompose.core.monthCompletionProgress
+import com.tlincompose.core.monthCompletionRemaining
+import com.tlincompose.core.monthHoursTitle
+import com.tlincompose.core.monthFieldLabel
+import com.tlincompose.core.monthYearPickerTitle
+import com.tlincompose.core.nextMonth
+import com.tlincompose.core.openSettingsLabel
+import com.tlincompose.core.percentageValue
+import com.tlincompose.core.previousMonth
+import com.tlincompose.core.selectExportRange
+import com.tlincompose.core.standardWorkday
+import com.tlincompose.core.weekStartsMonday
+import com.tlincompose.core.weekendNormallyFree
+import com.tlincompose.core.yearFieldLabel
+import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsUiState
@@ -59,8 +95,12 @@ internal fun HeaderSection(
     onToggleRangeSelection: () -> Unit,
     onExport: () -> Unit,
     onToggleSettings: () -> Unit,
+    onMonthSelected: (CalendarMonth) -> Unit,
 ) {
     val strings = LocalAppStrings.current
+    val showDialog = remember { mutableStateOf(false) }
+    val selectedMonth = remember { mutableStateOf(month) }
+
     Card(
         shape = androidx.compose.foundation.shape.RoundedCornerShape(layoutSpec.cardCornerRadius),
         colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
@@ -146,15 +186,60 @@ internal fun HeaderSection(
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
                 ) {
-                    Text(
-                        text = month.displayLabel(strings.language),
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 18.dp, vertical = 14.dp),
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center,
+                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        IconButton(
+                            onClick = onPreviousMonth,
+                            modifier = Modifier
+                                .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                                .testTag("previous-month-icon-button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = strings.previousMonth,
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                        Text(
+                            text = month.displayLabel(strings.language),
+                            modifier = Modifier
+                                .clickable { showDialog.value = true }
+                                .padding(horizontal = 12.dp)
+                                .weight(1f),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1
+                        )
+                        IconButton(
+                            onClick = onNextMonth,
+                            modifier = Modifier
+                                .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                                .testTag("next-month-icon-button")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowForward,
+                                contentDescription = strings.nextMonth,
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
+                if (showDialog.value) {
+                    MonthYearPickerDialog(
+                        initialMonth = selectedMonth.value,
+                        onDismissRequest = { showDialog.value = false },
+                        onMonthYearSelected = { newMonth ->
+                            selectedMonth.value = newMonth
+                            showDialog.value = false
+                            onMonthSelected(newMonth)
+                        }
                     )
                 }
                 MonthSummaryCard(
@@ -167,32 +252,7 @@ internal fun HeaderSection(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     AppActionButton(
-                        text = strings.previousMonth,
-                        onClick = onPreviousMonth,
-                        variant = AppButtonVariant.SECONDARY,
-                        minHeight = layoutSpec.buttonMinHeight,
-                        modifier = Modifier.weight(1f),
-                        testTag = "previous-month-button",
-                    )
-                    AppActionButton(
-                        text = strings.nextMonth,
-                        onClick = onNextMonth,
-                        variant = AppButtonVariant.SECONDARY,
-                        minHeight = layoutSpec.buttonMinHeight,
-                        modifier = Modifier.weight(1f),
-                        testTag = "next-month-button",
-                    )
-                }
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    AppActionButton(
-                        text = if (isSelectingRange) {
-                            strings.cancelRangeSelection
-                        } else {
-                            strings.selectExportRange
-                        },
+                        text = if (isSelectingRange) strings.cancelRangeSelection else strings.selectExportRange,
                         onClick = onToggleRangeSelection,
                         variant = AppButtonVariant.SECONDARY,
                         minHeight = layoutSpec.buttonMinHeight,
@@ -200,11 +260,7 @@ internal fun HeaderSection(
                         testTag = "range-selection-button",
                     )
                     AppActionButton(
-                        text = if (isSelectingRange) {
-                            strings.exportSelectedRange
-                        } else {
-                            strings.exportVisibleMonth
-                        },
+                        text = if (isSelectingRange) strings.exportSelectedRange else strings.exportVisibleMonth,
                         onClick = onExport,
                         enabled = isExportEnabled,
                         minHeight = layoutSpec.buttonMinHeight,
@@ -358,4 +414,65 @@ private fun SettingsToggleButton(
             )
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MonthYearPickerDialog(
+    initialMonth: CalendarMonth,
+    onDismissRequest: () -> Unit,
+    onMonthYearSelected: (CalendarMonth) -> Unit,
+) {
+    // Implementazione dialog con selettori mese e anno (esempio base con dropdown) per usabilità e accessibilità
+    val strings = LocalAppStrings.current
+    val months = listOf(
+        "Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno",
+        "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"
+    )
+    val years = (2010..2030).toList()
+
+    val selectedMonthIndex = months.indexOf(
+        months.firstOrNull {
+            it.equals(initialMonth.displayLabel(AppLanguage.ITALIAN).split(" ")[0], ignoreCase = true)
+        }.takeIf { it != null } ?: months[initialMonth.monthNumber - 1]
+    ).coerceAtLeast(0)
+
+    val selectedYear = initialMonth.year
+
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = {
+            Text(strings.monthYearPickerTitle, fontWeight = FontWeight.Bold)
+        },
+        text = {
+            Column {
+                androidx.compose.material3.Text("${strings.monthFieldLabel}:")
+                androidx.compose.material3.ExposedDropdownMenuBox(
+                    expanded = false,
+                    onExpandedChange = {}
+                ) {
+                    Text(months[selectedMonthIndex], modifier = Modifier.padding(12.dp))
+                    // TODO: aggiungere dropdown mesi selezionabili con accessibilità
+                }
+                androidx.compose.material3.Text("${strings.yearFieldLabel}:")
+                androidx.compose.material3.ExposedDropdownMenuBox(
+                    expanded = false,
+                    onExpandedChange = {}
+                ) {
+                    Text(selectedYear.toString(), modifier = Modifier.padding(12.dp))
+                    // TODO: aggiungere dropdown anni selezionabili con accessibilità
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    // TODO: già che tanto è un placeholder, questa callback potrebbe essere implementata in seguito
+                    onDismissRequest()
+                }
+            ) {
+                Text(strings.closeLabel)
+            }
+        }
+    )
 }

@@ -1,7 +1,7 @@
 package com.tlincompose.data.mapper
 
-import com.tlincompose.data.local.ActivityEntity
 import com.tlincompose.data.local.ActivityDefinitionEntity
+import com.tlincompose.data.local.ActivityEntity
 import com.tlincompose.data.local.DailyEntryEntity
 import com.tlincompose.data.local.EntryTypeEntity
 import com.tlincompose.data.local.ProjectIconPresetEntity

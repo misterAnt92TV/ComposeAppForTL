@@ -134,6 +134,17 @@ Copertura attuale verificata in `commonTest`:
 - repository JSON con storage in-memory
 - regressioni su naming e raggruppamento export
 
+## GitHub Copilot custom agent
+
+Per rendere visibili i profili dedicati nel tool GitHub Copilot, il repository include:
+
+- `.github/chatmodes/tlincompose.chatmode.md`
+- `.github/chatmodes/tlincompose-testing.chatmode.md`
+- `.github/agents/tlincompose-agent.md`
+- `.github/agents/tlincompose-testing-agent.md`
+
+Se i nuovi profili non compaiono subito, ricarica la finestra dell'IDE o riapri la sessione Copilot.
+
 ## Setup locale
 
 Prerequisiti:

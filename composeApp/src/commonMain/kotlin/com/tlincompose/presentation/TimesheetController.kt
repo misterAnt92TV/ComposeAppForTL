@@ -4,25 +4,39 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import co.touchlab.kermit.Logger
-import com.tlincompose.core.*
+import com.tlincompose.core.AppStrings
+import com.tlincompose.core.AppTimeZone
+import com.tlincompose.core.DateMath
+import com.tlincompose.core.DispatcherProvider
+import com.tlincompose.core.LocalDateComparator
+import com.tlincompose.core.appStrings
+import com.tlincompose.core.displayLabel
+import com.tlincompose.core.exportPeriodTitle
+import com.tlincompose.core.exportSelectedMonthsDescription
+import com.tlincompose.core.exportVisibleMonthDescription
+import com.tlincompose.core.formatHours
+import com.tlincompose.core.message
+import com.tlincompose.core.selectFirstMonthInstruction
+import com.tlincompose.core.selectLastMonthInstruction
+import com.tlincompose.core.selectedMonthsReadyMessage
 import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DailyEntry
-import com.tlincompose.domain.model.DefaultWorkdayMinutes
 import com.tlincompose.domain.model.DateRange
-import com.tlincompose.domain.model.ExportDocument
+import com.tlincompose.domain.model.DefaultWorkdayMinutes
 import com.tlincompose.domain.model.ExportActivityTypeFilter
+import com.tlincompose.domain.model.ExportDocument
 import com.tlincompose.domain.model.ExportFormat
 import com.tlincompose.domain.model.MonthRange
 import com.tlincompose.domain.model.PdfExportStyle
+import com.tlincompose.domain.usecase.AddActivityToDayUseCase
 import com.tlincompose.domain.usecase.BuildCalendarMonthGridUseCase
 import com.tlincompose.domain.usecase.CalculateMonthWorkSummaryUseCase
 import com.tlincompose.domain.usecase.CreateDateRangeUseCase
 import com.tlincompose.domain.usecase.CreateMonthRangeUseCase
-import com.tlincompose.domain.usecase.AddActivityToDayUseCase
-import com.tlincompose.domain.usecase.ExportMonthReportUseCase
 import com.tlincompose.domain.usecase.ExportMonthRangeReportUseCase
+import com.tlincompose.domain.usecase.ExportMonthReportUseCase
 import com.tlincompose.domain.usecase.LoadMonthEntriesUseCase
 import com.tlincompose.domain.usecase.SaveDateRangeEntriesUseCase
 import com.tlincompose.domain.usecase.ValidateDailyEntryUseCase
@@ -31,12 +45,11 @@ import com.tlincompose.presentation.calendar.ActivityDragUiState
 import com.tlincompose.presentation.calendar.DayDragSelectionUiState
 import com.tlincompose.presentation.calendar.DayEditTargetUiState
 import com.tlincompose.presentation.calendar.DayEditorUiState
-import com.tlincompose.presentation.calendar.MonthCellUiModel
 import com.tlincompose.presentation.calendar.RangeSelectionUiState
 import com.tlincompose.presentation.calendar.toDayEditorUiState
 import com.tlincompose.presentation.calendar.toDomainInput
-import com.tlincompose.presentation.calendar.toUiState
 import com.tlincompose.presentation.calendar.toUiModels
+import com.tlincompose.presentation.calendar.toUiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
@@ -156,6 +169,21 @@ class TimesheetController(
         activityDragState = ActivityDragUiState()
         editorState = null
         entriesByDate = emptyMap()
+        updateMonthCells()
+        reloadMonth()
+    }
+
+    fun goToMonth(month: CalendarMonth) {
+        if (currentMonth == month) return
+
+        currentMonth = month
+        log.i { "Navigazione diretta al mese ${currentMonth.fileStamp}." }
+
+        dayDragSelectionState = DayDragSelectionUiState()
+        activityDragState = ActivityDragUiState()
+        editorState = null
+        entriesByDate = emptyMap()
+
         updateMonthCells()
         reloadMonth()
     }

@@ -2,9 +2,9 @@ package com.tlincompose.domain.usecase
 
 import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.EntryType
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlinx.datetime.LocalDate
 
 class GenerateNextExtCodeUseCaseTest {
     private val useCase = GenerateNextExtCodeUseCase()

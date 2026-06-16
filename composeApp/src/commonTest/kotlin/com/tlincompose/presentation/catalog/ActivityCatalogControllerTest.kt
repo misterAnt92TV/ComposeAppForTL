@@ -2,8 +2,8 @@ package com.tlincompose.presentation.catalog
 
 import co.touchlab.kermit.Logger
 import com.tlincompose.TestDispatcherProvider
-import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.Activity
+import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DailyEntry
@@ -18,14 +18,14 @@ import com.tlincompose.domain.usecase.LoadActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.SaveActivityDefinitionUseCase
 import com.tlincompose.domain.usecase.SyncActivitiesWithDefinitionUseCase
 import com.tlincompose.domain.usecase.ValidateActivityDefinitionUseCase
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ActivityCatalogControllerTest {
