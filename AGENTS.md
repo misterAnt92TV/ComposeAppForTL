@@ -1,0 +1,192 @@
+# TLInCompose Agent Guide
+
+## Mission
+- Mantieni `TLInCompose` come progetto `Kotlin Multiplatform + Compose Multiplatform` con target Android e Desktop.
+- Ogni modifica futura deve spingere il progetto verso una `Clean Architecture` chiara, testabile e coroutine-first.
+- Favorisci codice condiviso in `commonMain`; usa `androidMain` e `desktopMain` solo per adapter e integrazioni di piattaforma.
+- Keep simple: preferisci la soluzione piu semplice che rispetta i vincoli architetturali.
+- Evita over engineering: non introdurre layer, astrazioni o pattern se non portano un beneficio concreto al progetto.
+- Gestire tutto per step: privilegia refactor incrementali, verificabili e facili da testare invece di riscritture massive.
+
+## Architectural Direction
+- Usa questi layer come riferimento obbligatorio per le nuove feature:
+  - `presentation`: UI Compose, state holder, eventi, state mapping.
+  - `domain`: model, repository contract, use case, regole di business.
+  - `data`: datasource, repository implementation, DTO/entity, mapper, persistenza/export.
+- Non aggiungere nuova business logic direttamente in `App.kt` o nei composable.
+- Non far crescere `TimesheetController` come contenitore generico di logica:
+  - per nuove feature, estrai prima la logica in `use case`
+  - lascia al controller solo coordinazione dello state e chiamate ai use case
+- `domain` non deve dipendere da Compose, Android, Swing, file system, serialization o dettagli di persistenza.
+- Le interfacce dei repository stanno in `domain`; le implementazioni concrete stanno in `data`.
+
+## Package Layout
+- Per il nuovo codice, preferisci questa struttura:
+  - `com.tlincompose.presentation`
+  - `com.tlincompose.presentation.calendar`
+  - `com.tlincompose.presentation.export`
+  - `com.tlincompose.domain.model`
+  - `com.tlincompose.domain.repository`
+  - `com.tlincompose.domain.usecase`
+  - `com.tlincompose.data.local`
+  - `com.tlincompose.data.export`
+  - `com.tlincompose.data.mapper`
+  - `com.tlincompose.core`
+- Evita di aggiungere nuovi file flat direttamente sotto `com.tlincompose` se appartengono chiaramente a uno di questi layer.
+- Se modifichi codice esistente flat, preferisci spostarlo gradualmente nella struttura sopra invece di duplicarlo.
+
+## Domain Rules
+- Separa sempre:
+  - `data model` o `DTO/entity` per storage/export
+  - `domain model` per la logica applicativa
+  - `presentation model` o UI state per la schermata
+- Non usare gli stessi model per tutti i layer salvo casi davvero banali e dichiarati.
+- Ogni comportamento di business non banale deve vivere in un `use case`.
+- I use case devono avere responsabilità singola e nome esplicito, per esempio:
+  - `LoadMonthEntriesUseCase`
+  - `SaveDailyEntryUseCase`
+  - `ExportMonthReportUseCase`
+  - `ValidateDailyEntryUseCase`
+- Preferisci `operator fun invoke(...)` nei use case.
+- Le regole di validazione non devono stare nei composable.
+
+## Coroutines Rules
+- Uniforma tutta la logica asincrona con `kotlinx.coroutines`.
+- Ogni operazione di I/O o computazione non banale deve essere `suspend` o restituire `Flow`.
+- Linee guida:
+  - usa `suspend` per operazioni one-shot
+  - usa `Flow` per stream osservabili o stato persistente
+  - non esporre `MutableStateFlow` fuori dal layer owner
+- Non usare chiamate bloccanti nel main thread.
+- Introduci e usa un `DispatcherProvider` o equivalente quando una logica dipende dal dispatcher, così i test restano deterministici.
+- Nei test coroutine usa `runTest`.
+- Evita `GlobalScope`.
+
+## Presentation Rules
+- I composable devono:
+  - leggere state
+  - inviare eventi
+  - delegare la logica ai use case/state holder
+- Evita accesso diretto a repository, storage, export writer o serializer dalla UI.
+- Mantieni gli state holder piccoli e focalizzati.
+- Mantieni classi, composable e file UI compatti: non lasciare crescere classi troppo lunghe o file monolitici.
+- Se una schermata o un componente supera una dimensione ragionevole o contiene piu responsabilita, estrai nuove classi/file e usa directory dedicate come `components`, `model`, `state` o equivalenti invece di accumulare tutto nello stesso file.
+- Ogni nuovo componente Compose deve includere preview in modalità chiara e scura con sample state/stub coerenti, preferibilmente tramite `@PreviewLightDark` o equivalente.
+- Le stringhe user-facing non devono mai essere cablate direttamente in composable, controller, exporter o adapter di piattaforma:
+  - definiscile in una API di localizzazione centralizzata come `AppStrings` o helper equivalenti dedicati
+  - prevedi sempre il testo per ogni lingua supportata con naming esplicito e criterio coerente
+  - evita `when(language)` sparsi nei file feature se la stringa puo vivere nel layer di localizzazione
+- Se una schermata cresce, estrai:
+  - `UiState`
+  - `UiEvent`
+  - `UiAction` o callback mirate
+  - mapper da `domain` a `presentation`
+- Aggiungi `testTag` ai componenti chiave quando una feature può beneficiare di UI test futuri.
+
+## Data Rules
+- Tutto ciò che parla con file system, JSON, PDF, CSV, XLSX o API di piattaforma appartiene a `data`.
+- Usa mapper espliciti tra `data` e `domain`.
+- Le implementazioni concrete dei repository devono nascondere dettagli di storage.
+- Le eccezioni di basso livello non devono propagare direttamente alla UI:
+  - convertile in `Result`, sealed error type o stato esplicito
+  - mantieni coerente la strategia scelta nella feature
+
+## KMP Rules
+- `commonMain` è la destinazione preferita per:
+  - use case
+  - domain model
+  - validazione
+  - mapping
+  - repository contract
+  - logica export che non dipende dalla piattaforma
+- Usa `expect/actual` solo per confini realmente platform-specific, ad esempio:
+  - file picker
+  - storage path
+  - API native
+  - integrazione sistema operativo
+- Non introdurre dipendenze Android-only in `commonMain`.
+
+## Product Invariants
+- L'app resta in lingua italiana.
+- Timezone di riferimento: `Europe/Rome`.
+- La schermata principale mostra il mese corrente con navigazione mese precedente/successivo.
+- Il calendario parte da lunedì.
+- Le festività supportate restano, salvo richieste esplicite diverse, quelle nazionali italiane.
+- Un giorno può contenere più attività.
+- I tipi attuali del timesheet sono:
+  - `PROJECT`
+  - `VACATION`
+  - `PERMIT`
+- `PROJECT` usa descrizione libera.
+- `VACATION` e `PERMIT` possono essere parziali in ore.
+- L'export standard puo lavorare sul mese visibile oppure su un intervallo selezionato dall'utente.
+- L'export raggruppa giorni consecutivi con stessa tripletta:
+  - tipo
+  - valore
+  - minuti per giorno
+- Mantieni coerenza di naming file export:
+  - `TLInCompose_YYYY-MM.csv`
+  - `TLInCompose_YYYY-MM.xlsx`
+  - `TLInCompose_YYYY-MM.pdf`
+  - `TLInCompose_YYYY-MM-DD_YYYY-MM-DD.csv`
+  - `TLInCompose_YYYY-MM-DD_YYYY-MM-DD.xlsx`
+  - `TLInCompose_YYYY-MM-DD_YYYY-MM-DD.pdf`
+- Ogni nuova feature deve preservare il comportamento su Android e Desktop, salvo esplicita eccezione.
+
+## Testing Rules
+- Ogni nuova feature deve arrivare con test proporzionati.
+- Minimo richiesto:
+  - test unitari dei use case
+  - test della validazione
+  - test dei mapper
+  - test dei repository con fake o storage in-memory quando possibile
+- Per logica pure Kotlin, usa `commonTest`.
+- Sposta i test platform-specific in `androidUnitTest` o `desktopTest` solo se necessario.
+- Casi da coprire quando applicabili:
+  - happy path
+  - input invalidi
+  - errori del repository o export
+  - edge case di date, intervalli, festività, ore parziali
+  - regressioni sui raggruppamenti dell’export
+
+## Migration Guidance For Current Code
+- Stato attuale del progetto:
+  - la struttura principale e ora organizzata per layer `core`, `domain`, `data` e `presentation`
+  - `TimesheetController` deve restare uno state holder leggero di coordinazione
+  - repository, export, validazione e mapper sono gia separati per responsabilita
+- Per ogni modifica futura, segui questa priorità:
+  1. non aggiungere nuova logica business nei composable
+  2. non aggiungere nuova logica business in `TimesheetController` se può vivere in un use case
+  3. mantieni separati i model di `data`, `domain` e `presentation`
+  4. aggiungi test mentre sposti la logica
+
+## Definition Of Done
+- Una modifica è completa solo se:
+  - rispetta i layer della clean architecture
+  - usa coroutine in modo coerente
+  - non introduce logica business nella UI
+  - aggiunge preview light/dark per ogni nuovo componente Compose introdotto
+  - non lascia stringhe user-facing cablate fuori dal layer di localizzazione
+  - include test adeguati
+  - mantiene compatibilità Android + Desktop
+  - documenta eventuali tradeoff temporanei nel codice o nella PR description
+
+## Preferred Defaults
+- Constructor injection per dipendenze.
+- Use case piccoli e composti, non classi “manager” generiche.
+- `Result` o sealed state per error handling leggibile.
+- Storage e export dietro interfacce.
+- Naming esplicito e orientato al dominio.
+- Keep simple come default operativo.
+- Gestire tutto per step durante analisi, refactor e migrazioni.
+- Refactor incrementali, non riscritture massive non richieste.
+
+## Anti-Patterns To Avoid
+- Business logic nei composable.
+- Repository chiamati direttamente dalla UI.
+- Model condivisi indiscriminatamente tra `data`, `domain` e `presentation`.
+- Utility file enormi con funzioni eterogenee.
+- `suspend` mancante su operazioni di I/O.
+- Test mancanti per use case o validazione.
+- Dipendenze Android/JVM introdotte in `commonMain` senza bisogno reale.
+- Over engineering: astrazioni premature, interfacce inutili o moltiplicazione di use case senza una responsabilita chiara.

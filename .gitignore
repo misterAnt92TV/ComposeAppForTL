@@ -1,14 +1,18 @@
-# Gradle files
+# Gradle / Kotlin / KMP
 .gradle/
+.gradle-local/
+.kotlin/
 build/
+**/build/
 
-# Local configuration file (sdk path, etc)
+# Local machine configuration
 local.properties
 
-# Log/OS Files
+# Logs and OS files
 *.log
+.DS_Store
 
-# Android Studio generated files and folders
+# Android / Compose generated artifacts
 captures/
 .externalNativeBuild/
 .cxx/
@@ -16,19 +20,34 @@ captures/
 *.apk
 output-metadata.json
 
-# IntelliJ
+# Desktop packaging artifacts (if exported locally)
+*.dmg
+*.msi
+*.deb
+
+# IDE files
 *.iml
 .idea/
 misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# Keystore files
+# Signing / secret files
 *.jks
 *.keystore
+keystore.properties
 
-# Google Services (e.g. APIs or Firebase)
+# Google services config (project-specific secret-ish file)
 google-services.json
 
-# Android Profiling
+# Profiling / diagnostics
 *.hprof
+
+# Always ignore local reports and test outputs
+**/reports/
+**/test-results/
+**/tmp/
+
+# Generated artwork assets
+artwork/icons/generated/
+
