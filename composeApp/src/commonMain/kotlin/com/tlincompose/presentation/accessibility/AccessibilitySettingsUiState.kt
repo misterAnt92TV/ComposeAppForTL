@@ -29,6 +29,7 @@ data class AccessibilitySettingsUiState(
     val themeMode: ThemeModeUiState = ThemeModeUiState.SYSTEM,
     val language: com.tlincompose.domain.model.AppLanguage = com.tlincompose.domain.model.AppLanguage.ENGLISH,
     val standardWorkdayMinutes: Int = com.tlincompose.domain.model.DefaultWorkdayMinutes,
+    val exportUserFullName: String = "",
     val brandingLogoBase64: String? = null,
     val pdfExportStyle: PdfExportStyleUiState = PdfExportStyleUiState.RETRO,
 ) {

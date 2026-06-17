@@ -24,14 +24,17 @@ class PdfReportWriterTest {
                     totalLoggedMinutes = 0,
                 ),
                 language = AppLanguage.ITALIAN,
+                exportUserFullName = "Mario Rossi",
                 brandingLogoBase64 = Base64.Default.encode(minimalJpegBytes(width = 800, height = 350)),
             ),
             title = "Export",
+            font = testPdfFont(),
         )
 
         val pdfText = pdfBytes.decodeToString()
         assertTrue(pdfText.contains("/DCTDecode"))
         assertTrue(pdfText.contains("/Im1 Do"))
+        assertTrue(pdfText.contains("/FontFile2"))
     }
 
     @Test
@@ -55,7 +58,8 @@ class PdfReportWriterTest {
         val compactText = buildPdfText(PdfExportStyle.COMPACT_LIST)
         val detailText = buildPdfText(PdfExportStyle.DETAIL_BLOCKS)
 
-        assertTrue(compactText.contains("Type: Project"))
+        assertTrue(compactText.contains("User: Mario Rossi"))
+        assertTrue(compactText.contains("Attivit\\340"))
         assertTrue(detailText.contains("============================================================================================"))
     }
 }
@@ -69,7 +73,7 @@ private fun buildPdfText(style: PdfExportStyle): String {
             rows = listOf(
                 ExportRow(
                     activityCode = "EXT-0001",
-                    activityTitle = "Apollo",
+                    activityTitle = "Attività Demo",
                     typeLabel = "Project",
                     periods = listOf(ExportPeriod(kotlinx.datetime.LocalDate(2026, 5, 5), kotlinx.datetime.LocalDate(2026, 5, 6))),
                     hoursPerDayLabel = "8",
@@ -83,12 +87,28 @@ private fun buildPdfText(style: PdfExportStyle): String {
                 totalLoggedMinutes = 960,
             ),
             language = AppLanguage.ENGLISH,
+            exportUserFullName = "Mario Rossi",
             brandingLogoBase64 = Base64.Default.encode(minimalJpegBytes(width = 800, height = 350)),
             pdfExportStyle = style,
         ),
         title = "Export",
+        font = testPdfFont(),
     ).decodeToString()
 }
+
+private fun testPdfFont(): PdfEmbeddedFont = PdfEmbeddedFont(
+    postScriptName = "TestFont",
+    fontBytes = byteArrayOf(0x00, 0x01, 0x02),
+    firstChar = 32,
+    lastChar = 255,
+    widths = List(224) { 500 },
+    ascent = 800,
+    descent = -200,
+    capHeight = 700,
+    bbox = intArrayOf(-200, -200, 1000, 900),
+    italicAngle = 0,
+    missingWidth = 500,
+)
 
 private fun minimalJpegBytes(width: Int, height: Int): ByteArray = byteArrayOf(
     0xFF.toByte(), 0xD8.toByte(),

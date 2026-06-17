@@ -45,6 +45,7 @@ class ExportMonthRangeReportUseCaseTest {
             format = ExportFormat.CSV,
             language = AppLanguage.ITALIAN,
             filter = ExportActivityTypeFilter(setOf(EntryType.PERMIT)),
+            exportUserFullName = "Mario Rossi",
         )
 
         assertEquals(DateRange(LocalDate(2026, 5, 1), LocalDate(2026, 7, 31)), repository.requestedRange)
@@ -54,6 +55,7 @@ class ExportMonthRangeReportUseCaseTest {
             exporter.exportedEntries.map(DailyEntry::date),
         )
         assertEquals(listOf(EntryType.PERMIT), exporter.exportedEntries.single().activities.map(Activity::type))
+        assertEquals("Mario Rossi", exporter.exportUserFullName)
         assertEquals("months.csv", result.fileName)
     }
 
@@ -82,12 +84,14 @@ class ExportMonthRangeReportUseCaseTest {
     private class RecordingExporter : TimesheetExporter {
         var exportedRange: MonthRange? = null
         var exportedEntries: List<DailyEntry> = emptyList()
+        var exportUserFullName: String? = null
 
         override suspend fun exportMonth(
             month: CalendarMonth,
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportMonth should not be called in this test")
@@ -97,6 +101,7 @@ class ExportMonthRangeReportUseCaseTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportDateRange should not be called in this test")
@@ -106,11 +111,13 @@ class ExportMonthRangeReportUseCaseTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument {
             exportedRange = range
             exportedEntries = entries
+            this.exportUserFullName = exportUserFullName
             return ExportDocument(
                 fileName = "months.csv",
                 mimeType = format.mimeType,

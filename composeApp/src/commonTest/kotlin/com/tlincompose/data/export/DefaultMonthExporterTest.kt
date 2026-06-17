@@ -23,6 +23,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class DefaultMonthExporterTest {
+    private val testPdfFontProvider = PdfFontProvider {
+        PdfFontResource(
+            postScriptName = "TestFont",
+            fontBytes = byteArrayOf(0x00, 0x01, 0x02),
+        )
+    }
+
     @Test
     fun activitiesWithSameCodeAreGroupedIntoSingleExportRow() {
         val rows = groupActivitiesForExport(
@@ -61,9 +68,10 @@ class DefaultMonthExporterTest {
         val exportedAt = Instant.parse("2026-05-20T14:35:00Z")
         val exporter = DefaultMonthExporter(
             dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler)),
+            pdfFontProvider = testPdfFontProvider,
             logger = Logger.withTag("DefaultMonthExporterTest"),
             xlsxEncoder = { _, _ -> "xlsx".encodeToByteArray() },
-            pdfEncoder = { _, _ -> "%PDF-1.4".encodeToByteArray() },
+            pdfEncoder = { _, _, _ -> "%PDF-1.4".encodeToByteArray() },
             nowProvider = { exportedAt },
         )
         val entries = listOf(
@@ -91,12 +99,42 @@ class DefaultMonthExporterTest {
     }
 
     @Test
+    fun exportPreservesAccentsInUserNameFileNameAndCsvMetadata() = runTest {
+        val exporter = DefaultMonthExporter(
+            dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler)),
+            pdfFontProvider = testPdfFontProvider,
+            logger = Logger.withTag("DefaultMonthExporterTest"),
+            xlsxEncoder = { _, _ -> "xlsx".encodeToByteArray() },
+            pdfEncoder = { _, _, _ -> "%PDF-1.4".encodeToByteArray() },
+        )
+        val entries = listOf(
+            DailyEntry(
+                LocalDate(2026, 5, 1),
+                listOf(Activity(type = EntryType.PROJECT, extCode = "EXT-0002", title = "Attività Demo", minutes = 480)),
+            ),
+        )
+
+        val csv = exporter.exportMonth(
+            month = CalendarMonth(2026, 5),
+            entries = entries,
+            format = ExportFormat.CSV,
+            language = AppLanguage.ITALIAN,
+            exportUserFullName = "  José   García  ",
+        )
+
+        assertEquals("TLInCompose_José_García_2026-05.csv", csv.fileName)
+        assertTrue(csv.bytes.decodeToString().contains("\"Utente\";\"José García\""))
+        assertTrue(csv.bytes.decodeToString().contains("\"EXT-0002\";\"Attività Demo\""))
+    }
+
+    @Test
     fun exportDateRangeProducesExpectedFileName() = runTest {
         val exporter = DefaultMonthExporter(
             dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler)),
+            pdfFontProvider = testPdfFontProvider,
             logger = Logger.withTag("DefaultMonthExporterTest"),
             xlsxEncoder = { _, _ -> "xlsx".encodeToByteArray() },
-            pdfEncoder = { _, _ -> "%PDF-1.4".encodeToByteArray() },
+            pdfEncoder = { _, _, _ -> "%PDF-1.4".encodeToByteArray() },
         )
         val entries = listOf(
             DailyEntry(
@@ -117,9 +155,10 @@ class DefaultMonthExporterTest {
             entries = entries,
             format = ExportFormat.PDF,
             language = AppLanguage.ENGLISH,
+            exportUserFullName = "Mario Rossi",
         )
 
-        assertEquals("TLInCompose_2026-05-10_2026-05-12.pdf", pdf.fileName)
+        assertEquals("TLInCompose_Mario_Rossi_2026-05-10_2026-05-12.pdf", pdf.fileName)
         assertTrue(pdf.bytes.decodeToString().startsWith("%PDF-1.4"))
     }
 
@@ -127,9 +166,10 @@ class DefaultMonthExporterTest {
     fun exportMonthRangeProducesExpectedFileName() = runTest {
         val exporter = DefaultMonthExporter(
             dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler)),
+            pdfFontProvider = testPdfFontProvider,
             logger = Logger.withTag("DefaultMonthExporterTest"),
             xlsxEncoder = { _, _ -> "xlsx".encodeToByteArray() },
-            pdfEncoder = { _, _ -> "%PDF-1.4".encodeToByteArray() },
+            pdfEncoder = { _, _, _ -> "%PDF-1.4".encodeToByteArray() },
         )
         val entries = listOf(
             DailyEntry(
@@ -146,9 +186,10 @@ class DefaultMonthExporterTest {
             entries = entries,
             format = ExportFormat.PDF,
             language = AppLanguage.ENGLISH,
+            exportUserFullName = "Mario Rossi",
         )
 
-        assertEquals("TLInCompose_2026-05_2026-07.pdf", pdf.fileName)
+        assertEquals("TLInCompose_Mario_Rossi_2026-05_2026-07.pdf", pdf.fileName)
         assertTrue(pdf.bytes.decodeToString().startsWith("%PDF-1.4"))
     }
 
@@ -158,12 +199,13 @@ class DefaultMonthExporterTest {
         var pdfReport: ExportReport? = null
         val exporter = DefaultMonthExporter(
             dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler)),
+            pdfFontProvider = testPdfFontProvider,
             logger = Logger.withTag("DefaultMonthExporterTest"),
             xlsxEncoder = { report, _ ->
                 xlsxReport = report
                 "xlsx".encodeToByteArray()
             },
-            pdfEncoder = { report, _ ->
+            pdfEncoder = { report, _, _ ->
                 pdfReport = report
                 "%PDF-1.4".encodeToByteArray()
             },

@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -38,6 +39,10 @@ import com.tlincompose.core.comfortableLayoutDescription
 import com.tlincompose.core.comfortableLayoutTitle
 import com.tlincompose.core.decreaseWorkdayButtonLabel
 import com.tlincompose.core.decreaseWorkdayHours
+import com.tlincompose.core.exportUserFullNameDescription
+import com.tlincompose.core.exportUserFullNameLabel
+import com.tlincompose.core.exportUserFullNamePlaceholder
+import com.tlincompose.core.exportUserFullNameTitle
 import com.tlincompose.core.focusModeDescription
 import com.tlincompose.core.focusModeTitle
 import com.tlincompose.core.formatHours
@@ -87,6 +92,7 @@ internal fun AccessibilitySettingsSection(
     onFocusModeChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onStandardWorkdayChanged: (Int) -> Unit,
+    onExportUserFullNameChanged: (String) -> Unit,
     onPdfExportStyleChanged: (PdfExportStyleUiState) -> Unit,
     onPickBrandingLogo: (ByteArray) -> Unit,
     onClearBrandingLogo: () -> Unit,
@@ -389,6 +395,38 @@ internal fun AccessibilitySettingsSection(
                             minWidth = chipMinWidth,
                             minHeight = layoutSpec.buttonMinHeight - 4.dp,
                         ),
+                    )
+                }
+            }
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    Text(
+                        text = strings.exportUserFullNameTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                    Text(
+                        text = strings.exportUserFullNameDescription,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    OutlinedTextField(
+                        value = state.exportUserFullName,
+                        onValueChange = onExportUserFullNameChanged,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("export-user-full-name-field"),
+                        label = { Text(strings.exportUserFullNameLabel) },
+                        placeholder = { Text(strings.exportUserFullNamePlaceholder) },
+                        singleLine = true,
                     )
                 }
             }

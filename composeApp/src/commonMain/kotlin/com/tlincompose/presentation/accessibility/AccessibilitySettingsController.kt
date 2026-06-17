@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import co.touchlab.kermit.Logger
 import com.tlincompose.core.DispatcherProvider
 import com.tlincompose.core.MaxBrandingLogoBytes
+import com.tlincompose.core.normalizeUserFacingName
 import com.tlincompose.domain.usecase.LoadAccessibilityPreferencesUseCase
 import com.tlincompose.domain.usecase.SaveAccessibilityPreferencesUseCase
 import kotlinx.coroutines.CoroutineScope
@@ -72,6 +73,10 @@ class AccessibilitySettingsController(
 
     fun updateStandardWorkdayMinutes(minutes: Int) {
         updatePreferences { copy(standardWorkdayMinutes = minutes) }
+    }
+
+    fun updateExportUserFullName(fullName: String) {
+        updatePreferences { copy(exportUserFullName = normalizeUserFacingName(fullName)) }
     }
 
     fun updatePdfExportStyle(style: PdfExportStyleUiState) {

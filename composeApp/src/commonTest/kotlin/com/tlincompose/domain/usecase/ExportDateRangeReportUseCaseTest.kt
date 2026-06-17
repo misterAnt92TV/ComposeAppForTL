@@ -59,6 +59,7 @@ class ExportDateRangeReportUseCaseTest {
             format = ExportFormat.CSV,
             language = AppLanguage.ENGLISH,
             filter = ExportActivityTypeFilter(setOf(EntryType.PROJECT)),
+            exportUserFullName = "Mario Rossi",
         )
 
         assertEquals(requestedRange, repository.requestedRange)
@@ -68,6 +69,7 @@ class ExportDateRangeReportUseCaseTest {
             exporter.exportedEntries.map(DailyEntry::date),
         )
         assertEquals(listOf(EntryType.PROJECT), exporter.exportedEntries.single().activities.map(Activity::type))
+        assertEquals("Mario Rossi", exporter.exportUserFullName)
         assertEquals("range.csv", result.fileName)
     }
 
@@ -96,12 +98,14 @@ class ExportDateRangeReportUseCaseTest {
     private class RecordingExporter : TimesheetExporter {
         var exportedRange: DateRange? = null
         var exportedEntries: List<DailyEntry> = emptyList()
+        var exportUserFullName: String? = null
 
         override suspend fun exportMonth(
             month: CalendarMonth,
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportMonth should not be called in this test")
@@ -111,11 +115,13 @@ class ExportDateRangeReportUseCaseTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument {
             exportedRange = range
             exportedEntries = entries
+            this.exportUserFullName = exportUserFullName
             return ExportDocument(
                 fileName = "range.csv",
                 mimeType = format.mimeType,
@@ -128,6 +134,7 @@ class ExportDateRangeReportUseCaseTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportMonthRange should not be called in this test")

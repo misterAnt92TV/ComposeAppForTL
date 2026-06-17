@@ -15,6 +15,7 @@ interface TimesheetExporter {
         entries: List<DailyEntry>,
         format: ExportFormat,
         language: AppLanguage,
+        exportUserFullName: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
     ): ExportDocument
@@ -24,6 +25,7 @@ interface TimesheetExporter {
         entries: List<DailyEntry>,
         format: ExportFormat,
         language: AppLanguage,
+        exportUserFullName: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
     ): ExportDocument
@@ -33,6 +35,7 @@ interface TimesheetExporter {
         entries: List<DailyEntry>,
         format: ExportFormat,
         language: AppLanguage,
+        exportUserFullName: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
     ): ExportDocument

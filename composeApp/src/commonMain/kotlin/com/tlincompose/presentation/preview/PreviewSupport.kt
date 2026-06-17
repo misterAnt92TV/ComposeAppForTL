@@ -50,6 +50,7 @@ internal fun previewAccessibilityState(
     comfortableSpacing: Boolean = true,
     focusMode: Boolean = false,
     standardWorkdayMinutes: Int = DefaultWorkdayMinutes,
+    exportUserFullName: String = "",
     brandingLogoBase64: String? = null,
     pdfExportStyle: PdfExportStyleUiState = PdfExportStyleUiState.RETRO,
 ): AccessibilitySettingsUiState = AccessibilitySettingsUiState(
@@ -60,6 +61,7 @@ internal fun previewAccessibilityState(
     themeMode = themeMode,
     language = language,
     standardWorkdayMinutes = standardWorkdayMinutes,
+    exportUserFullName = exportUserFullName,
     brandingLogoBase64 = brandingLogoBase64,
     pdfExportStyle = pdfExportStyle,
 )

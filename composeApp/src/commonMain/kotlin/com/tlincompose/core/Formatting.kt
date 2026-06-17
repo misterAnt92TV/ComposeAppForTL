@@ -37,4 +37,13 @@ fun formatHours(minutes: Int): String {
     }
 }
 
+fun normalizeUserFacingName(value: String): String = value
+    .trim()
+    .split(Regex("\\s+"))
+    .filter(String::isNotBlank)
+    .joinToString(separator = " ")
+
+fun exportFileNameUserSegment(value: String): String =
+    normalizeUserFacingName(value).replace(' ', '_')
+
 internal fun Int.toTwoDigits(): String = toString().padStart(2, '0')

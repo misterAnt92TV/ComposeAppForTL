@@ -432,6 +432,7 @@ class TimesheetController(
         language: AppLanguage,
         format: ExportFormat,
         filter: ExportActivityTypeFilter = ExportActivityTypeFilter(),
+        exportUserFullName: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
         onSuccess: (ExportDocument) -> Unit,
@@ -446,6 +447,7 @@ class TimesheetController(
                         format = format,
                         language = language,
                         filter = filter,
+                        exportUserFullName = exportUserFullName,
                         brandingLogoBase64 = brandingLogoBase64,
                         pdfExportStyle = pdfExportStyle,
                     )
@@ -455,6 +457,7 @@ class TimesheetController(
                     format = format,
                     language = language,
                     filter = filter,
+                    exportUserFullName = exportUserFullName,
                     brandingLogoBase64 = brandingLogoBase64,
                     pdfExportStyle = pdfExportStyle,
                 )

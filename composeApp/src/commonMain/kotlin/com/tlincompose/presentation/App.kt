@@ -46,8 +46,11 @@ fun App() {
         language = platformLanguage,
         onMessage = showMessage,
     )
-    val modules = remember(platformServices.storageDriver) {
-        appModules(platformServices.storageDriver)
+    val modules = remember(platformServices.storageDriver, platformServices.pdfFontProvider) {
+        appModules(
+            storageDriver = platformServices.storageDriver,
+            pdfFontProvider = platformServices.pdfFontProvider,
+        )
     }
 
     KoinApplication(application = {
@@ -102,6 +105,7 @@ fun App() {
                             onFocusModeChanged = accessibilityController::updateFocusMode,
                             onLanguageChanged = accessibilityController::updateLanguage,
                             onStandardWorkdayChanged = accessibilityController::updateStandardWorkdayMinutes,
+                            onExportUserFullNameChanged = accessibilityController::updateExportUserFullName,
                             onPdfExportStyleChanged = accessibilityController::updatePdfExportStyle,
                             fileSaveLauncher = platformServices.fileSaveLauncher,
                             brandLogoPickerLauncher = platformServices.brandLogoPickerLauncher,

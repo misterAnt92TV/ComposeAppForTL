@@ -65,6 +65,7 @@ internal fun TimesheetScreen(
     onFocusModeChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onStandardWorkdayChanged: (Int) -> Unit,
+    onExportUserFullNameChanged: (String) -> Unit,
     onPdfExportStyleChanged: (PdfExportStyleUiState) -> Unit,
     fileSaveLauncher: FileSaveLauncher,
     brandLogoPickerLauncher: BrandLogoPickerLauncher,
@@ -121,6 +122,7 @@ internal fun TimesheetScreen(
                     onFocusModeChanged = onFocusModeChanged,
                     onLanguageChanged = onLanguageChanged,
                     onStandardWorkdayChanged = onStandardWorkdayChanged,
+                    onExportUserFullNameChanged = onExportUserFullNameChanged,
                     onPdfExportStyleChanged = onPdfExportStyleChanged,
                     onPickBrandingLogo = onPickBrandingLogo,
                     onClearBrandingLogo = onClearBrandingLogo,
@@ -278,6 +280,7 @@ internal fun TimesheetScreen(
                     language = accessibilityState.language,
                     format = format,
                     filter = filter,
+                    exportUserFullName = accessibilityState.exportUserFullName,
                     brandingLogoBase64 = accessibilityState.brandingLogoBase64,
                     pdfExportStyle = accessibilityState.pdfExportStyle.toDomain(),
                     onSuccess = { document ->

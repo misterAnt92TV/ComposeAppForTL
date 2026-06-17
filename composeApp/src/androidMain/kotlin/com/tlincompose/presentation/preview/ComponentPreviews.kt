@@ -141,6 +141,7 @@ private fun AccessibilitySettingsSectionWithBrandingLogoPreview() {
         textScale = AccessibilityTextScaleUiState.LARGE,
         comfortableSpacing = true,
         standardWorkdayMinutes = 450,
+        exportUserFullName = "Mario Rossi",
         brandingLogoBase64 = previewBrandingLogoBase64,
         pdfExportStyle = PdfExportStyleUiState.SIMPLE_TABLE,
     )
@@ -156,6 +157,7 @@ private fun AccessibilitySettingsSectionWithBrandingLogoPreview() {
             onFocusModeChanged = {},
             onLanguageChanged = {},
             onStandardWorkdayChanged = {},
+            onExportUserFullNameChanged = {},
             onPdfExportStyleChanged = {},
             onPickBrandingLogo = {},
             onClearBrandingLogo = {},
@@ -184,6 +186,7 @@ private fun AccessibilitySettingsSectionWithoutBrandingLogoPreview() {
             onFocusModeChanged = {},
             onLanguageChanged = {},
             onStandardWorkdayChanged = {},
+            onExportUserFullNameChanged = {},
             onPdfExportStyleChanged = {},
             onPickBrandingLogo = {},
             onClearBrandingLogo = {},

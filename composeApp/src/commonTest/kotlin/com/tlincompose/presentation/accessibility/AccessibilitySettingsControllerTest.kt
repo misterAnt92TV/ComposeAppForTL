@@ -31,6 +31,7 @@ class AccessibilitySettingsControllerTest {
                 themeMode = AppThemeMode.SYSTEM,
                 language = AppLanguage.ITALIAN,
                 standardWorkdayMinutes = 450,
+                exportUserFullName = "Mario Rossi",
                 brandingLogoBase64 = "AQID",
                 pdfExportStyle = PdfExportStyle.SIMPLE_TABLE,
             ),
@@ -50,6 +51,7 @@ class AccessibilitySettingsControllerTest {
         assertEquals(ThemeModeUiState.SYSTEM, controller.uiState.themeMode)
         assertEquals(AppLanguage.ITALIAN, controller.uiState.language)
         assertEquals(450, controller.uiState.standardWorkdayMinutes)
+        assertEquals("Mario Rossi", controller.uiState.exportUserFullName)
         assertEquals("AQID", controller.uiState.brandingLogoBase64)
         assertEquals(PdfExportStyleUiState.SIMPLE_TABLE, controller.uiState.pdfExportStyle)
 
@@ -57,6 +59,7 @@ class AccessibilitySettingsControllerTest {
         controller.updateFocusMode(true)
         controller.updateLanguage(AppLanguage.GERMAN)
         controller.updateStandardWorkdayMinutes(510)
+        controller.updateExportUserFullName("  Mario   Rossi  ")
         controller.updatePdfExportStyle(PdfExportStyleUiState.DETAIL_BLOCKS)
         advanceUntilIdle()
 
@@ -72,6 +75,7 @@ class AccessibilitySettingsControllerTest {
                 themeMode = AppThemeMode.DARK,
                 language = AppLanguage.GERMAN,
                 standardWorkdayMinutes = 510,
+                exportUserFullName = "Mario Rossi",
                 brandingLogoBase64 = "AQID",
                 pdfExportStyle = PdfExportStyle.DETAIL_BLOCKS,
             ),
@@ -111,6 +115,12 @@ class AccessibilitySettingsControllerTest {
 
         assertEquals(PdfExportStyleUiState.COMPACT_LIST, controller.uiState.pdfExportStyle)
         assertEquals(PdfExportStyle.COMPACT_LIST, repository.savedPreferences?.pdfExportStyle)
+
+        controller.updateExportUserFullName("  Anna   Bianchi ")
+        advanceUntilIdle()
+
+        assertEquals("Anna Bianchi", controller.uiState.exportUserFullName)
+        assertEquals("Anna Bianchi", repository.savedPreferences?.exportUserFullName)
 
         controller.clearBrandingLogo()
         advanceUntilIdle()

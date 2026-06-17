@@ -42,6 +42,7 @@ data class AccessibilityPreferencesStore(
     val themeMode: AppThemeModeEntity = AppThemeModeEntity.SYSTEM,
     val language: AppLanguageEntity = AppLanguageEntity.ENGLISH,
     val standardWorkdayMinutes: Int = com.tlincompose.domain.model.DefaultWorkdayMinutes,
+    val exportUserFullName: String = "",
     val brandingLogoBase64: String? = null,
     val pdfExportStyle: PdfExportStyleEntity = PdfExportStyleEntity.RETRO,
 )

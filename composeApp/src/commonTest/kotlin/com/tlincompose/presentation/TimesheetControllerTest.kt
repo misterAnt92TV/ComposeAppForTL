@@ -244,6 +244,7 @@ class TimesheetControllerTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = ExportDocument("month.${format.extension}", format.mimeType, byteArrayOf())
@@ -253,6 +254,7 @@ class TimesheetControllerTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = ExportDocument("range.${format.extension}", format.mimeType, byteArrayOf())
@@ -262,6 +264,7 @@ class TimesheetControllerTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = ExportDocument("months.${format.extension}", format.mimeType, byteArrayOf())

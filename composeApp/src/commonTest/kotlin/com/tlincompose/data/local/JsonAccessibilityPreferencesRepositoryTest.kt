@@ -29,6 +29,7 @@ class JsonAccessibilityPreferencesRepositoryTest {
             themeMode = AppThemeMode.DARK,
             language = AppLanguage.SPANISH,
             standardWorkdayMinutes = 540,
+            exportUserFullName = "Mario Rossi",
             brandingLogoBase64 = "AQID",
             pdfExportStyle = PdfExportStyle.SIMPLE_TABLE,
         )

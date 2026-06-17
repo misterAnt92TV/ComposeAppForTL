@@ -222,7 +222,7 @@ class ActivityCatalogController(
                 log.i { "Catalogo EXT aggiornato per ${definition.extCode}." }
                 onSuccess()
             }.onFailure {
-                log.e(it) { "Impossibile salvare l'entita ${currentState.extCode}." }
+                log.e(it) { "Impossibile salvare l'entità ${currentState.extCode}." }
                 onPersistenceError()
             }
         }
@@ -241,7 +241,7 @@ class ActivityCatalogController(
                     .sortedForDisplay()
                 definitionPendingDelete = null
             }.onFailure {
-                log.e(it) { "Impossibile eliminare l'entita ${pendingDefinition.extCode}." }
+                log.e(it) { "Impossibile eliminare l'entità ${pendingDefinition.extCode}." }
                 onFailure()
             }
         }

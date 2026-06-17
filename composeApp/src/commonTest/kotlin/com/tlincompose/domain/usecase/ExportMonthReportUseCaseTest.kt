@@ -40,14 +40,17 @@ class ExportMonthReportUseCaseTest {
             format = ExportFormat.CSV,
             language = AppLanguage.ITALIAN,
             filter = ExportActivityTypeFilter(setOf(EntryType.PERMIT)),
+            exportUserFullName = "Mario Rossi",
         )
 
         assertEquals(listOf(EntryType.PERMIT), exporter.exportedEntries.single().activities.map(Activity::type))
+        assertEquals("Mario Rossi", exporter.exportUserFullName)
         assertEquals("month.csv", result.fileName)
     }
 
     private class RecordingExporter : TimesheetExporter {
         var exportedEntries: List<DailyEntry> = emptyList()
+        var exportUserFullName: String? = null
         var brandingLogoBase64: String? = null
         var pdfExportStyle: PdfExportStyle? = null
 
@@ -56,10 +59,12 @@ class ExportMonthReportUseCaseTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument {
             exportedEntries = entries
+            this.exportUserFullName = exportUserFullName
             this.brandingLogoBase64 = brandingLogoBase64
             this.pdfExportStyle = pdfExportStyle
             return ExportDocument("month.csv", format.mimeType, byteArrayOf())
@@ -70,6 +75,7 @@ class ExportMonthReportUseCaseTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportDateRange should not be called in this test")
@@ -79,6 +85,7 @@ class ExportMonthReportUseCaseTest {
             entries: List<DailyEntry>,
             format: ExportFormat,
             language: AppLanguage,
+            exportUserFullName: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportMonthRange should not be called in this test")

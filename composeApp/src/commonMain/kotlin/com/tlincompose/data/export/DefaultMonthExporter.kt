@@ -7,9 +7,11 @@ import com.tlincompose.core.DispatcherProvider
 import com.tlincompose.core.LocalDateComparator
 import com.tlincompose.core.appStrings
 import com.tlincompose.core.displayLabel
+import com.tlincompose.core.exportFileNameUserSegment
 import com.tlincompose.core.exportDocumentTitle
 import com.tlincompose.core.formatDateRange
 import com.tlincompose.core.formatFileDate
+import com.tlincompose.core.normalizeUserFacingName
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DailyEntry
@@ -27,9 +29,12 @@ expect fun buildXlsx(report: ExportReport, title: String): ByteArray
 
 class DefaultMonthExporter(
     private val dispatcherProvider: DispatcherProvider,
+    private val pdfFontProvider: PdfFontProvider,
     logger: Logger,
     private val xlsxEncoder: (ExportReport, String) -> ByteArray = ::buildXlsx,
-    private val pdfEncoder: (ExportReport, String) -> ByteArray = PdfReportWriter::build,
+    private val pdfEncoder: (ExportReport, String, PdfFontProvider) -> ByteArray = { report, title, provider ->
+        PdfReportWriter.build(report, title, parsePdfEmbeddedFont(provider.loadRegularFont()))
+    },
     private val nowProvider: () -> Instant = { Clock.System.now() },
 ) : TimesheetExporter {
     private val log = logger.withTag("DefaultMonthExporter")
@@ -39,6 +44,7 @@ class DefaultMonthExporter(
         entries: List<DailyEntry>,
         format: ExportFormat,
         language: AppLanguage,
+        exportUserFullName: String?,
         brandingLogoBase64: String?,
         pdfExportStyle: PdfExportStyle,
     ): ExportDocument = withContext(dispatcherProvider.io) {
@@ -48,10 +54,14 @@ class DefaultMonthExporter(
         buildDocument(
             title = strings.exportDocumentTitle(monthLabel),
             periodLabel = monthLabel,
-            fileNameBase = "TLInCompose_${month.fileStamp}",
+            fileNameBase = buildFileNameBase(
+                exportUserFullName = exportUserFullName,
+                periodSegment = month.fileStamp,
+            ),
             entries = entries,
             format = format,
             language = language,
+            exportUserFullName = exportUserFullName,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )
@@ -62,6 +72,7 @@ class DefaultMonthExporter(
         entries: List<DailyEntry>,
         format: ExportFormat,
         language: AppLanguage,
+        exportUserFullName: String?,
         brandingLogoBase64: String?,
         pdfExportStyle: PdfExportStyle,
     ): ExportDocument = withContext(dispatcherProvider.io) {
@@ -71,10 +82,14 @@ class DefaultMonthExporter(
         buildDocument(
             title = strings.exportDocumentTitle(periodLabel),
             periodLabel = periodLabel,
-            fileNameBase = "TLInCompose_${formatFileDate(range.startDate)}_${formatFileDate(range.endDate)}",
+            fileNameBase = buildFileNameBase(
+                exportUserFullName = exportUserFullName,
+                periodSegment = "${formatFileDate(range.startDate)}_${formatFileDate(range.endDate)}",
+            ),
             entries = entries,
             format = format,
             language = language,
+            exportUserFullName = exportUserFullName,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )
@@ -85,6 +100,7 @@ class DefaultMonthExporter(
         entries: List<DailyEntry>,
         format: ExportFormat,
         language: AppLanguage,
+        exportUserFullName: String?,
         brandingLogoBase64: String?,
         pdfExportStyle: PdfExportStyle,
     ): ExportDocument = withContext(dispatcherProvider.io) {
@@ -95,13 +111,20 @@ class DefaultMonthExporter(
             title = strings.exportDocumentTitle(periodLabel),
             periodLabel = periodLabel,
             fileNameBase = if (range.startMonth == range.endMonth) {
-                "TLInCompose_${range.startMonth.fileStamp}"
+                buildFileNameBase(
+                    exportUserFullName = exportUserFullName,
+                    periodSegment = range.startMonth.fileStamp,
+                )
             } else {
-                "TLInCompose_${range.startMonth.fileStamp}_${range.endMonth.fileStamp}"
+                buildFileNameBase(
+                    exportUserFullName = exportUserFullName,
+                    periodSegment = "${range.startMonth.fileStamp}_${range.endMonth.fileStamp}",
+                )
             },
             entries = entries,
             format = format,
             language = language,
+            exportUserFullName = exportUserFullName,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )
@@ -114,10 +137,12 @@ class DefaultMonthExporter(
         entries: List<DailyEntry>,
         format: ExportFormat,
         language: AppLanguage,
+        exportUserFullName: String?,
         brandingLogoBase64: String?,
         pdfExportStyle: PdfExportStyle,
     ): ExportDocument {
         val orderedEntries = entries.sortedWith(compareBy(LocalDateComparator) { it.date })
+        val normalizedExportUserFullName = normalizeUserFacingName(exportUserFullName.orEmpty()).ifBlank { null }
         val report = ExportReport(
             periodLabel = periodLabel,
             exportedAt = nowProvider(),
@@ -128,6 +153,7 @@ class DefaultMonthExporter(
                 totalLoggedMinutes = orderedEntries.sumOf { entry -> entry.activities.sumOf { it.minutes } },
             ),
             language = language,
+            exportUserFullName = normalizedExportUserFullName,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )
@@ -135,7 +161,7 @@ class DefaultMonthExporter(
         val bytes = when (format) {
             ExportFormat.CSV -> report.toCsv().encodeToByteArray()
             ExportFormat.XLSX -> xlsxEncoder(report, title)
-            ExportFormat.PDF -> pdfEncoder(report, title)
+            ExportFormat.PDF -> pdfEncoder(report, title, pdfFontProvider)
         }
 
         val document = ExportDocument(
@@ -145,5 +171,17 @@ class DefaultMonthExporter(
         )
         log.d { "Creato file ${document.fileName} con ${report.rows.size} righe esportate." }
         return document
+    }
+
+    private fun buildFileNameBase(
+        exportUserFullName: String?,
+        periodSegment: String,
+    ): String {
+        val userSegment = exportFileNameUserSegment(exportUserFullName.orEmpty())
+        return if (userSegment.isBlank()) {
+            "TLInCompose_$periodSegment"
+        } else {
+            "TLInCompose_${userSegment}_$periodSegment"
+        }
     }
 }

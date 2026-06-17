@@ -6,6 +6,7 @@ import co.touchlab.kermit.Logger
 import com.tlincompose.core.DefaultDispatcherProvider
 import com.tlincompose.core.DispatcherProvider
 import com.tlincompose.data.export.DefaultMonthExporter
+import com.tlincompose.data.export.PdfFontProvider
 import com.tlincompose.data.local.JsonAccessibilityPreferencesRepository
 import com.tlincompose.data.local.JsonActivityDefinitionRepository
 import com.tlincompose.data.local.JsonTimesheetRepository
@@ -41,16 +42,23 @@ import com.tlincompose.presentation.catalog.ActivityCatalogController
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
-fun appModules(storageDriver: StorageDriver): List<Module> = listOf(
-    platformModule(storageDriver),
+fun appModules(
+    storageDriver: StorageDriver,
+    pdfFontProvider: PdfFontProvider,
+): List<Module> = listOf(
+    platformModule(storageDriver, pdfFontProvider),
     coreModule,
     dataModule,
     domainModule,
     presentationModule,
 )
 
-private fun platformModule(storageDriver: StorageDriver): Module = module {
+private fun platformModule(
+    storageDriver: StorageDriver,
+    pdfFontProvider: PdfFontProvider,
+): Module = module {
     single<StorageDriver> { storageDriver }
+    single<PdfFontProvider> { pdfFontProvider }
 }
 
 private val coreModule = module {
@@ -83,6 +91,7 @@ private val dataModule = module {
     single<TimesheetExporter> {
         DefaultMonthExporter(
             dispatcherProvider = get(),
+            pdfFontProvider = get(),
             logger = get(),
         )
     }

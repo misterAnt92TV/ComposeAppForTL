@@ -19,6 +19,7 @@ import com.tlincompose.core.exportRecordedDaysLabel
 import com.tlincompose.core.exportReportLabel
 import com.tlincompose.core.exportTotalHoursLabel
 import com.tlincompose.core.exportTypeLabel
+import com.tlincompose.core.exportUserLabel
 import com.tlincompose.core.formatDate
 import com.tlincompose.core.formatDateRange
 import com.tlincompose.core.formatHours
@@ -64,6 +65,7 @@ data class ExportReport(
     val rows: List<ExportRow>,
     val summary: ExportSummary,
     val language: AppLanguage = AppLanguage.ENGLISH,
+    val exportUserFullName: String? = null,
     val brandingLogoBase64: String? = null,
     val pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
 )
@@ -139,6 +141,9 @@ fun ExportReport.toCsv(): String {
     val rows = buildList {
         add(listOf(strings.exportReportLabel, strings.appName))
         add(listOf(strings.exportPeriodLabel, periodLabel))
+        exportUserFullName?.takeIf(String::isNotBlank)?.let { fullName ->
+            add(listOf(strings.exportUserLabel, fullName))
+        }
         add(listOf(strings.exportGeneratedAtLabel, strings.exportGeneratedAtValue(exportedAt)))
         add(listOf(strings.exportRecordedDaysLabel, summary.recordedDays.toString()))
         add(listOf(strings.exportActivitiesLabel, summary.activityCount.toString()))
@@ -182,6 +187,9 @@ fun ExportReport.toSpreadsheetRows(title: String): List<List<SpreadsheetCell>> {
     return buildList {
         add(listOf(SpreadsheetCell.Text(title)))
         add(listOf(SpreadsheetCell.Text(strings.exportPeriodLabel), SpreadsheetCell.Text(periodLabel)))
+        exportUserFullName?.takeIf(String::isNotBlank)?.let { fullName ->
+            add(listOf(SpreadsheetCell.Text(strings.exportUserLabel), SpreadsheetCell.Text(fullName)))
+        }
         add(
             listOf(
                 SpreadsheetCell.Text(strings.exportGeneratedAtLabel),

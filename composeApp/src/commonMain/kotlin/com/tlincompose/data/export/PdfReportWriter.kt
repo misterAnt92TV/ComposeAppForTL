@@ -21,12 +21,13 @@ import com.tlincompose.core.exportRecordedDaysLabel
 import com.tlincompose.core.exportTotalHoursCompactLabel
 import com.tlincompose.core.exportTotalHoursLabel
 import com.tlincompose.core.exportTypeLabel
+import com.tlincompose.core.exportUserLabel
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.labeledValue
 import com.tlincompose.domain.model.PdfExportStyle
 
 object PdfReportWriter {
-    fun build(report: ExportReport, title: String): ByteArray {
+    fun build(report: ExportReport, title: String, font: PdfEmbeddedFont): ByteArray {
         val lines = buildLines(report, title)
         val brandingLogo = decodeBrandingLogoImage(report.brandingLogoBase64)
         val pages = lines.chunked(60).ifEmpty { listOf(emptyList()) }
@@ -39,6 +40,9 @@ object PdfReportWriter {
             contentObjectIds += nextObjectId++
         }
         val brandingLogoObjectId = brandingLogo?.let { nextObjectId++ }
+        val fontFileObjectId = nextObjectId++
+        val fontDescriptorObjectId = nextObjectId++
+        val toUnicodeObjectId = nextObjectId++
         val fontObjectId = nextObjectId
 
         val objects = mutableListOf<String>()
@@ -51,6 +55,7 @@ object PdfReportWriter {
                 ?.let { buildPdfLogoPlacement(it.size.width, it.size.height) }
             val content = buildPageContent(
                 lines = pageLines,
+                font = font,
                 logoPlacement = logoPlacement,
             )
             val xObjectSection = if (index == 0 && brandingLogoObjectId != null) {
@@ -70,7 +75,10 @@ object PdfReportWriter {
                 heightPx = logo.size.height,
             )
         }
-        objects += "<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>"
+        objects += buildFontFileObject(font)
+        objects += buildFontDescriptorObject(font, fontFileObjectId)
+        objects += buildToUnicodeObject(toUnicodeObjectId)
+        objects += buildFontObject(font, fontDescriptorObjectId, toUnicodeObjectId)
 
         return buildPdf(objects)
     }
@@ -177,8 +185,11 @@ object PdfReportWriter {
         title: String,
         strings: AppStrings,
     ): List<String> = buildList {
-        add(toAsciiSafe(title))
-        add(strings.labeledValue(strings.exportPeriodLabel, toAsciiSafe(report.periodLabel)))
+        add(title)
+        add(strings.labeledValue(strings.exportPeriodLabel, report.periodLabel))
+        report.exportUserFullName?.takeIf(String::isNotBlank)?.let { fullName ->
+            add(strings.labeledValue(strings.exportUserLabel, fullName))
+        }
         add(strings.labeledValue(strings.exportGeneratedAtLabel, strings.exportGeneratedAtValue(report.exportedAt)))
         add(strings.labeledValue(strings.exportRecordedDaysLabel, report.summary.recordedDays.toString()))
         add(strings.labeledValue(strings.exportActivitiesLabel, report.summary.activityCount.toString()))
@@ -223,7 +234,7 @@ object PdfReportWriter {
             return@buildList
         }
         rows.forEachIndexed { index, row ->
-            add("${toAsciiSafe(row.activityCode)} - ${toAsciiSafe(row.activityTitle)}")
+            add("${row.activityCode} - ${row.activityTitle}")
             addAll(wrapLabeledValue(strings.exportTypeLabel, row.typeLabel))
             addAll(wrapLabeledValue(strings.exportPeriodsLabel, row.periodsLabel))
             addAll(
@@ -247,7 +258,7 @@ object PdfReportWriter {
         val divider = "=".repeat(92)
         rows.forEach { row ->
             add(divider)
-            addAll(wrapText("${toAsciiSafe(row.activityCode)} - ${toAsciiSafe(row.activityTitle)}"))
+            addAll(wrapText("${row.activityCode} - ${row.activityTitle}"))
             addAll(wrapLabeledValue(strings.exportTypeLabel, row.typeLabel))
             addAll(wrapLabeledValue(strings.exportPeriodsLabel, row.periodsLabel))
             addAll(wrapLabeledValue(strings.exportHoursPerDayLabel, row.hoursPerDayLabel))
@@ -258,7 +269,7 @@ object PdfReportWriter {
     }
 
     private fun wrapLabeledValue(label: String, value: String): List<String> =
-        wrapText("$label: ${toAsciiSafe(value)}")
+        wrapText("$label: $value")
 
     private fun ExportRow.toPdfRowValues(): List<String> = listOf(
         activityCode,
@@ -271,7 +282,7 @@ object PdfReportWriter {
     )
 
     private fun padOrTrim(text: String, width: Int): String {
-        val sanitized = toAsciiSafe(text)
+        val sanitized = text
         return if (sanitized.length >= width) {
             sanitized.take(width - 1) + " "
         } else {
@@ -279,14 +290,8 @@ object PdfReportWriter {
         }
     }
 
-    private fun toAsciiSafe(text: String): String = buildString {
-        text.forEach { char ->
-            append(if (char.code in 32..126) char else '?')
-        }
-    }
-
     private fun wrapText(text: String, width: Int = 92): List<String> {
-        val sanitized = toAsciiSafe(text)
+        val sanitized = text
         if (sanitized.length <= width) return listOf(sanitized)
 
         val lines = mutableListOf<String>()
@@ -302,6 +307,7 @@ object PdfReportWriter {
 
     private fun buildPageContent(
         lines: List<String>,
+        font: PdfEmbeddedFont,
         logoPlacement: PdfLogoPlacement?,
     ): String = buildString {
         if (logoPlacement != null) {
@@ -316,7 +322,7 @@ object PdfReportWriter {
         append("10 TL\n")
         lines.forEachIndexed { index, line ->
             append("(")
-            append(escapePdfText(line))
+            append(escapePdfText(line, font))
             append(") Tj\n")
             if (index != lines.lastIndex) {
                 append("T*\n")
@@ -325,15 +331,94 @@ object PdfReportWriter {
         append("ET")
     }
 
-    private fun escapePdfText(text: String): String = buildString {
-        text.forEach { char ->
-            when (char) {
-                '\\' -> append("\\\\")
-                '(' -> append("\\(")
-                ')' -> append("\\)")
-                else -> append(char)
+    private fun escapePdfText(text: String, font: PdfEmbeddedFont): String = buildString {
+        encodeWindows1252(text).forEach { byte ->
+            val value = byte.toInt() and 0xFF
+            when (value) {
+                '\\'.code -> append("\\\\")
+                '('.code -> append("\\(")
+                ')'.code -> append("\\)")
+                in 32..126 -> append(value.toChar())
+                else -> {
+                    // Keep the stream ASCII-safe while preserving the original single-byte glyph code.
+                    append("\\")
+                    append(value.toString(8).padStart(3, '0'))
+                }
             }
         }
+    }
+
+    private fun buildFontObject(
+        font: PdfEmbeddedFont,
+        fontDescriptorObjectId: Int,
+        toUnicodeObjectId: Int,
+    ): String = """
+        << /Type /Font /Subtype /TrueType /BaseFont /${font.postScriptName}
+        /FirstChar ${font.firstChar}
+        /LastChar ${font.lastChar}
+        /Widths [${font.widths.joinToString(separator = " ")}]
+        /Encoding /WinAnsiEncoding
+        /FontDescriptor $fontDescriptorObjectId 0 R
+        /ToUnicode $toUnicodeObjectId 0 R
+        >>
+    """.trimIndent()
+
+    private fun buildFontDescriptorObject(
+        font: PdfEmbeddedFont,
+        fontFileObjectId: Int,
+    ): String = """
+        << /Type /FontDescriptor /FontName /${font.postScriptName}
+        /Flags 32
+        /FontBBox [${font.bbox.joinToString(separator = " ")}]
+        /ItalicAngle ${font.italicAngle}
+        /Ascent ${font.ascent}
+        /Descent ${font.descent}
+        /CapHeight ${font.capHeight}
+        /StemV 80
+        /MissingWidth ${font.missingWidth}
+        /FontFile2 $fontFileObjectId 0 R
+        >>
+    """.trimIndent()
+
+    private fun buildFontFileObject(font: PdfEmbeddedFont): String {
+        val fontHex = font.fontBytes.joinToString(separator = "") { byte -> "%02X".format(byte.toInt() and 0xFF) }
+        val stream = "$fontHex>"
+        return """
+            << /Length ${stream.length} /Length1 ${font.fontBytes.size} /Filter /ASCIIHexDecode >>
+            stream
+            $stream
+            endstream
+        """.trimIndent()
+    }
+
+    private fun buildToUnicodeObject(objectId: Int): String {
+        val mappings = (32..255).joinToString(separator = "\n") { byteValue ->
+            "<${byteValue.toString(16).padStart(2, '0').uppercase()}> <${windows1252Decode(byteValue).toString(16).padStart(4, '0').uppercase()}>"
+        }
+        val cmap = """
+            /CIDInit /ProcSet findresource begin
+            12 dict begin
+            begincmap
+            /CIDSystemInfo << /Registry (Adobe) /Ordering (UCS) /Supplement 0 >> def
+            /CMapName /F1Unicode def
+            /CMapType 2 def
+            1 begincodespacerange
+            <00> <FF>
+            endcodespacerange
+            224 beginbfchar
+            $mappings
+            endbfchar
+            endcmap
+            CMapName currentdict /CMap defineresource pop
+            end
+            end
+        """.trimIndent()
+        return """
+            << /Length ${cmap.length} >>
+            stream
+            $cmap
+            endstream
+        """.trimIndent()
     }
 
     private fun buildImageObject(

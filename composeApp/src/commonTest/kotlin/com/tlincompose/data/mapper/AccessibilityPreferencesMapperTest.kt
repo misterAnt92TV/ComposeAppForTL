@@ -24,6 +24,7 @@ class AccessibilityPreferencesMapperTest {
             themeMode = AppThemeModeEntity.DARK,
             language = AppLanguageEntity.GERMAN,
             standardWorkdayMinutes = 510,
+            exportUserFullName = "Mario Rossi",
             brandingLogoBase64 = "AQID",
             pdfExportStyle = PdfExportStyleEntity.COMPACT_LIST,
         )
@@ -39,6 +40,7 @@ class AccessibilityPreferencesMapperTest {
                 themeMode = AppThemeMode.DARK,
                 language = AppLanguage.GERMAN,
                 standardWorkdayMinutes = 510,
+                exportUserFullName = "Mario Rossi",
                 brandingLogoBase64 = "AQID",
                 pdfExportStyle = PdfExportStyle.COMPACT_LIST,
             ),
@@ -56,6 +58,7 @@ class AccessibilityPreferencesMapperTest {
             themeMode = AppThemeMode.LIGHT,
             language = AppLanguage.FRENCH,
             standardWorkdayMinutes = 450,
+            exportUserFullName = "Anna Bianchi",
             brandingLogoBase64 = "AQID",
             pdfExportStyle = PdfExportStyle.DETAIL_BLOCKS,
         )
@@ -71,6 +74,7 @@ class AccessibilityPreferencesMapperTest {
                 themeMode = AppThemeModeEntity.LIGHT,
                 language = AppLanguageEntity.FRENCH,
                 standardWorkdayMinutes = 450,
+                exportUserFullName = "Anna Bianchi",
                 brandingLogoBase64 = "AQID",
                 pdfExportStyle = PdfExportStyleEntity.DETAIL_BLOCKS,
             ),

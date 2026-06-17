@@ -20,6 +20,7 @@ fun AccessibilityPreferencesStore.toDomain(): AccessibilityPreferences =
         themeMode = themeMode.toDomain(),
         language = language.toDomain(),
         standardWorkdayMinutes = standardWorkdayMinutes,
+        exportUserFullName = exportUserFullName,
         brandingLogoBase64 = brandingLogoBase64,
         pdfExportStyle = pdfExportStyle.toDomain(),
     )
@@ -33,6 +34,7 @@ fun AccessibilityPreferences.toStore(): AccessibilityPreferencesStore =
         themeMode = themeMode.toEntity(),
         language = language.toEntity(),
         standardWorkdayMinutes = standardWorkdayMinutes,
+        exportUserFullName = exportUserFullName,
         brandingLogoBase64 = brandingLogoBase64,
         pdfExportStyle = pdfExportStyle.toEntity(),
     )

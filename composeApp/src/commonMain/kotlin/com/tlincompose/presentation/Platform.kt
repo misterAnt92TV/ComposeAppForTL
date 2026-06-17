@@ -1,6 +1,7 @@
 package com.tlincompose.presentation
 
 import androidx.compose.runtime.Composable
+import com.tlincompose.data.export.PdfFontProvider
 import com.tlincompose.data.local.StorageDriver
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.ExportDocument
@@ -19,6 +20,7 @@ interface BrandLogoPickerLauncher {
 
 data class PlatformServices(
     val storageDriver: StorageDriver,
+    val pdfFontProvider: PdfFontProvider,
     val fileSaveLauncher: FileSaveLauncher,
     val projectIconPickerLauncher: ProjectIconPickerLauncher,
     val brandLogoPickerLauncher: BrandLogoPickerLauncher,

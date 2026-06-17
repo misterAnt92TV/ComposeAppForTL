@@ -3,6 +3,8 @@ package com.tlincompose.core.di
 import co.touchlab.kermit.Logger
 import com.tlincompose.TestDispatcherProvider
 import com.tlincompose.core.DispatcherProvider
+import com.tlincompose.data.export.PdfFontProvider
+import com.tlincompose.data.export.PdfFontResource
 import com.tlincompose.data.local.InMemoryStorageDriver
 import com.tlincompose.domain.repository.AccessibilityPreferencesRepository
 import com.tlincompose.domain.repository.ActivityDefinitionRepository
@@ -24,7 +26,10 @@ class AppModulesTest {
         val koinApp = startKoin {
             allowOverride(true)
             modules(
-                appModules(InMemoryStorageDriver()) +
+                appModules(
+                    storageDriver = InMemoryStorageDriver(),
+                    pdfFontProvider = PdfFontProvider { PdfFontResource("TestFont", byteArrayOf()) },
+                ) +
                     module {
                         single<DispatcherProvider> {
                             TestDispatcherProvider(StandardTestDispatcher())

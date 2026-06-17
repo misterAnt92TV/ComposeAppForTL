@@ -42,14 +42,14 @@ class JsonActivityDefinitionRepository(
             ?.let(definitions::remove)
         definitions[definition.extCode] = definition
         persistDefinitions(definitions.values)
-        log.i { "Entita ${definition.extCode} salvata con successo." }
+        log.i { "Entità ${definition.extCode} salvata con successo." }
     }
 
     override suspend fun delete(extCode: String) = withContext(dispatcherProvider.io) {
         val definitions = loadDefinitionsMap()
         definitions.remove(extCode)
         persistDefinitions(definitions.values)
-        log.i { "Entita $extCode eliminata dal catalogo." }
+        log.i { "Entità $extCode eliminata dal catalogo." }
     }
 
     private fun loadDefinitionsMap(): MutableMap<String, ActivityDefinition> {

@@ -22,6 +22,8 @@ import com.tlincompose.core.parseSvgViewportSize
 import com.tlincompose.core.saveCancelledMessage
 import com.tlincompose.core.saveErrorMessage
 import com.tlincompose.core.unableToReadSelectedImage
+import com.tlincompose.data.export.PdfFontProvider
+import com.tlincompose.data.export.PdfFontResource
 import com.tlincompose.data.local.StorageDriver
 import com.tlincompose.domain.model.AppLanguage
 import org.apache.batik.transcoder.TranscoderInput
@@ -45,6 +47,17 @@ actual fun rememberPlatformServices(
 ): PlatformServices {
     val strings = appStrings(language)
     val storageDriver = remember { DesktopStorageDriver() }
+    val pdfFontProvider = remember {
+        val fontBytes = checkNotNull(Thread.currentThread().contextClassLoader.getResourceAsStream("fonts/arial.ttf")) {
+            "Missing bundled PDF font resource."
+        }.use { it.readBytes() }
+        PdfFontProvider {
+            PdfFontResource(
+                postScriptName = "ArialMT",
+                fontBytes = fontBytes,
+            )
+        }
+    }
     val fileSaveLauncher = remember(onMessage, strings) {
         object : FileSaveLauncher {
             override fun save(document: com.tlincompose.domain.model.ExportDocument) {
@@ -120,6 +133,7 @@ actual fun rememberPlatformServices(
 
     return PlatformServices(
         storageDriver = storageDriver,
+        pdfFontProvider = pdfFontProvider,
         fileSaveLauncher = fileSaveLauncher,
         projectIconPickerLauncher = projectIconPickerLauncher,
         brandLogoPickerLauncher = brandLogoPickerLauncher,
@@ -197,12 +211,12 @@ private class DesktopStorageDriver : StorageDriver {
 
     override fun read(fileName: String): String? {
         val file = baseDirectory.resolve(fileName)
-        return if (Files.exists(file)) Files.readString(file) else null
+        return if (Files.exists(file)) Files.readString(file, Charsets.UTF_8) else null
     }
 
     override fun write(fileName: String, content: String) {
         Files.createDirectories(baseDirectory)
-        Files.writeString(baseDirectory.resolve(fileName), content)
+        Files.writeString(baseDirectory.resolve(fileName), content, Charsets.UTF_8)
     }
 }
 

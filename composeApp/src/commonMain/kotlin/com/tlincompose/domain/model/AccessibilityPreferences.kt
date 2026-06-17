@@ -35,6 +35,7 @@ data class AccessibilityPreferences(
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val standardWorkdayMinutes: Int = DefaultWorkdayMinutes,
+    val exportUserFullName: String = "",
     val brandingLogoBase64: String? = null,
     val pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
 )

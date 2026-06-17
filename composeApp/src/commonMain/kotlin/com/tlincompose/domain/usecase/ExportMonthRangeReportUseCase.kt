@@ -20,6 +20,7 @@ class ExportMonthRangeReportUseCase(
         format: ExportFormat,
         language: AppLanguage,
         filter: ExportActivityTypeFilter = ExportActivityTypeFilter(),
+        exportUserFullName: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
     ): ExportDocument {
@@ -35,6 +36,7 @@ class ExportMonthRangeReportUseCase(
             entries = filterExportEntries(entries, filter),
             format = format,
             language = language,
+            exportUserFullName = exportUserFullName,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )

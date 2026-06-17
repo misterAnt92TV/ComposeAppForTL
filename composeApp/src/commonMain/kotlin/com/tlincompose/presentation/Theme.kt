@@ -38,6 +38,10 @@ private val tlInComposeColors = lightColorScheme(
     surfaceVariant = Color(0xFFE7DDD2),
     onSurfaceVariant = Color(0xFF4D463E),
     outline = Color(0xFF7C746B),
+    error = Color(0xFFB3261E),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFF9DEDC),
+    onErrorContainer = Color(0xFF410E0B),
 )
 
 private val tlInComposeDarkColors = darkColorScheme(
@@ -60,6 +64,10 @@ private val tlInComposeDarkColors = darkColorScheme(
     surfaceVariant = Color(0xFF4A453E),
     onSurfaceVariant = Color(0xFFD0C5BA),
     outline = Color(0xFF9A9188),
+    error = Color(0xFFF2B8B5),
+    onError = Color(0xFF601410),
+    errorContainer = Color(0xFF8C1D18),
+    onErrorContainer = Color(0xFFF9DEDC),
 )
 
 private val tlInComposeHighContrastColors = lightColorScheme(
@@ -82,6 +90,10 @@ private val tlInComposeHighContrastColors = lightColorScheme(
     surfaceVariant = Color(0xFFE7E2D9),
     onSurfaceVariant = Color(0xFF26221E),
     outline = Color(0xFF49433C),
+    error = Color(0xFF8B0000),
+    onError = Color(0xFFFFFFFF),
+    errorContainer = Color(0xFFFFD6D0),
+    onErrorContainer = Color(0xFF330000),
 )
 
 private val tlInComposeHighContrastDarkColors = darkColorScheme(
@@ -104,6 +116,10 @@ private val tlInComposeHighContrastDarkColors = darkColorScheme(
     surfaceVariant = Color(0xFF313131),
     onSurfaceVariant = Color(0xFFF2EEE8),
     outline = Color(0xFFD4CDC4),
+    error = Color(0xFFFFB4AE),
+    onError = Color(0xFF4D0000),
+    errorContainer = Color(0xFFBB0000),
+    onErrorContainer = Color(0xFFFFE0E0),
 )
 
 private val tlInComposeTypography = Typography(

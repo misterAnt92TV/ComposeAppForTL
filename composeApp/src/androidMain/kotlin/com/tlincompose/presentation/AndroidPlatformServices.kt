@@ -28,6 +28,8 @@ import com.tlincompose.core.computeBrandingLogoRenderSize
 import com.tlincompose.core.isSvgImageBytes
 import com.tlincompose.core.parseSvgViewportSize
 import com.tlincompose.core.unableToReadSelectedImage
+import com.tlincompose.data.export.PdfFontProvider
+import com.tlincompose.data.export.PdfFontResource
 import com.tlincompose.data.local.StorageDriver
 import com.tlincompose.domain.model.AppLanguage
 import java.io.ByteArrayOutputStream
@@ -41,6 +43,15 @@ actual fun rememberPlatformServices(
     val strings = appStrings(language)
     val context = LocalContext.current.applicationContext
     val storageDriver = remember(context) { AndroidStorageDriver(context) }
+    val pdfFontProvider = remember(context) {
+        val fontBytes = context.assets.open("fonts/arial.ttf").use { it.readBytes() }
+        PdfFontProvider {
+            PdfFontResource(
+                postScriptName = "ArialMT",
+                fontBytes = fontBytes,
+            )
+        }
+    }
     var pendingDocument by remember { mutableStateOf<com.tlincompose.domain.model.ExportDocument?>(null) }
     var pendingIconPick by remember { mutableStateOf<((ByteArray?) -> Unit)?>(null) }
     var pendingBrandLogoPick by remember { mutableStateOf<((ByteArray?) -> Unit)?>(null) }
@@ -143,6 +154,7 @@ actual fun rememberPlatformServices(
 
     return PlatformServices(
         storageDriver = storageDriver,
+        pdfFontProvider = pdfFontProvider,
         fileSaveLauncher = fileSaveLauncher,
         projectIconPickerLauncher = projectIconPickerLauncher,
         brandLogoPickerLauncher = appBrandLogoPickerLauncher,
@@ -228,13 +240,13 @@ private fun renderSvgToBitmap(rawBytes: ByteArray): Bitmap? {
 private class AndroidStorageDriver(private val context: Context) : StorageDriver {
     override fun read(fileName: String): String? {
         val file = fileFor(fileName)
-        return if (file.exists()) file.readText() else null
+        return if (file.exists()) file.readText(Charsets.UTF_8) else null
     }
 
     override fun write(fileName: String, content: String) {
         val file = fileFor(fileName)
         file.parentFile?.mkdirs()
-        file.writeText(content)
+        file.writeText(content, Charsets.UTF_8)
     }
 
     private fun fileFor(fileName: String): File = File(context.filesDir, fileName)
