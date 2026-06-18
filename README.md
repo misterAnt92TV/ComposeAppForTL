@@ -138,12 +138,18 @@ Copertura attuale verificata in `commonTest`:
 
 Per rendere visibili i profili dedicati nel tool GitHub Copilot, il repository include:
 
+- `.github/copilot-instructions.md` (baseline/autorevole per comportamento Copilot)
 - `.github/chatmodes/tlincompose.chatmode.md`
 - `.github/chatmodes/tlincompose-testing.chatmode.md`
 - `.github/agents/tlincompose-agent.md`
 - `.github/agents/tlincompose-testing-agent.md`
 
 Se i nuovi profili non compaiono subito, ricarica la finestra dell'IDE o riapri la sessione Copilot.
+
+Regola pratica di manutenzione:
+- aggiorna prima `.github/copilot-instructions.md`
+- poi sincronizza `AGENTS.md` e `.aider*.json` quando necessario
+- mantieni `agents/` e `chatmodes/` sintetici e coerenti con la baseline
 
 ## Setup locale
 

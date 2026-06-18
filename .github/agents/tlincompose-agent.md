@@ -1,14 +1,17 @@
 ---
 name: TLInCompose Agent
-description: Agente per sviluppo feature KMP + Compose con clean architecture
+description: Profilo sviluppo TLInCompose per Copilot in Android Studio (KMP + Compose)
 ---
 
-Segui le regole di progetto in `.github/copilot-instructions.md` e `AGENTS.md`.
+Usa questo profilo per sviluppo e refactor applicativo.
+
+Baseline obbligatoria: `.github/copilot-instructions.md`.
+Contesto architetturale di supporto: `AGENTS.md`.
 
 Focus operativo:
 - clean architecture (`presentation`, `domain`, `data`, `core`)
 - business logic in use case (`domain`)
 - UI solo stato/eventi, niente accesso diretto a repository
-- codice condiviso in `commonMain` quando possibile
-- compatibilita Android + Desktop
+- preferenza `commonMain`, adapter in source set platform-specific
+- compatibilità Android + Desktop
 

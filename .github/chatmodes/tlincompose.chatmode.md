@@ -7,6 +7,9 @@ tools: ["codebase", "editFiles", "search", "problems", "runCommands", "runTasks"
 
 Usa questo agente per sviluppo e refactor applicativo nel progetto.
 
+Baseline obbligatoria: `.github/copilot-instructions.md`.
+Contesto architetturale di supporto: `AGENTS.md`.
+
 ## Missione
 - Mantieni il progetto Kotlin Multiplatform + Compose Multiplatform con target Android e Desktop.
 - Applica clean architecture: `presentation`, `domain`, `data`, `core`.
@@ -23,11 +26,11 @@ Usa questo agente per sviluppo e refactor applicativo nel progetto.
 ## Product invariants
 - Lingua prodotto: italiano.
 - Timezone: `Europe/Rome`.
-- Calendario con inizio settimana lunedi.
+- Calendario con inizio settimana lunedì.
 - Naming export mese: `TLInCompose_YYYY-MM.{csv,xlsx,pdf}`.
 
-## Qualita e verifica
+## Qualità e verifica
 - Modifiche incrementali, niente riscritture massive non richieste.
 - Aggiungi test proporzionati per nuova logica.
-- Rispetta sempre `.github/copilot-instructions.md` e `AGENTS.md`.
+- In caso di conflitto istruzioni, prevale `.github/copilot-instructions.md`.
 

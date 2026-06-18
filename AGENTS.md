@@ -4,7 +4,7 @@
 - Mantieni `TLInCompose` come progetto `Kotlin Multiplatform + Compose Multiplatform` con target Android e Desktop.
 - Ogni modifica futura deve spingere il progetto verso una `Clean Architecture` chiara, testabile e coroutine-first.
 - Favorisci codice condiviso in `commonMain`; usa `androidMain` e `desktopMain` solo per adapter e integrazioni di piattaforma.
-- Keep simple: preferisci la soluzione piu semplice che rispetta i vincoli architetturali.
+- Keep simple: preferisci la soluzione più semplice che rispetta i vincoli architetturali.
 - Evita over engineering: non introdurre layer, astrazioni o pattern se non portano un beneficio concreto al progetto.
 - Gestire tutto per step: privilegia refactor incrementali, verificabili e facili da testare invece di riscritture massive.
 
@@ -76,7 +76,7 @@
   - `ActivityCatalogController`: catalogo e CRUD attività
 - Mantieni gli state holder piccoli e focalizzati.
 - Mantieni classi, composable e file UI compatti: non lasciare crescere classi troppo lunghe o file monolitici.
-- Se una schermata o un componente supera una dimensione ragionevole o contiene piu responsabilita, estrai nuove classi/file e usa directory dedicate come `components`, `model`, `state` o equivalenti invece di accumulare tutto nello stesso file.
+- Se una schermata o un componente supera una dimensione ragionevole o contiene più responsabilità, estrai nuove classi/file e usa directory dedicate come `components`, `model`, `state` o equivalenti invece di accumulare tutto nello stesso file.
 - **Preview Pattern**: ogni nuovo composable deve includere preview in modalità chiara e scura usando `@PreviewLightDark` (in `androidMain/...presentation/preview/ComponentPreviews.kt`), con state/stub coerenti.
   - Esempio: `ActivityCatalogSection`, `DayEditorDialog`, `ExportDialog` hanno già preview light/dark funzionanti
 - **Localization with StringKey**: le stringhe user-facing vanno centralizzate come `StringKey` sealed class in `AppStrings`:
@@ -127,7 +127,7 @@
   - `PERMIT`
 - `PROJECT` usa descrizione libera.
 - `VACATION` e `PERMIT` possono essere parziali in ore.
-- L'export standard puo lavorare sul mese visibile oppure su un intervallo selezionato dall'utente.
+- L'export standard può lavorare sul mese visibile oppure su un intervallo selezionato dall'utente.
 - L'export raggruppa giorni consecutivi con stessa tripletta:
   - tipo
   - valore
@@ -211,4 +211,4 @@
 - `suspend` mancante su operazioni di I/O.
 - Test mancanti per use case o validazione.
 - Dipendenze Android/JVM introdotte in `commonMain` senza bisogno reale.
-- Over engineering: astrazioni premature, interfacce inutili o moltiplicazione di use case senza una responsabilita chiara.
+- Over engineering: astrazioni premature, interfacce inutili o moltiplicazione di use case senza una responsabilità chiara.

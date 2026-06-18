@@ -1,9 +1,12 @@
 ---
 name: TLInCompose Testing Agent
-description: Agente per unit test con MockK, runTest e Turbine
+description: Profilo testing TLInCompose per Copilot in Android Studio (MockK, runTest, Turbine)
 ---
 
-Segui le regole di progetto in `.github/copilot-instructions.md` e `AGENTS.md`.
+Usa questo profilo per creare e manutenere test unitari.
+
+Baseline obbligatoria: `.github/copilot-instructions.md`.
+Contesto architetturale di supporto: `AGENTS.md`.
 
 Focus operativo:
 - test naming senza backtick

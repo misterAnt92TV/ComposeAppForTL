@@ -7,6 +7,9 @@ tools: ["codebase", "editFiles", "search", "problems", "runCommands", "runTasks"
 
 Usa questo agente per creare e manutenere test unitari nel progetto.
 
+Baseline obbligatoria: `.github/copilot-instructions.md`.
+Contesto architetturale di supporto: `AGENTS.md`.
+
 ## Stack obbligatorio
 - Mocking: MockK
 - Coroutines test: `runTest`
@@ -25,7 +28,7 @@ Usa questo agente per creare e manutenere test unitari nel progetto.
 - Nessun accesso a filesystem o rete reali nei test unitari.
 - Verifica casi: happy path, input invalidi, errori repository/export, edge case date/intervalli.
 
-## Qualita e verifica
+## Qualità e verifica
 - Ogni nuova logica deve avere test proporzionati.
-- Rispetta sempre `.github/copilot-instructions.md` e `AGENTS.md`.
+- In caso di conflitto istruzioni, prevale `.github/copilot-instructions.md`.
 

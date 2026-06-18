@@ -2,6 +2,14 @@
 
 Questo file rende le regole degli agenti (`.aider.json` e `.aider.testing.json`) utilizzabili anche con **GitHub Copilot**.
 
+## Fonte autorevole per Copilot (Android Studio)
+
+Per il plugin Copilot in Android Studio, questo file è la baseline di comportamento.
+
+- Aggiorna prima questo file quando cambia una regola di sviluppo/testing.
+- Mantieni `AGENTS.md`, `.aider.json` e `.aider.testing.json` allineati a quanto definito qui.
+- I file in `.github/agents/` e `.github/chatmodes/` devono restare sintetici e rimandare a questa baseline, evitando duplicazioni estese.
+
 Copilot deve rispettare queste linee guida quando genera codice o test nel progetto.
 
 ---
@@ -116,6 +124,29 @@ Una feature è completa solo se:
 - Non hardcodifica stringhe
 - Include test adeguati
 - È compatibile Android + Desktop
+
+---
+
+# ✅ Uso operativo nel plugin Copilot (Android Studio)
+
+- Profili disponibili nel repository:
+  - `.github/agents/tlincompose-agent.md`
+  - `.github/agents/tlincompose-testing-agent.md`
+  - `.github/chatmodes/tlincompose.chatmode.md`
+  - `.github/chatmodes/tlincompose-testing.chatmode.md`
+- Se i profili non compaiono subito nel plugin, ricaricare la finestra IDE o riaprire la sessione Copilot.
+- In caso di conflitto tra file istruzioni, questo file prevale per i comportamenti Copilot.
+
+---
+
+# ✅ Manutenzione istruzioni (checklist rapida)
+
+Quando modifichi regole di progetto:
+
+1. Aggiorna `.github/copilot-instructions.md` (fonte principale).
+2. Sincronizza `AGENTS.md` se la regola è architetturale/prodotto.
+3. Sincronizza `.aider.json` e/o `.aider.testing.json` se la regola impatta i rispettivi agenti.
+4. Verifica che `.github/agents/*.md` e `.github/chatmodes/*.md` restino coerenti e sintetici.
 
 ---
 
