@@ -51,6 +51,9 @@ internal fun previewAccessibilityState(
     focusMode: Boolean = false,
     standardWorkdayMinutes: Int = DefaultWorkdayMinutes,
     exportUserFullName: String = "",
+    exportOfficeName: String = "",
+    exportEmployeeId: String = "",
+    exportPersonId: String = "",
     brandingLogoBase64: String? = null,
     pdfExportStyle: PdfExportStyleUiState = PdfExportStyleUiState.RETRO,
 ): AccessibilitySettingsUiState = AccessibilitySettingsUiState(
@@ -62,6 +65,9 @@ internal fun previewAccessibilityState(
     language = language,
     standardWorkdayMinutes = standardWorkdayMinutes,
     exportUserFullName = exportUserFullName,
+    exportOfficeName = exportOfficeName,
+    exportEmployeeId = exportEmployeeId,
+    exportPersonId = exportPersonId,
     brandingLogoBase64 = brandingLogoBase64,
     pdfExportStyle = pdfExportStyle,
 )
@@ -80,12 +86,14 @@ internal fun TLInComposePreviewSurface(
     CompositionLocalProvider(LocalAppStrings provides strings) {
         TLInComposeTheme(accessibilitySettings = state) {
             Box(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxSize()
                     .background(appBackgroundBrush(state))
                     .padding(16.dp),
             ) {
-                content()
+                Box(modifier = modifier) {
+                    content()
+                }
             }
         }
     }

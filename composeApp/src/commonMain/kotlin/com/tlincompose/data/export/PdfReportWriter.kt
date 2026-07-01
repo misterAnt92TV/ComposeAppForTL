@@ -97,14 +97,24 @@ object PdfReportWriter {
         return lines
     }
 
-    private fun pdfColumns(strings: AppStrings): List<PdfColumn> = listOf(
-        PdfColumn(strings.exportActivityCodeLabel, 12),
-        PdfColumn(strings.exportActivityLabel, 18),
+    private fun retroPdfColumns(strings: AppStrings): List<PdfColumn> = listOf(
+        PdfColumn(strings.exportActivityCodeLabel, 10),
+        PdfColumn(strings.exportActivityLabel, 16),
         PdfColumn(strings.exportTypeLabel, 10),
-        PdfColumn(strings.exportPeriodsLabel, 22),
-        PdfColumn(strings.exportHoursPerDayCompactLabel, 9),
-        PdfColumn(strings.exportDaysLabel, 6),
-        PdfColumn(strings.exportTotalHoursCompactLabel, 9),
+        PdfColumn(strings.exportPeriodsLabel, 15),
+        PdfColumn(strings.exportHoursPerDayCompactLabel, 8, alignment = PdfColumnAlignment.END),
+        PdfColumn(strings.exportDaysLabel, 4, alignment = PdfColumnAlignment.END),
+        PdfColumn(strings.exportTotalHoursCompactLabel, 7, alignment = PdfColumnAlignment.END),
+    )
+
+    private fun simplePdfColumns(strings: AppStrings): List<PdfColumn> = listOf(
+        PdfColumn(strings.exportActivityLabel, 18),
+        PdfColumn(strings.exportActivityCodeLabel, 10),
+        PdfColumn(strings.exportPeriodsLabel, 19),
+        PdfColumn(strings.exportTypeLabel, 10),
+        PdfColumn(strings.exportHoursPerDayCompactLabel, 8, alignment = PdfColumnAlignment.END),
+        PdfColumn(strings.exportDaysLabel, 5, alignment = PdfColumnAlignment.END),
+        PdfColumn(strings.exportTotalHoursCompactLabel, 10, alignment = PdfColumnAlignment.END),
     )
 
     private fun formatTableSeparator(columns: List<PdfColumn>): String = buildString {
@@ -168,6 +178,7 @@ object PdfReportWriter {
                         padOrTrim(
                             text = wrappedCells[columnIndex].getOrElse(lineIndex) { "" },
                             width = column.width,
+                            alignment = column.alignment,
                         ),
                     )
                     if (columnIndex != columns.lastIndex) {
@@ -186,25 +197,20 @@ object PdfReportWriter {
         strings: AppStrings,
     ): List<String> = buildList {
         add(title)
-        add(strings.labeledValue(strings.exportPeriodLabel, report.periodLabel))
-        report.exportUserFullName?.takeIf(String::isNotBlank)?.let { fullName ->
-            add(strings.labeledValue(strings.exportUserLabel, fullName))
+        report.metadataRows(strings).forEach { row ->
+            add(strings.labeledValue(row.label, row.value))
         }
-        add(strings.labeledValue(strings.exportGeneratedAtLabel, strings.exportGeneratedAtValue(report.exportedAt)))
-        add(strings.labeledValue(strings.exportRecordedDaysLabel, report.summary.recordedDays.toString()))
-        add(strings.labeledValue(strings.exportActivitiesLabel, report.summary.activityCount.toString()))
-        add(strings.labeledValue(strings.exportTotalHoursLabel, formatHours(report.summary.totalLoggedMinutes)))
     }
 
     private fun buildRetroTableLines(rows: List<ExportRow>, strings: AppStrings): List<String> {
-        val columns = pdfColumns(strings)
+        val columns = retroPdfColumns(strings)
         val tableSeparator = formatTableSeparator(columns)
         return buildList {
             add(tableSeparator)
             addAll(formatTableRow(columns, columns.map(PdfColumn::header)))
             add(tableSeparator)
             rows.forEach { row ->
-                addAll(formatTableRow(columns, row.toPdfRowValues()))
+                addAll(formatTableRow(columns, row.toRetroPdfRowValues()))
                 add(tableSeparator)
             }
             if (rows.isEmpty()) {
@@ -214,13 +220,13 @@ object PdfReportWriter {
     }
 
     private fun buildSimpleTableLines(rows: List<ExportRow>, strings: AppStrings): List<String> {
-        val columns = pdfColumns(strings)
+        val columns = simplePdfColumns(strings)
         val separator = formatSimpleTableSeparator(columns)
         return buildList {
             addAll(formatSimpleTableRow(columns, columns.map(PdfColumn::header)))
             add(separator)
             rows.forEach { row ->
-                addAll(formatSimpleTableRow(columns, row.toPdfRowValues()))
+                addAll(formatSimpleTableRow(columns, row.toSimplePdfRowValues()))
             }
             if (rows.isEmpty()) {
                 add(strings.exportNoActivitiesForSelectedPeriod)
@@ -234,7 +240,7 @@ object PdfReportWriter {
             return@buildList
         }
         rows.forEachIndexed { index, row ->
-            add("${row.activityCode} - ${row.activityTitle}")
+            add(row.heading())
             addAll(wrapLabeledValue(strings.exportTypeLabel, row.typeLabel))
             addAll(wrapLabeledValue(strings.exportPeriodsLabel, row.periodsLabel))
             addAll(
@@ -258,7 +264,7 @@ object PdfReportWriter {
         val divider = "=".repeat(92)
         rows.forEach { row ->
             add(divider)
-            addAll(wrapText("${row.activityCode} - ${row.activityTitle}"))
+            addAll(wrapText(row.heading()))
             addAll(wrapLabeledValue(strings.exportTypeLabel, row.typeLabel))
             addAll(wrapLabeledValue(strings.exportPeriodsLabel, row.periodsLabel))
             addAll(wrapLabeledValue(strings.exportHoursPerDayLabel, row.hoursPerDayLabel))
@@ -271,7 +277,7 @@ object PdfReportWriter {
     private fun wrapLabeledValue(label: String, value: String): List<String> =
         wrapText("$label: $value")
 
-    private fun ExportRow.toPdfRowValues(): List<String> = listOf(
+    private fun ExportRow.toRetroPdfRowValues(): List<String> = listOf(
         activityCode,
         activityTitle,
         typeLabel,
@@ -281,13 +287,38 @@ object PdfReportWriter {
         formatHours(totalMinutes),
     )
 
-    private fun padOrTrim(text: String, width: Int): String {
+    private fun ExportRow.toSimplePdfRowValues(): List<String> = listOf(
+        activityTitle,
+        activityCode,
+        periodsLabel,
+        typeLabel,
+        hoursPerDayLabel,
+        days.toString(),
+        formatHours(totalMinutes),
+    )
+
+    private fun ExportRow.heading(): String =
+        if (activityCode == "-") {
+            activityTitle
+        } else {
+            "$activityCode - $activityTitle"
+        }
+
+    private fun padOrTrim(
+        text: String,
+        width: Int,
+        alignment: PdfColumnAlignment,
+    ): String {
         val sanitized = text
-        return if (sanitized.length >= width) {
+        val padded = if (sanitized.length >= width) {
             sanitized.take(width - 1) + " "
         } else {
-            sanitized.padEnd(width, ' ')
+            when (alignment) {
+                PdfColumnAlignment.START -> sanitized.padEnd(width, ' ')
+                PdfColumnAlignment.END -> sanitized.padStart(width, ' ')
+            }
         }
+        return padded
     }
 
     private fun wrapText(text: String, width: Int = 92): List<String> {
@@ -496,4 +527,10 @@ private data class PdfLogoPlacement(
 private data class PdfColumn(
     val header: String,
     val width: Int,
+    val alignment: PdfColumnAlignment = PdfColumnAlignment.START,
 )
+
+private enum class PdfColumnAlignment {
+    START,
+    END,
+}

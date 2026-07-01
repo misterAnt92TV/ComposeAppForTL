@@ -43,6 +43,8 @@ fun normalizeUserFacingName(value: String): String = value
     .filter(String::isNotBlank)
     .joinToString(separator = " ")
 
+fun normalizeExportMetadataIdentifier(value: String): String = value.trim()
+
 fun exportFileNameUserSegment(value: String): String =
     normalizeUserFacingName(value).replace(' ', '_')
 

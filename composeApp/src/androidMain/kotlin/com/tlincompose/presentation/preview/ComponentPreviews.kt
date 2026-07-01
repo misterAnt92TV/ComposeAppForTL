@@ -3,18 +3,24 @@ package com.tlincompose.presentation.preview
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.tlincompose.core.StringKey
 import com.tlincompose.presentation.BrandLogoPickerLauncher
+import com.tlincompose.presentation.JsonFilePickerLauncher
 import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.ProjectIconPickerLauncher
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsSection
 import com.tlincompose.presentation.accessibility.AccessibilityTextScaleUiState
 import com.tlincompose.presentation.accessibility.PdfExportStyleUiState
+import com.tlincompose.presentation.accessibility.SettingsBackupSection
+import com.tlincompose.presentation.accessibility.SettingsBackupUiState
 import com.tlincompose.presentation.calendar.CalendarSection
 import com.tlincompose.presentation.calendar.DayEditorDialog
 import com.tlincompose.presentation.catalog.ActivityCatalogSection
@@ -37,21 +43,36 @@ private val previewBrandLogoPickerLauncher = object : BrandLogoPickerLauncher {
     override fun pickImage(onImagePicked: (ByteArray?) -> Unit) = Unit
 }
 
+private val previewJsonFilePickerLauncher = object : JsonFilePickerLauncher {
+    override fun pickFile(onFilePicked: (com.tlincompose.presentation.JsonFileSelection?) -> Unit) = Unit
+}
+
 @PreviewLightDark
 @Composable
 private fun AppButtonsPreview() {
-    TLInComposePreviewSurface {
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+    val state = previewAccessibilityState()
+    TLInComposePreviewSurface(
+        state = state,
+        modifier = Modifier.widthIn(max = 520.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
             AppActionButton(
                 text = "Primario",
                 onClick = {},
-                modifier = androidx.compose.ui.Modifier.weight(1f),
+                minWidth = previewLayoutSpec(state).buttonPreferredWidth,
+                maxWidth = previewLayoutSpec(state).buttonMaxWidth,
+                modifier = Modifier.weight(1f),
             )
             AppActionButton(
                 text = "Secondario",
                 onClick = {},
                 variant = AppButtonVariant.SECONDARY,
-                modifier = androidx.compose.ui.Modifier.weight(1f),
+                minWidth = previewLayoutSpec(state).buttonPreferredWidth,
+                maxWidth = previewLayoutSpec(state).buttonMaxWidth,
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -61,7 +82,10 @@ private fun AppButtonsPreview() {
 @Composable
 private fun HeaderSectionWithBrandingLogoPreview() {
     val state = previewAccessibilityState(brandingLogoBase64 = previewBrandingLogoBase64)
-    TLInComposePreviewSurface(state = state) {
+    TLInComposePreviewSurface(
+        state = state,
+        modifier = Modifier.widthIn(min = 920.dp, max = 920.dp),
+    ) {
         val strings = LocalAppStrings.current
         HeaderSection(
             month = previewMonth,
@@ -87,7 +111,10 @@ private fun HeaderSectionWithBrandingLogoPreview() {
 @Composable
 private fun HeaderSectionWithoutBrandingLogoPreview() {
     val state = previewAccessibilityState()
-    TLInComposePreviewSurface(state = state) {
+    TLInComposePreviewSurface(
+        state = state,
+        modifier = Modifier.widthIn(max = 520.dp),
+    ) {
         val strings = LocalAppStrings.current
         HeaderSection(
             month = previewMonth,
@@ -136,16 +163,22 @@ private fun CalendarSectionPreview() {
 
 @PreviewLightDark
 @Composable
-private fun AccessibilitySettingsSectionWithBrandingLogoPreview() {
+private fun AccessibilitySettingsSectionWidePreview() {
     val state = previewAccessibilityState(
         textScale = AccessibilityTextScaleUiState.LARGE,
         comfortableSpacing = true,
         standardWorkdayMinutes = 450,
         exportUserFullName = "Mario Rossi",
+        exportOfficeName = "Sede Milano",
+        exportEmployeeId = "EMP-12345",
+        exportPersonId = "P-67890",
         brandingLogoBase64 = previewBrandingLogoBase64,
         pdfExportStyle = PdfExportStyleUiState.SIMPLE_TABLE,
     )
-    TLInComposePreviewSurface(state = state) {
+    TLInComposePreviewSurface(
+        state = state,
+        modifier = Modifier.widthIn(min = 1040.dp, max = 1040.dp),
+    ) {
         AccessibilitySettingsSection(
             state = state,
             layoutSpec = previewLayoutSpec(state),
@@ -158,9 +191,18 @@ private fun AccessibilitySettingsSectionWithBrandingLogoPreview() {
             onLanguageChanged = {},
             onStandardWorkdayChanged = {},
             onExportUserFullNameChanged = {},
+            onExportOfficeNameChanged = {},
+            onExportEmployeeIdChanged = {},
+            onExportPersonIdChanged = {},
             onPdfExportStyleChanged = {},
             onPickBrandingLogo = {},
             onClearBrandingLogo = {},
+            settingsBackupState = SettingsBackupUiState(),
+            jsonFilePickerLauncher = previewJsonFilePickerLauncher,
+            onExportBackup = {},
+            onImportBackupSelected = {},
+            onConfirmImport = {},
+            onDismissImportConfirmation = {},
             onClose = {},
         )
     }
@@ -168,13 +210,16 @@ private fun AccessibilitySettingsSectionWithBrandingLogoPreview() {
 
 @PreviewLightDark
 @Composable
-private fun AccessibilitySettingsSectionWithoutBrandingLogoPreview() {
+private fun AccessibilitySettingsSectionNarrowPreview() {
     val state = previewAccessibilityState(
         textScale = AccessibilityTextScaleUiState.LARGE,
         comfortableSpacing = true,
         standardWorkdayMinutes = 450,
     )
-    TLInComposePreviewSurface(state = state) {
+    TLInComposePreviewSurface(
+        state = state,
+        modifier = Modifier.widthIn(max = 520.dp),
+    ) {
         AccessibilitySettingsSection(
             state = state,
             layoutSpec = previewLayoutSpec(state),
@@ -187,10 +232,53 @@ private fun AccessibilitySettingsSectionWithoutBrandingLogoPreview() {
             onLanguageChanged = {},
             onStandardWorkdayChanged = {},
             onExportUserFullNameChanged = {},
+            onExportOfficeNameChanged = {},
+            onExportEmployeeIdChanged = {},
+            onExportPersonIdChanged = {},
             onPdfExportStyleChanged = {},
             onPickBrandingLogo = {},
             onClearBrandingLogo = {},
+            settingsBackupState = SettingsBackupUiState(),
+            jsonFilePickerLauncher = previewJsonFilePickerLauncher,
+            onExportBackup = {},
+            onImportBackupSelected = {},
+            onConfirmImport = {},
+            onDismissImportConfirmation = {},
             onClose = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SettingsBackupSectionPreview() {
+    val state = previewAccessibilityState()
+    TLInComposePreviewSurface(state = state, modifier = Modifier.widthIn(max = 560.dp)) {
+        SettingsBackupSection(
+            state = SettingsBackupUiState(),
+            layoutSpec = previewLayoutSpec(state),
+            jsonFilePickerLauncher = previewJsonFilePickerLauncher,
+            onExportBackup = {},
+            onImportBackupSelected = {},
+            onConfirmImport = {},
+            onDismissImportConfirmation = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun SettingsBackupSectionConfirmPreview() {
+    val state = previewAccessibilityState()
+    TLInComposePreviewSurface(state = state, modifier = Modifier.widthIn(max = 560.dp)) {
+        SettingsBackupSection(
+            state = SettingsBackupUiState(pendingImportFileName = "TLInCompose_backup_2026-07-01_10-15-00.json"),
+            layoutSpec = previewLayoutSpec(state),
+            jsonFilePickerLauncher = previewJsonFilePickerLauncher,
+            onExportBackup = {},
+            onImportBackupSelected = {},
+            onConfirmImport = {},
+            onDismissImportConfirmation = {},
         )
     }
 }

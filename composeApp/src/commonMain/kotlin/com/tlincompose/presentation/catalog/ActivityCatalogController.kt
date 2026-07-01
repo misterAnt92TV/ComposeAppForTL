@@ -59,6 +59,10 @@ class ActivityCatalogController(
         scope.cancel()
     }
 
+    fun refresh() {
+        reloadDefinitions()
+    }
+
     fun openCreateEditor(defaultMinutes: Int) {
         editorState = ActivityDefinitionEditorUiState(
             mode = ActivityDefinitionEditorMode.CREATE,

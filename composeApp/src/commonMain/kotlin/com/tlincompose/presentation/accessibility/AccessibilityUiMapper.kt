@@ -15,6 +15,9 @@ fun AccessibilityPreferences.toUiState(): AccessibilitySettingsUiState =
         language = language,
         standardWorkdayMinutes = standardWorkdayMinutes,
         exportUserFullName = exportUserFullName,
+        exportOfficeName = exportOfficeName,
+        exportEmployeeId = exportEmployeeId,
+        exportPersonId = exportPersonId,
         brandingLogoBase64 = brandingLogoBase64,
         pdfExportStyle = pdfExportStyle.toUiState(),
     )
@@ -29,6 +32,9 @@ fun AccessibilitySettingsUiState.toDomain(): AccessibilityPreferences =
         language = language,
         standardWorkdayMinutes = standardWorkdayMinutes,
         exportUserFullName = exportUserFullName,
+        exportOfficeName = exportOfficeName,
+        exportEmployeeId = exportEmployeeId,
+        exportPersonId = exportPersonId,
         brandingLogoBase64 = brandingLogoBase64,
         pdfExportStyle = pdfExportStyle.toDomain(),
     )

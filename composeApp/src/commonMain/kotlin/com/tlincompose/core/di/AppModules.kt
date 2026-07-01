@@ -7,12 +7,14 @@ import com.tlincompose.core.DefaultDispatcherProvider
 import com.tlincompose.core.DispatcherProvider
 import com.tlincompose.data.export.DefaultMonthExporter
 import com.tlincompose.data.export.PdfFontProvider
+import com.tlincompose.data.local.JsonAppBackupRepository
 import com.tlincompose.data.local.JsonAccessibilityPreferencesRepository
 import com.tlincompose.data.local.JsonActivityDefinitionRepository
 import com.tlincompose.data.local.JsonTimesheetRepository
 import com.tlincompose.data.local.StorageDriver
 import com.tlincompose.domain.repository.AccessibilityPreferencesRepository
 import com.tlincompose.domain.repository.ActivityDefinitionRepository
+import com.tlincompose.domain.repository.AppBackupRepository
 import com.tlincompose.domain.repository.TimesheetExporter
 import com.tlincompose.domain.repository.TimesheetRepository
 import com.tlincompose.domain.usecase.AddActivityToDayUseCase
@@ -21,11 +23,13 @@ import com.tlincompose.domain.usecase.CalculateMonthWorkSummaryUseCase
 import com.tlincompose.domain.usecase.CreateDateRangeUseCase
 import com.tlincompose.domain.usecase.CreateMonthRangeUseCase
 import com.tlincompose.domain.usecase.DeleteActivityDefinitionUseCase
+import com.tlincompose.domain.usecase.ExportAppBackupUseCase
 import com.tlincompose.domain.usecase.ExportDateRangeReportUseCase
 import com.tlincompose.domain.usecase.ExportMonthRangeReportUseCase
 import com.tlincompose.domain.usecase.ExportMonthReportUseCase
 import com.tlincompose.domain.usecase.FilterExportEntriesUseCase
 import com.tlincompose.domain.usecase.GenerateNextExtCodeUseCase
+import com.tlincompose.domain.usecase.ImportAppBackupUseCase
 import com.tlincompose.domain.usecase.LoadAccessibilityPreferencesUseCase
 import com.tlincompose.domain.usecase.LoadActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.LoadMonthEntriesUseCase
@@ -38,6 +42,7 @@ import com.tlincompose.domain.usecase.ValidateActivityDefinitionUseCase
 import com.tlincompose.domain.usecase.ValidateDailyEntryUseCase
 import com.tlincompose.presentation.TimesheetController
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsController
+import com.tlincompose.presentation.accessibility.SettingsBackupController
 import com.tlincompose.presentation.catalog.ActivityCatalogController
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -88,6 +93,12 @@ private val dataModule = module {
             logger = get(),
         )
     }
+    single<AppBackupRepository> {
+        JsonAppBackupRepository(
+            dispatcherProvider = get(),
+            logger = get(),
+        )
+    }
     single<TimesheetExporter> {
         DefaultMonthExporter(
             dispatcherProvider = get(),
@@ -110,6 +121,8 @@ private val domainModule = module {
     single { LoadMonthEntriesUseCase(get()) }
     single { SaveActivityDefinitionUseCase(get()) }
     single { SaveAccessibilityPreferencesUseCase(get()) }
+    single { ExportAppBackupUseCase(get(), get(), get(), get()) }
+    single { ImportAppBackupUseCase(get(), get(), get(), get()) }
     single { ValidateActivityDefinitionUseCase() }
     single { ValidateDailyEntryUseCase() }
     single { SaveDailyEntryUseCase(get()) }
@@ -154,6 +167,14 @@ private val presentationModule = module {
             saveActivityDefinition = get(),
             syncActivitiesWithDefinition = get(),
             deleteActivityDefinition = get(),
+            dispatcherProvider = get(),
+            logger = get(),
+        )
+    }
+    factory {
+        SettingsBackupController(
+            exportAppBackup = get(),
+            importAppBackup = get(),
             dispatcherProvider = get(),
             logger = get(),
         )

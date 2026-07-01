@@ -121,4 +121,6 @@ private class RecordingActivityDefinitionRepository : ActivityDefinitionReposito
     }
 
     override suspend fun delete(extCode: String) = Unit
+
+    override suspend fun replaceAll(definitions: List<ActivityDefinition>) = Unit
 }

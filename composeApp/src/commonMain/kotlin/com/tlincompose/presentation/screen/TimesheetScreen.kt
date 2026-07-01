@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -14,11 +15,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.tlincompose.core.APP_VERSION
+import com.tlincompose.core.backupExportErrorMessage
+import com.tlincompose.core.backupImportEmptyContentMessage
+import com.tlincompose.core.backupImportInvalidJsonMessage
+import com.tlincompose.core.backupImportPersistenceErrorMessage
+import com.tlincompose.core.backupImportSuccessMessage
+import com.tlincompose.core.backupImportUnsupportedVersionMessage
 import com.tlincompose.core.checkDayFieldsBeforeSaving
 import com.tlincompose.core.checkEntityFieldsBeforeSaving
 import com.tlincompose.core.chooseLighterImage
@@ -33,10 +41,13 @@ import com.tlincompose.core.unableToSaveSelectedDays
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.presentation.BrandLogoPickerLauncher
 import com.tlincompose.presentation.FileSaveLauncher
+import com.tlincompose.presentation.JsonFilePickerLauncher
 import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.ProjectIconPickerLauncher
 import com.tlincompose.presentation.TimesheetController
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsSection
+import com.tlincompose.presentation.accessibility.SettingsBackupController
+import com.tlincompose.presentation.accessibility.SettingsBackupFailureReason
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsUiState
 import com.tlincompose.presentation.accessibility.AccessibilityTextScaleUiState
 import com.tlincompose.presentation.accessibility.PdfExportStyleUiState
@@ -57,6 +68,7 @@ import com.tlincompose.presentation.layout.accessibilityLayoutSpec
 internal fun TimesheetScreen(
     controller: TimesheetController,
     activityCatalogController: ActivityCatalogController,
+    settingsBackupController: SettingsBackupController,
     accessibilityState: AccessibilitySettingsUiState,
     onThemeModeChanged: (ThemeModeUiState) -> Unit,
     onTextScaleChanged: (AccessibilityTextScaleUiState) -> Unit,
@@ -66,12 +78,17 @@ internal fun TimesheetScreen(
     onLanguageChanged: (AppLanguage) -> Unit,
     onStandardWorkdayChanged: (Int) -> Unit,
     onExportUserFullNameChanged: (String) -> Unit,
+    onExportOfficeNameChanged: (String) -> Unit,
+    onExportEmployeeIdChanged: (String) -> Unit,
+    onExportPersonIdChanged: (String) -> Unit,
     onPdfExportStyleChanged: (PdfExportStyleUiState) -> Unit,
     fileSaveLauncher: FileSaveLauncher,
     brandLogoPickerLauncher: BrandLogoPickerLauncher,
     projectIconPickerLauncher: ProjectIconPickerLauncher,
+    jsonFilePickerLauncher: JsonFilePickerLauncher,
     onPickBrandingLogo: (ByteArray) -> Unit,
     onClearBrandingLogo: () -> Unit,
+    onRefreshAfterBackupImport: () -> Unit,
     showMessage: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -86,105 +103,149 @@ internal fun TimesheetScreen(
 
     Column(
         modifier = modifier
+            .fillMaxWidth()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = layoutSpec.screenPadding, vertical = layoutSpec.screenPadding),
-        verticalArrangement = Arrangement.spacedBy(layoutSpec.sectionSpacing),
     ) {
-        HeaderSection(
-            month = controller.currentMonth,
-            monthSummary = controller.monthSummary,
-            intervalMessage = controller.intervalSelectionMessage,
-            isSelectingRange = controller.rangeSelectionState.isSelecting,
-            isExportEnabled = controller.isExportEnabled,
-            accessibilityState = accessibilityState,
-            brandingLogoBase64 = accessibilityState.brandingLogoBase64,
-            isSettingsVisible = isSettingsVisible,
-            layoutSpec = layoutSpec,
-            onPreviousMonth = controller::loadPreviousMonth,
-            onNextMonth = controller::loadNextMonth,
-            onToggleRangeSelection = controller::toggleRangeSelection,
-            onExport = controller::openExportDialog,
-            onToggleSettings = {
-                isSettingsVisible = !isSettingsVisible
-            },
-            onMonthSelected = { month -> controller.goToMonth(month) }
-        )
-        if (isSettingsVisible) {
-            Box(modifier = Modifier.testTag("settings-panel")) {
-                AccessibilitySettingsSection(
-                    state = accessibilityState,
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.TopCenter,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .widthIn(max = layoutSpec.contentMaxWidth),
+                verticalArrangement = Arrangement.spacedBy(layoutSpec.sectionSpacing),
+            ) {
+                HeaderSection(
+                    month = controller.currentMonth,
+                    monthSummary = controller.monthSummary,
+                    intervalMessage = controller.intervalSelectionMessage,
+                    isSelectingRange = controller.rangeSelectionState.isSelecting,
+                    isExportEnabled = controller.isExportEnabled,
+                    accessibilityState = accessibilityState,
+                    brandingLogoBase64 = accessibilityState.brandingLogoBase64,
+                    isSettingsVisible = isSettingsVisible,
                     layoutSpec = layoutSpec,
-                    brandLogoPickerLauncher = brandLogoPickerLauncher,
-                    onThemeModeChanged = onThemeModeChanged,
-                    onTextScaleChanged = onTextScaleChanged,
-                    onHighContrastChanged = onHighContrastChanged,
-                    onComfortableSpacingChanged = onComfortableSpacingChanged,
-                    onFocusModeChanged = onFocusModeChanged,
-                    onLanguageChanged = onLanguageChanged,
-                    onStandardWorkdayChanged = onStandardWorkdayChanged,
-                    onExportUserFullNameChanged = onExportUserFullNameChanged,
-                    onPdfExportStyleChanged = onPdfExportStyleChanged,
-                    onPickBrandingLogo = onPickBrandingLogo,
-                    onClearBrandingLogo = onClearBrandingLogo,
-                    onClose = {
-                        isSettingsVisible = false
+                    onPreviousMonth = controller::loadPreviousMonth,
+                    onNextMonth = controller::loadNextMonth,
+                    onToggleRangeSelection = controller::toggleRangeSelection,
+                    onExport = controller::openExportDialog,
+                    onToggleSettings = {
+                        isSettingsVisible = !isSettingsVisible
                     },
+                    onMonthSelected = { month -> controller.goToMonth(month) }
+                )
+                if (isSettingsVisible) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("settings-panel"),
+                        contentAlignment = Alignment.TopCenter,
+                    ) {
+                        AccessibilitySettingsSection(
+                            state = accessibilityState,
+                            layoutSpec = layoutSpec,
+                            brandLogoPickerLauncher = brandLogoPickerLauncher,
+                            onThemeModeChanged = onThemeModeChanged,
+                            onTextScaleChanged = onTextScaleChanged,
+                            onHighContrastChanged = onHighContrastChanged,
+                            onComfortableSpacingChanged = onComfortableSpacingChanged,
+                            onFocusModeChanged = onFocusModeChanged,
+                            onLanguageChanged = onLanguageChanged,
+                            onStandardWorkdayChanged = onStandardWorkdayChanged,
+                            onExportUserFullNameChanged = onExportUserFullNameChanged,
+                            onExportOfficeNameChanged = onExportOfficeNameChanged,
+                            onExportEmployeeIdChanged = onExportEmployeeIdChanged,
+                            onExportPersonIdChanged = onExportPersonIdChanged,
+                            onPdfExportStyleChanged = onPdfExportStyleChanged,
+                            onPickBrandingLogo = onPickBrandingLogo,
+                            onClearBrandingLogo = onClearBrandingLogo,
+                            settingsBackupState = settingsBackupController.uiState,
+                            jsonFilePickerLauncher = jsonFilePickerLauncher,
+                            onExportBackup = {
+                                settingsBackupController.exportBackup(
+                                    onSuccess = fileSaveLauncher::save,
+                                    onFailure = {
+                                        showMessage(strings.messageFor(it))
+                                    },
+                                )
+                            },
+                            onImportBackupSelected = settingsBackupController::prepareImport,
+                            onConfirmImport = {
+                                settingsBackupController.confirmImport(
+                                    onSuccess = {
+                                        onRefreshAfterBackupImport()
+                                        showMessage(strings.backupImportSuccessMessage)
+                                    },
+                                    onFailure = {
+                                        showMessage(strings.messageFor(it))
+                                    },
+                                )
+                            },
+                            onDismissImportConfirmation = settingsBackupController::dismissImportConfirmation,
+                            onClose = {
+                                isSettingsVisible = false
+                            },
+                            modifier = Modifier.widthIn(max = layoutSpec.panelMaxWidth),
+                        )
+                    }
+                }
+                ActivityCatalogToggleButton(
+                    isVisible = isActivityCatalogVisible,
+                    layoutSpec = layoutSpec,
+                    onClick = {
+                        isActivityCatalogVisible = !isActivityCatalogVisible
+                    },
+                )
+                if (isActivityCatalogVisible) {
+                    Box(modifier = Modifier.testTag("activity-catalog-panel")) {
+                        ActivityCatalogSection(
+                            definitions = activityCatalogController.definitions,
+                            layoutSpec = layoutSpec,
+                            defaultWorkdayMinutes = accessibilityState.standardWorkdayMinutes,
+                            onCreateDefinition = {
+                                activityCatalogController.openCreateEditor(accessibilityState.standardWorkdayMinutes)
+                            },
+                            onEditDefinition = activityCatalogController::openEditEditor,
+                            onDeleteDefinition = activityCatalogController::requestDelete,
+                            onClose = {
+                                isActivityCatalogVisible = false
+                            },
+                        )
+                    }
+                }
+                CalendarSection(
+                    grid = controller.monthCells,
+                    accessibilityState = accessibilityState,
+                    layoutSpec = layoutSpec,
+                    onDaySelected = controller::onDayTapped,
+                    onDayDragStarted = controller::startDayDragSelection,
+                    onDayDragMoved = controller::updateDayDragSelection,
+                    onDayDragCompleted = controller::completeDayDragSelection,
+                    onDayDragCancelled = controller::cancelDayDragSelection,
+                    onActivityDragStarted = controller::startActivityDrag,
+                    onActivityDragMoved = controller::updateActivityDragTarget,
+                    onActivityDragCompleted = {
+                        controller.completeActivityDrag(
+                            onPersistenceError = {
+                                showMessage(strings.unableToCopyDraggedActivity)
+                            },
+                        )
+                    },
+                    onActivityDragCancelled = controller::cancelActivityDrag,
+                )
+                Text(
+                    text = APP_VERSION,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Center,
                 )
             }
         }
-        ActivityCatalogToggleButton(
-            isVisible = isActivityCatalogVisible,
-            buttonMinHeight = layoutSpec.buttonMinHeight,
-            onClick = {
-                isActivityCatalogVisible = !isActivityCatalogVisible
-            },
-        )
-        if (isActivityCatalogVisible) {
-            Box(modifier = Modifier.testTag("activity-catalog-panel")) {
-                ActivityCatalogSection(
-                    definitions = activityCatalogController.definitions,
-                    layoutSpec = layoutSpec,
-                    defaultWorkdayMinutes = accessibilityState.standardWorkdayMinutes,
-                    onCreateDefinition = {
-                        activityCatalogController.openCreateEditor(accessibilityState.standardWorkdayMinutes)
-                    },
-                    onEditDefinition = activityCatalogController::openEditEditor,
-                    onDeleteDefinition = activityCatalogController::requestDelete,
-                    onClose = {
-                        isActivityCatalogVisible = false
-                    },
-                )
-            }
-        }
-        CalendarSection(
-            grid = controller.monthCells,
-            accessibilityState = accessibilityState,
-            layoutSpec = layoutSpec,
-            onDaySelected = controller::onDayTapped,
-            onDayDragStarted = controller::startDayDragSelection,
-            onDayDragMoved = controller::updateDayDragSelection,
-            onDayDragCompleted = controller::completeDayDragSelection,
-            onDayDragCancelled = controller::cancelDayDragSelection,
-            onActivityDragStarted = controller::startActivityDrag,
-            onActivityDragMoved = controller::updateActivityDragTarget,
-            onActivityDragCompleted = {
-                controller.completeActivityDrag(
-                    onPersistenceError = {
-                        showMessage(strings.unableToCopyDraggedActivity)
-                    },
-                )
-            },
-            onActivityDragCancelled = controller::cancelActivityDrag,
-        )
-        Text(
-            text = APP_VERSION,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-            color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-            style = androidx.compose.material3.MaterialTheme.typography.bodySmall,
-            textAlign = TextAlign.Center,
-        )
     }
 
     controller.editorState?.let { editorState ->
@@ -281,6 +342,9 @@ internal fun TimesheetScreen(
                     format = format,
                     filter = filter,
                     exportUserFullName = accessibilityState.exportUserFullName,
+                    exportOfficeName = accessibilityState.exportOfficeName,
+                    exportEmployeeId = accessibilityState.exportEmployeeId,
+                    exportPersonId = accessibilityState.exportPersonId,
                     brandingLogoBase64 = accessibilityState.brandingLogoBase64,
                     pdfExportStyle = accessibilityState.pdfExportStyle.toDomain(),
                     onSuccess = { document ->
@@ -296,6 +360,14 @@ internal fun TimesheetScreen(
     }
 }
 
+private fun com.tlincompose.core.AppStrings.messageFor(reason: SettingsBackupFailureReason): String = when (reason) {
+    SettingsBackupFailureReason.EMPTY_CONTENT -> backupImportEmptyContentMessage
+    SettingsBackupFailureReason.EXPORT_FAILED -> backupExportErrorMessage
+    SettingsBackupFailureReason.INVALID_JSON -> backupImportInvalidJsonMessage
+    SettingsBackupFailureReason.PERSISTENCE_ERROR -> backupImportPersistenceErrorMessage
+    SettingsBackupFailureReason.UNSUPPORTED_VERSION -> backupImportUnsupportedVersionMessage
+}
+
 private fun PdfExportStyleUiState.toDomain(): com.tlincompose.domain.model.PdfExportStyle = when (this) {
     PdfExportStyleUiState.RETRO -> com.tlincompose.domain.model.PdfExportStyle.RETRO
     PdfExportStyleUiState.SIMPLE_TABLE -> com.tlincompose.domain.model.PdfExportStyle.SIMPLE_TABLE
@@ -306,7 +378,7 @@ private fun PdfExportStyleUiState.toDomain(): com.tlincompose.domain.model.PdfEx
 @Composable
 private fun ActivityCatalogToggleButton(
     isVisible: Boolean,
-    buttonMinHeight: androidx.compose.ui.unit.Dp,
+    layoutSpec: com.tlincompose.presentation.layout.AccessibilityLayoutSpec,
     onClick: () -> Unit,
 ) {
     val strings = LocalAppStrings.current
@@ -318,9 +390,10 @@ private fun ActivityCatalogToggleButton(
         },
         onClick = onClick,
         variant = AppButtonVariant.SECONDARY,
-        minHeight = buttonMinHeight,
+        minHeight = layoutSpec.buttonMinHeight,
+        minWidth = 200.dp,
+        maxWidth = 280.dp,
         modifier = Modifier
-            .fillMaxWidth()
             .testTag("activity-catalog-toggle-button"),
     )
 }

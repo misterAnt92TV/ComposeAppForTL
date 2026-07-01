@@ -25,6 +25,9 @@ class PdfReportWriterTest {
                 ),
                 language = AppLanguage.ITALIAN,
                 exportUserFullName = "Mario Rossi",
+                exportOfficeName = "Sede Milano",
+                exportEmployeeId = "EMP-123",
+                exportPersonId = "P-456",
                 brandingLogoBase64 = Base64.Default.encode(minimalJpegBytes(width = 800, height = 350)),
             ),
             title = "Export",
@@ -59,6 +62,9 @@ class PdfReportWriterTest {
         val detailText = buildPdfText(PdfExportStyle.DETAIL_BLOCKS)
 
         assertTrue(compactText.contains("User: Mario Rossi"))
+        assertTrue(compactText.contains("Office: Milan HQ"))
+        assertTrue(compactText.contains("Employee ID: EMP-123"))
+        assertTrue(compactText.contains("Person ID: P-456"))
         assertTrue(compactText.contains("Attivit\\340"))
         assertTrue(detailText.contains("============================================================================================"))
     }
@@ -88,6 +94,9 @@ private fun buildPdfText(style: PdfExportStyle): String {
             ),
             language = AppLanguage.ENGLISH,
             exportUserFullName = "Mario Rossi",
+            exportOfficeName = "Milan HQ",
+            exportEmployeeId = "EMP-123",
+            exportPersonId = "P-456",
             brandingLogoBase64 = Base64.Default.encode(minimalJpegBytes(width = 800, height = 350)),
             pdfExportStyle = style,
         ),

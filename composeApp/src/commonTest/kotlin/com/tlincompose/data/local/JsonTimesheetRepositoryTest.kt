@@ -154,4 +154,40 @@ class JsonTimesheetRepositoryTest {
         assertEquals("https://example.com/new", loaded[entry.date]?.activities?.single()?.projectUrl)
         assertEquals(450, loaded[entry.date]?.activities?.single()?.minutes)
     }
+
+    @Test
+    fun replaceAllAndLoadAllKeepOrderedEntries() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val repository = JsonTimesheetRepository(
+            storageDriver = InMemoryStorageDriver(),
+            dispatcherProvider = TestDispatcherProvider(dispatcher),
+            logger = Logger.withTag("JsonTimesheetRepositoryTest"),
+        )
+        val laterEntry = DailyEntry(
+            date = LocalDate(2026, 5, 16),
+            activities = listOf(
+                Activity(
+                    type = EntryType.PROJECT,
+                    extCode = "EXT-0100",
+                    title = "Athena",
+                    minutes = 480,
+                ),
+            ),
+        )
+        val earlierEntry = DailyEntry(
+            date = LocalDate(2026, 5, 10),
+            activities = listOf(
+                Activity(
+                    type = EntryType.PERMIT,
+                    extCode = "EXT-0200",
+                    title = "Permesso",
+                    minutes = 120,
+                ),
+            ),
+        )
+
+        repository.replaceAll(listOf(laterEntry, earlierEntry))
+
+        assertEquals(listOf(earlierEntry, laterEntry), repository.loadAll())
+    }
 }

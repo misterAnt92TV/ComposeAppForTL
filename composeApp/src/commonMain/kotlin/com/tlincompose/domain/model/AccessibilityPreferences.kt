@@ -36,6 +36,9 @@ data class AccessibilityPreferences(
     val language: AppLanguage = AppLanguage.ENGLISH,
     val standardWorkdayMinutes: Int = DefaultWorkdayMinutes,
     val exportUserFullName: String = "",
+    val exportOfficeName: String = "",
+    val exportEmployeeId: String = "",
+    val exportPersonId: String = "",
     val brandingLogoBase64: String? = null,
     val pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
 )

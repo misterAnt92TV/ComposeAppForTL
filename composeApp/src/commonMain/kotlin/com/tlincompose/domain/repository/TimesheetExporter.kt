@@ -16,6 +16,9 @@ interface TimesheetExporter {
         format: ExportFormat,
         language: AppLanguage,
         exportUserFullName: String? = null,
+        exportOfficeName: String? = null,
+        exportEmployeeId: String? = null,
+        exportPersonId: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
     ): ExportDocument
@@ -26,6 +29,9 @@ interface TimesheetExporter {
         format: ExportFormat,
         language: AppLanguage,
         exportUserFullName: String? = null,
+        exportOfficeName: String? = null,
+        exportEmployeeId: String? = null,
+        exportPersonId: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
     ): ExportDocument
@@ -36,6 +42,9 @@ interface TimesheetExporter {
         format: ExportFormat,
         language: AppLanguage,
         exportUserFullName: String? = null,
+        exportOfficeName: String? = null,
+        exportEmployeeId: String? = null,
+        exportPersonId: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
     ): ExportDocument

@@ -97,4 +97,39 @@ class JsonActivityDefinitionRepositoryTest {
 
         assertEquals(listOf("EXT-0042"), repository.loadAll().map(ActivityDefinition::extCode))
     }
+
+    @Test
+    fun replaceAllReplacesExistingDefinitions() = runTest {
+        val dispatcher = StandardTestDispatcher(testScheduler)
+        val repository = JsonActivityDefinitionRepository(
+            storageDriver = InMemoryStorageDriver(),
+            dispatcherProvider = TestDispatcherProvider(dispatcher),
+            logger = Logger.withTag("JsonActivityDefinitionRepositoryTest"),
+        )
+        repository.upsert(
+            ActivityDefinition(
+                extCode = "OLD-001",
+                type = EntryType.PROJECT,
+                title = "Legacy",
+                description = "",
+                defaultMinutes = 480,
+                createdDate = LocalDate(2026, 5, 1),
+                updatedDate = LocalDate(2026, 5, 1),
+            ),
+        )
+
+        val replacement = ActivityDefinition(
+            extCode = "EXT-0099",
+            type = EntryType.VACATION,
+            title = "Ferie estive",
+            description = "",
+            defaultMinutes = 480,
+            createdDate = LocalDate(2026, 6, 1),
+            updatedDate = LocalDate(2026, 6, 2),
+        )
+
+        repository.replaceAll(listOf(replacement))
+
+        assertEquals(listOf(replacement), repository.loadAll())
+    }
 }

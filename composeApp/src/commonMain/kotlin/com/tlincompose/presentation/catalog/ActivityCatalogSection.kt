@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -92,7 +93,11 @@ internal fun ActivityCatalogSection(
                         onClick = onClose,
                         variant = AppButtonVariant.TERTIARY,
                         minHeight = layoutSpec.buttonMinHeight,
-                        modifier = Modifier.testTag("activity-catalog-close-button"),
+                        minWidth = 96.dp,
+                        maxWidth = 128.dp,
+                        modifier = Modifier
+                            .widthIn(min = 96.dp, max = 128.dp)
+                            .testTag("activity-catalog-close-button"),
                     )
                 }
             }

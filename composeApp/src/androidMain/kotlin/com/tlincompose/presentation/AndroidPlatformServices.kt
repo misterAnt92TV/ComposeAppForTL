@@ -9,6 +9,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
+import android.provider.OpenableColumns
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -27,6 +28,7 @@ import com.tlincompose.core.brandingLogoTargetSizeFor
 import com.tlincompose.core.computeBrandingLogoRenderSize
 import com.tlincompose.core.isSvgImageBytes
 import com.tlincompose.core.parseSvgViewportSize
+import com.tlincompose.core.unableToReadSelectedFile
 import com.tlincompose.core.unableToReadSelectedImage
 import com.tlincompose.data.export.PdfFontProvider
 import com.tlincompose.data.export.PdfFontResource
@@ -43,18 +45,21 @@ actual fun rememberPlatformServices(
     val strings = appStrings(language)
     val context = LocalContext.current.applicationContext
     val storageDriver = remember(context) { AndroidStorageDriver(context) }
-    val pdfFontProvider = remember(context) {
-        val fontBytes = context.assets.open("fonts/arial.ttf").use { it.readBytes() }
-        PdfFontProvider {
-            PdfFontResource(
+    val pdfFontBytes = remember(context) {
+        context.assets.open("fonts/arial.ttf").use { it.readBytes() }
+    }
+    val pdfFontProvider = remember(pdfFontBytes) {
+        object : PdfFontProvider {
+            override fun loadRegularFont(): PdfFontResource = PdfFontResource(
                 postScriptName = "ArialMT",
-                fontBytes = fontBytes,
+                fontBytes = pdfFontBytes,
             )
         }
     }
     var pendingDocument by remember { mutableStateOf<com.tlincompose.domain.model.ExportDocument?>(null) }
     var pendingIconPick by remember { mutableStateOf<((ByteArray?) -> Unit)?>(null) }
     var pendingBrandLogoPick by remember { mutableStateOf<((ByteArray?) -> Unit)?>(null) }
+    var pendingJsonFilePick by remember { mutableStateOf<((JsonFileSelection?) -> Unit)?>(null) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val document = pendingDocument
         pendingDocument = null
@@ -121,6 +126,30 @@ actual fun rememberPlatformServices(
             callback(null)
         }
     }
+    val jsonFilePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        val callback = pendingJsonFilePick
+        pendingJsonFilePick = null
+        if (callback == null) return@rememberLauncherForActivityResult
+        if (uri == null) {
+            callback(null)
+            return@rememberLauncherForActivityResult
+        }
+
+        runCatching {
+            val bytes = context.contentResolver.openInputStream(uri)?.use { input ->
+                input.readBytes()
+            } ?: error(strings.unableToReadSelectedFile)
+            JsonFileSelection(
+                fileName = context.resolveDisplayName(uri) ?: "TLInCompose_backup.json",
+                bytes = bytes,
+            )
+        }.onSuccess {
+            callback(it)
+        }.onFailure {
+            onMessage(strings.unableToReadSelectedFile)
+            callback(null)
+        }
+    }
 
     val fileSaveLauncher = remember(context, launcher, strings) {
         object : FileSaveLauncher {
@@ -151,6 +180,14 @@ actual fun rememberPlatformServices(
             }
         }
     }
+    val jsonFilePickerLauncher = remember(context, jsonFilePicker) {
+        object : JsonFilePickerLauncher {
+            override fun pickFile(onFilePicked: (JsonFileSelection?) -> Unit) {
+                pendingJsonFilePick = onFilePicked
+                jsonFilePicker.launch(arrayOf("application/json"))
+            }
+        }
+    }
 
     return PlatformServices(
         storageDriver = storageDriver,
@@ -158,7 +195,17 @@ actual fun rememberPlatformServices(
         fileSaveLauncher = fileSaveLauncher,
         projectIconPickerLauncher = projectIconPickerLauncher,
         brandLogoPickerLauncher = appBrandLogoPickerLauncher,
+        jsonFilePickerLauncher = jsonFilePickerLauncher,
     )
+}
+
+private fun Context.resolveDisplayName(uri: android.net.Uri): String? {
+    return contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+        if (!cursor.moveToFirst()) return@use null
+        val columnIndex = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+        if (columnIndex < 0) return@use null
+        cursor.getString(columnIndex)
+    }
 }
 
 private fun normalizeBrandingLogoBytes(rawBytes: ByteArray): ByteArray? {

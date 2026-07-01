@@ -120,11 +120,44 @@ class DefaultMonthExporterTest {
             format = ExportFormat.CSV,
             language = AppLanguage.ITALIAN,
             exportUserFullName = "  José   García  ",
+            exportOfficeName = "  Sede   Milano  ",
+            exportEmployeeId = "  EMP-123  ",
+            exportPersonId = "  P-456  ",
         )
 
         assertEquals("TLInCompose_José_García_2026-05.csv", csv.fileName)
         assertTrue(csv.bytes.decodeToString().contains("\"Utente\";\"José García\""))
+        assertTrue(csv.bytes.decodeToString().contains("\"Sede\";\"Sede Milano\""))
+        assertTrue(csv.bytes.decodeToString().contains("\"Dipendente ID\";\"EMP-123\""))
+        assertTrue(csv.bytes.decodeToString().contains("\"Person ID\";\"P-456\""))
         assertTrue(csv.bytes.decodeToString().contains("\"EXT-0002\";\"Attività Demo\""))
+    }
+
+    @Test
+    fun exportOmitsBlankOptionalMetadataRowsFromCsv() = runTest {
+        val exporter = DefaultMonthExporter(
+            dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler)),
+            pdfFontProvider = testPdfFontProvider,
+            logger = Logger.withTag("DefaultMonthExporterTest"),
+            xlsxEncoder = { _, _ -> "xlsx".encodeToByteArray() },
+            pdfEncoder = { _, _, _ -> "%PDF-1.4".encodeToByteArray() },
+        )
+
+        val csv = exporter.exportMonth(
+            month = CalendarMonth(2026, 5),
+            entries = emptyList(),
+            format = ExportFormat.CSV,
+            language = AppLanguage.ITALIAN,
+            exportOfficeName = "   ",
+            exportEmployeeId = "",
+            exportPersonId = "   ",
+        )
+
+        val content = csv.bytes.decodeToString()
+        assertEquals("TLInCompose_2026-05.csv", csv.fileName)
+        assertTrue("\"Sede\"" !in content)
+        assertTrue("\"Dipendente ID\"" !in content)
+        assertTrue("\"Person ID\"" !in content)
     }
 
     @Test
@@ -235,6 +268,9 @@ class DefaultMonthExporterTest {
             entries = entries,
             format = ExportFormat.XLSX,
             language = AppLanguage.ITALIAN,
+            exportOfficeName = "Sede Milano",
+            exportEmployeeId = "EMP-123",
+            exportPersonId = "P-456",
             brandingLogoBase64 = "AQID",
         )
         exporter.exportMonth(
@@ -242,12 +278,62 @@ class DefaultMonthExporterTest {
             entries = entries,
             format = ExportFormat.PDF,
             language = AppLanguage.ITALIAN,
+            exportOfficeName = "Sede Milano",
+            exportEmployeeId = "EMP-123",
+            exportPersonId = "P-456",
             brandingLogoBase64 = "AQID",
             pdfExportStyle = PdfExportStyle.DETAIL_BLOCKS,
         )
 
         assertContentEquals(csvWithoutLogo.bytes, csvWithLogo.bytes)
+        assertEquals("Sede Milano", xlsxReport?.exportOfficeName)
+        assertEquals("EMP-123", xlsxReport?.exportEmployeeId)
+        assertEquals("P-456", xlsxReport?.exportPersonId)
+        assertEquals("Sede Milano", pdfReport?.exportOfficeName)
+        assertEquals("EMP-123", pdfReport?.exportEmployeeId)
+        assertEquals("P-456", pdfReport?.exportPersonId)
         assertEquals("AQID", xlsxReport?.brandingLogoBase64)
         assertEquals(PdfExportStyle.DETAIL_BLOCKS, pdfReport?.pdfExportStyle)
+    }
+
+    @Test
+    fun csvLayoutFollowsSelectedExportStyle() = runTest {
+        val exporter = DefaultMonthExporter(
+            dispatcherProvider = TestDispatcherProvider(StandardTestDispatcher(testScheduler)),
+            pdfFontProvider = testPdfFontProvider,
+            logger = Logger.withTag("DefaultMonthExporterTest"),
+            xlsxEncoder = { _, _ -> "xlsx".encodeToByteArray() },
+            pdfEncoder = { _, _, _ -> "%PDF-1.4".encodeToByteArray() },
+        )
+        val entries = listOf(
+            DailyEntry(
+                LocalDate(2026, 5, 10),
+                listOf(Activity(type = EntryType.PROJECT, extCode = "EXT-0001", title = "Apollo", minutes = 480)),
+            ),
+        )
+
+        val compactCsv = exporter.exportMonth(
+            month = CalendarMonth(2026, 5),
+            entries = entries,
+            format = ExportFormat.CSV,
+            language = AppLanguage.ENGLISH,
+            pdfExportStyle = PdfExportStyle.COMPACT_LIST,
+        ).bytes.decodeToString()
+
+        val detailCsv = exporter.exportMonth(
+            month = CalendarMonth(2026, 5),
+            entries = entries,
+            format = ExportFormat.CSV,
+            language = AppLanguage.ENGLISH,
+            pdfExportStyle = PdfExportStyle.DETAIL_BLOCKS,
+        ).bytes.decodeToString()
+
+        assertTrue(compactCsv.contains("\"Activity\";\"Apollo\";\"Activity code\";\"EXT-0001\""))
+        assertTrue(compactCsv.contains("\"Hours/day\";\"8\";\"Days\";\"1\";\"Total hours\";\"8\""))
+        assertTrue(!compactCsv.contains("\"Activity code\";\"Activity\";\"Type\""))
+
+        assertTrue(detailCsv.contains("\"Activity\";\"EXT-0001 - Apollo\""))
+        assertTrue(detailCsv.contains("\"Type\";\"Project\""))
+        assertTrue(detailCsv.contains("\"Total hours\";\"8\""))
     }
 }

@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.Dp.Companion.Unspecified
 import androidx.compose.ui.unit.dp
 
 internal enum class AppButtonVariant {
@@ -28,13 +29,19 @@ internal fun AppActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     minHeight: Dp = 48.dp,
+    minWidth: Dp = Unspecified,
+    maxWidth: Dp = Unspecified,
     enabled: Boolean = true,
     variant: AppButtonVariant = AppButtonVariant.PRIMARY,
     centerLabel: Boolean = true,
     testTag: String? = null,
 ) {
     val shapedModifier = modifier
-        .sizeIn(minHeight = minHeight)
+        .sizeIn(
+            minWidth = minWidth,
+            minHeight = minHeight,
+            maxWidth = maxWidth,
+        )
         .let { base ->
             if (testTag == null) {
                 base

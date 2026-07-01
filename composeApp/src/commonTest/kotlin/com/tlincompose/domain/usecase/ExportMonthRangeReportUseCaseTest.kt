@@ -46,6 +46,9 @@ class ExportMonthRangeReportUseCaseTest {
             language = AppLanguage.ITALIAN,
             filter = ExportActivityTypeFilter(setOf(EntryType.PERMIT)),
             exportUserFullName = "Mario Rossi",
+            exportOfficeName = "Sede Milano",
+            exportEmployeeId = "EMP-123",
+            exportPersonId = "P-456",
         )
 
         assertEquals(DateRange(LocalDate(2026, 5, 1), LocalDate(2026, 7, 31)), repository.requestedRange)
@@ -56,6 +59,9 @@ class ExportMonthRangeReportUseCaseTest {
         )
         assertEquals(listOf(EntryType.PERMIT), exporter.exportedEntries.single().activities.map(Activity::type))
         assertEquals("Mario Rossi", exporter.exportUserFullName)
+        assertEquals("Sede Milano", exporter.exportOfficeName)
+        assertEquals("EMP-123", exporter.exportEmployeeId)
+        assertEquals("P-456", exporter.exportPersonId)
         assertEquals("months.csv", result.fileName)
     }
 
@@ -71,9 +77,13 @@ class ExportMonthRangeReportUseCaseTest {
             return loadRangeResult
         }
 
+        override suspend fun loadAll(): List<DailyEntry> = loadRangeResult.values.toList()
+
         override suspend fun saveEntry(entry: DailyEntry) = Unit
 
         override suspend fun deleteEntry(date: LocalDate) = Unit
+
+        override suspend fun replaceAll(entries: List<DailyEntry>) = Unit
 
         override suspend fun syncActivitiesWithDefinition(
             previousExtCode: String,
@@ -85,6 +95,9 @@ class ExportMonthRangeReportUseCaseTest {
         var exportedRange: MonthRange? = null
         var exportedEntries: List<DailyEntry> = emptyList()
         var exportUserFullName: String? = null
+        var exportOfficeName: String? = null
+        var exportEmployeeId: String? = null
+        var exportPersonId: String? = null
 
         override suspend fun exportMonth(
             month: CalendarMonth,
@@ -92,6 +105,9 @@ class ExportMonthRangeReportUseCaseTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportMonth should not be called in this test")
@@ -102,6 +118,9 @@ class ExportMonthRangeReportUseCaseTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportDateRange should not be called in this test")
@@ -112,12 +131,18 @@ class ExportMonthRangeReportUseCaseTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument {
             exportedRange = range
             exportedEntries = entries
             this.exportUserFullName = exportUserFullName
+            this.exportOfficeName = exportOfficeName
+            this.exportEmployeeId = exportEmployeeId
+            this.exportPersonId = exportPersonId
             return ExportDocument(
                 fileName = "months.csv",
                 mimeType = format.mimeType,

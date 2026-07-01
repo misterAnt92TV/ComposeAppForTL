@@ -20,6 +20,9 @@ class ExportMonthReportUseCase(
         language: AppLanguage,
         filter: ExportActivityTypeFilter = ExportActivityTypeFilter(),
         exportUserFullName: String? = null,
+        exportOfficeName: String? = null,
+        exportEmployeeId: String? = null,
+        exportPersonId: String? = null,
         brandingLogoBase64: String? = null,
         pdfExportStyle: PdfExportStyle = PdfExportStyle.RETRO,
     ): ExportDocument = exporter.exportMonth(
@@ -28,6 +31,9 @@ class ExportMonthReportUseCase(
         format = format,
         language = language,
         exportUserFullName = exportUserFullName,
+        exportOfficeName = exportOfficeName,
+        exportEmployeeId = exportEmployeeId,
+        exportPersonId = exportPersonId,
         brandingLogoBase64 = brandingLogoBase64,
         pdfExportStyle = pdfExportStyle,
     )

@@ -37,6 +37,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -192,8 +193,45 @@ class TimesheetControllerTest {
         assertEquals(listOf(activity), repository.entries[sourceDate]?.activities)
     }
 
+    @Test
+    fun exportDocumentPassesAdditionalExportMetadata() = runTest {
+        val repository = FakeTimesheetRepository()
+        val exporter = RecordingTimesheetExporter()
+        val controller = createController(
+            repository = repository,
+            monthExporter = exporter,
+            monthRangeExporter = FakeTimesheetExporter(),
+        )
+        var exportedDocument: ExportDocument? = null
+        var failed = false
+
+        advanceUntilIdle()
+
+        controller.exportDocument(
+            language = AppLanguage.ITALIAN,
+            format = ExportFormat.CSV,
+            exportUserFullName = "Mario Rossi",
+            exportOfficeName = "Sede Milano",
+            exportEmployeeId = "EMP-123",
+            exportPersonId = "P-456",
+            onSuccess = { exportedDocument = it },
+            onFailure = { failed = true },
+        )
+
+        advanceUntilIdle()
+
+        assertFalse(failed)
+        assertEquals("Mario Rossi", exporter.exportUserFullName)
+        assertEquals("Sede Milano", exporter.exportOfficeName)
+        assertEquals("EMP-123", exporter.exportEmployeeId)
+        assertEquals("P-456", exporter.exportPersonId)
+        assertEquals("month.csv", exportedDocument?.fileName)
+    }
+
     private fun TestScope.createController(
         repository: FakeTimesheetRepository,
+        monthExporter: TimesheetExporter = FakeTimesheetExporter(),
+        monthRangeExporter: TimesheetExporter = FakeTimesheetExporter(),
     ): TimesheetController {
         val dispatcher = StandardTestDispatcher(testScheduler)
         val filterExportEntries = FilterExportEntriesUseCase()
@@ -206,8 +244,8 @@ class TimesheetControllerTest {
             saveDateRangeEntries = SaveDateRangeEntriesUseCase(
                 saveDailyEntry = SaveDailyEntryUseCase(repository),
             ),
-            exportMonthReport = ExportMonthReportUseCase(FakeTimesheetExporter(), filterExportEntries),
-            exportMonthRangeReport = ExportMonthRangeReportUseCase(repository, FakeTimesheetExporter(), filterExportEntries),
+            exportMonthReport = ExportMonthReportUseCase(monthExporter, filterExportEntries),
+            exportMonthRangeReport = ExportMonthRangeReportUseCase(repository, monthRangeExporter, filterExportEntries),
             createDateRange = CreateDateRangeUseCase(),
             createMonthRange = CreateMonthRangeUseCase(),
             dispatcherProvider = TestDispatcherProvider(dispatcher),
@@ -224,12 +262,21 @@ class TimesheetControllerTest {
         override suspend fun loadRange(range: DateRange): Map<LocalDate, DailyEntry> =
             entries.filterKeys(range::contains)
 
+        override suspend fun loadAll(): List<DailyEntry> = entries.values.toList()
+
         override suspend fun saveEntry(entry: DailyEntry) {
             entries[entry.date] = entry
         }
 
         override suspend fun deleteEntry(date: LocalDate) {
             entries.remove(date)
+        }
+
+        override suspend fun replaceAll(entries: List<DailyEntry>) {
+            this.entries.clear()
+            entries.forEach { entry ->
+                this.entries[entry.date] = entry
+            }
         }
 
         override suspend fun syncActivitiesWithDefinition(
@@ -245,6 +292,9 @@ class TimesheetControllerTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = ExportDocument("month.${format.extension}", format.mimeType, byteArrayOf())
@@ -255,6 +305,9 @@ class TimesheetControllerTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = ExportDocument("range.${format.extension}", format.mimeType, byteArrayOf())
@@ -265,8 +318,63 @@ class TimesheetControllerTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = ExportDocument("months.${format.extension}", format.mimeType, byteArrayOf())
+    }
+
+    private class RecordingTimesheetExporter : TimesheetExporter {
+        var exportUserFullName: String? = null
+        var exportOfficeName: String? = null
+        var exportEmployeeId: String? = null
+        var exportPersonId: String? = null
+
+        override suspend fun exportMonth(
+            month: CalendarMonth,
+            entries: List<DailyEntry>,
+            format: ExportFormat,
+            language: AppLanguage,
+            exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
+            brandingLogoBase64: String?,
+            pdfExportStyle: PdfExportStyle,
+        ): ExportDocument {
+            this.exportUserFullName = exportUserFullName
+            this.exportOfficeName = exportOfficeName
+            this.exportEmployeeId = exportEmployeeId
+            this.exportPersonId = exportPersonId
+            return ExportDocument("month.csv", format.mimeType, byteArrayOf())
+        }
+
+        override suspend fun exportDateRange(
+            range: DateRange,
+            entries: List<DailyEntry>,
+            format: ExportFormat,
+            language: AppLanguage,
+            exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
+            brandingLogoBase64: String?,
+            pdfExportStyle: PdfExportStyle,
+        ): ExportDocument = error("exportDateRange should not be called in this test")
+
+        override suspend fun exportMonthRange(
+            range: MonthRange,
+            entries: List<DailyEntry>,
+            format: ExportFormat,
+            language: AppLanguage,
+            exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
+            brandingLogoBase64: String?,
+            pdfExportStyle: PdfExportStyle,
+        ): ExportDocument = error("exportMonthRange should not be called in this test")
     }
 }

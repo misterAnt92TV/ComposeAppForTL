@@ -18,12 +18,22 @@ interface BrandLogoPickerLauncher {
     fun pickImage(onImagePicked: (ByteArray?) -> Unit)
 }
 
+data class JsonFileSelection(
+    val fileName: String,
+    val bytes: ByteArray,
+)
+
+interface JsonFilePickerLauncher {
+    fun pickFile(onFilePicked: (JsonFileSelection?) -> Unit)
+}
+
 data class PlatformServices(
     val storageDriver: StorageDriver,
     val pdfFontProvider: PdfFontProvider,
     val fileSaveLauncher: FileSaveLauncher,
     val projectIconPickerLauncher: ProjectIconPickerLauncher,
     val brandLogoPickerLauncher: BrandLogoPickerLauncher,
+    val jsonFilePickerLauncher: JsonFilePickerLauncher,
 )
 
 expect @Composable

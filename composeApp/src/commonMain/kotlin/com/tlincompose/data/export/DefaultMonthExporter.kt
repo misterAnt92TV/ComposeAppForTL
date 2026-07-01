@@ -11,6 +11,7 @@ import com.tlincompose.core.exportFileNameUserSegment
 import com.tlincompose.core.exportDocumentTitle
 import com.tlincompose.core.formatDateRange
 import com.tlincompose.core.formatFileDate
+import com.tlincompose.core.normalizeExportMetadataIdentifier
 import com.tlincompose.core.normalizeUserFacingName
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
@@ -45,6 +46,9 @@ class DefaultMonthExporter(
         format: ExportFormat,
         language: AppLanguage,
         exportUserFullName: String?,
+        exportOfficeName: String?,
+        exportEmployeeId: String?,
+        exportPersonId: String?,
         brandingLogoBase64: String?,
         pdfExportStyle: PdfExportStyle,
     ): ExportDocument = withContext(dispatcherProvider.io) {
@@ -62,6 +66,9 @@ class DefaultMonthExporter(
             format = format,
             language = language,
             exportUserFullName = exportUserFullName,
+            exportOfficeName = exportOfficeName,
+            exportEmployeeId = exportEmployeeId,
+            exportPersonId = exportPersonId,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )
@@ -73,6 +80,9 @@ class DefaultMonthExporter(
         format: ExportFormat,
         language: AppLanguage,
         exportUserFullName: String?,
+        exportOfficeName: String?,
+        exportEmployeeId: String?,
+        exportPersonId: String?,
         brandingLogoBase64: String?,
         pdfExportStyle: PdfExportStyle,
     ): ExportDocument = withContext(dispatcherProvider.io) {
@@ -90,6 +100,9 @@ class DefaultMonthExporter(
             format = format,
             language = language,
             exportUserFullName = exportUserFullName,
+            exportOfficeName = exportOfficeName,
+            exportEmployeeId = exportEmployeeId,
+            exportPersonId = exportPersonId,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )
@@ -101,6 +114,9 @@ class DefaultMonthExporter(
         format: ExportFormat,
         language: AppLanguage,
         exportUserFullName: String?,
+        exportOfficeName: String?,
+        exportEmployeeId: String?,
+        exportPersonId: String?,
         brandingLogoBase64: String?,
         pdfExportStyle: PdfExportStyle,
     ): ExportDocument = withContext(dispatcherProvider.io) {
@@ -125,6 +141,9 @@ class DefaultMonthExporter(
             format = format,
             language = language,
             exportUserFullName = exportUserFullName,
+            exportOfficeName = exportOfficeName,
+            exportEmployeeId = exportEmployeeId,
+            exportPersonId = exportPersonId,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )
@@ -138,11 +157,17 @@ class DefaultMonthExporter(
         format: ExportFormat,
         language: AppLanguage,
         exportUserFullName: String?,
+        exportOfficeName: String?,
+        exportEmployeeId: String?,
+        exportPersonId: String?,
         brandingLogoBase64: String?,
         pdfExportStyle: PdfExportStyle,
     ): ExportDocument {
         val orderedEntries = entries.sortedWith(compareBy(LocalDateComparator) { it.date })
         val normalizedExportUserFullName = normalizeUserFacingName(exportUserFullName.orEmpty()).ifBlank { null }
+        val normalizedExportOfficeName = normalizeUserFacingName(exportOfficeName.orEmpty()).ifBlank { null }
+        val normalizedExportEmployeeId = normalizeExportMetadataIdentifier(exportEmployeeId.orEmpty()).ifBlank { null }
+        val normalizedExportPersonId = normalizeExportMetadataIdentifier(exportPersonId.orEmpty()).ifBlank { null }
         val report = ExportReport(
             periodLabel = periodLabel,
             exportedAt = nowProvider(),
@@ -154,6 +179,9 @@ class DefaultMonthExporter(
             ),
             language = language,
             exportUserFullName = normalizedExportUserFullName,
+            exportOfficeName = normalizedExportOfficeName,
+            exportEmployeeId = normalizedExportEmployeeId,
+            exportPersonId = normalizedExportPersonId,
             brandingLogoBase64 = brandingLogoBase64,
             pdfExportStyle = pdfExportStyle,
         )

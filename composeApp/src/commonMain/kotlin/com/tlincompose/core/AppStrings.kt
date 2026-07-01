@@ -23,13 +23,40 @@ sealed class StringKey {
     object TodayLabel : StringKey()
     object WeekStartsMonday : StringKey()
 
+    // --- Sezione "Librerie di terze parti" ---
+    object ThirdPartyLibrariesTitle : StringKey()
+    object ThirdPartyLibrariesDescription : StringKey()
+    data class ThirdPartyLibraryVersion(val version: String) : StringKey()
+    object ThirdPartyLibraryOpenSite : StringKey()
+    data class ThirdPartyLibraryContentDescription(val name: String) : StringKey()
+    // --- Fine sezione ---
+
     // Android save/IO system messages
     object SaveCancelledMessage : StringKey()
     object InvalidDestinationMessage : StringKey()
     object UnableToOpenDestinationFile : StringKey()
     object SaveErrorMessage : StringKey()
     object UnableToReadSelectedImage : StringKey()
+    object UnableToReadSelectedFile : StringKey()
     data class FileSavedMessage(val fileName: String) : StringKey()
+    object BackupJsonTitle : StringKey()
+    object BackupJsonDescription : StringKey()
+    object BackupJsonWarning : StringKey()
+    object BackupJsonExportLabel : StringKey()
+    object BackupJsonImportLabel : StringKey()
+    object BackupJsonExportingLabel : StringKey()
+    object BackupImportingLabel : StringKey()
+    object BackupImportConfirmTitle : StringKey()
+    data class BackupImportConfirmBody(val fileName: String) : StringKey()
+    object BackupImportReplaceLabel : StringKey()
+    object BackupImportSuccessMessage : StringKey()
+    object BackupExportErrorMessage : StringKey()
+    object BackupImportInvalidJsonMessage : StringKey()
+    object BackupImportUnsupportedVersionMessage : StringKey()
+    object BackupImportEmptyContentMessage : StringKey()
+    object BackupImportPersistenceErrorMessage : StringKey()
+    object ChooseBackupFileDialogTitle : StringKey()
+    object JsonFilesLabel : StringKey()
 }
 
 /**
@@ -55,7 +82,34 @@ class AppStrings(val language: AppLanguage) {
         StringKey.UnableToOpenDestinationFile -> unableToOpenDestinationFile
         StringKey.SaveErrorMessage -> saveErrorMessage
         StringKey.UnableToReadSelectedImage -> unableToReadSelectedImage
+        StringKey.UnableToReadSelectedFile -> unableToReadSelectedFile
         is StringKey.FileSavedMessage -> fileSavedMessage(key.fileName)
+        StringKey.BackupJsonTitle -> backupJsonTitle
+        StringKey.BackupJsonDescription -> backupJsonDescription
+        StringKey.BackupJsonWarning -> backupJsonWarning
+        StringKey.BackupJsonExportLabel -> backupJsonExportLabel
+        StringKey.BackupJsonImportLabel -> backupJsonImportLabel
+        StringKey.BackupJsonExportingLabel -> backupJsonExportingLabel
+        StringKey.BackupImportingLabel -> backupImportingLabel
+        StringKey.BackupImportConfirmTitle -> backupImportConfirmTitle
+        is StringKey.BackupImportConfirmBody -> backupImportConfirmBody(key.fileName)
+        StringKey.BackupImportReplaceLabel -> backupImportReplaceLabel
+        StringKey.BackupImportSuccessMessage -> backupImportSuccessMessage
+        StringKey.BackupExportErrorMessage -> backupExportErrorMessage
+        StringKey.BackupImportInvalidJsonMessage -> backupImportInvalidJsonMessage
+        StringKey.BackupImportUnsupportedVersionMessage -> backupImportUnsupportedVersionMessage
+        StringKey.BackupImportEmptyContentMessage -> backupImportEmptyContentMessage
+        StringKey.BackupImportPersistenceErrorMessage -> backupImportPersistenceErrorMessage
+        StringKey.ChooseBackupFileDialogTitle -> chooseBackupFileDialogTitle
+        StringKey.JsonFilesLabel -> jsonFilesLabel
+
+        // --- Sezione "Librerie di terze parti" ---
+        StringKey.ThirdPartyLibrariesTitle -> "Librerie di terze parti utilizzate"
+        StringKey.ThirdPartyLibrariesDescription -> "Di seguito sono elencate le principali librerie di terze parti utilizzate da TLInCompose."
+        is StringKey.ThirdPartyLibraryVersion -> "Versione: ${key.version}"
+        StringKey.ThirdPartyLibraryOpenSite -> "Apri sito"
+        is StringKey.ThirdPartyLibraryContentDescription -> "Pagina ufficiale di ${key.name}"
+        // --- Fine sezione ---
     }
 }
 

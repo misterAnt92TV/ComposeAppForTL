@@ -13,14 +13,17 @@ import com.tlincompose.core.brandingLogoTargetSizeFor
 import com.tlincompose.core.chooseBrandLogoDialogTitle
 import com.tlincompose.core.chooseProjectIconDialogTitle
 import com.tlincompose.core.computeBrandingLogoRenderSize
+import com.tlincompose.core.chooseBackupFileDialogTitle
 import com.tlincompose.core.exportFormatLabel
 import com.tlincompose.core.exportSaveDialogTitle
 import com.tlincompose.core.fileSavedMessage
 import com.tlincompose.core.imageFilesLabel
 import com.tlincompose.core.isSvgImageBytes
+import com.tlincompose.core.jsonFilesLabel
 import com.tlincompose.core.parseSvgViewportSize
 import com.tlincompose.core.saveCancelledMessage
 import com.tlincompose.core.saveErrorMessage
+import com.tlincompose.core.unableToReadSelectedFile
 import com.tlincompose.core.unableToReadSelectedImage
 import com.tlincompose.data.export.PdfFontProvider
 import com.tlincompose.data.export.PdfFontResource
@@ -130,6 +133,32 @@ actual fun rememberPlatformServices(
             }
         }
     }
+    val jsonFilePickerLauncher = remember(onMessage, strings) {
+        object : JsonFilePickerLauncher {
+            override fun pickFile(onFilePicked: (JsonFileSelection?) -> Unit) {
+                val chooser = JFileChooser().apply {
+                    dialogTitle = strings.chooseBackupFileDialogTitle
+                    fileFilter = FileNameExtensionFilter(strings.jsonFilesLabel, "json")
+                }
+                val result = chooser.showOpenDialog(null)
+                if (result != JFileChooser.APPROVE_OPTION) {
+                    onFilePicked(null)
+                    return
+                }
+                runCatching {
+                    JsonFileSelection(
+                        fileName = chooser.selectedFile.name,
+                        bytes = chooser.selectedFile.readBytes(),
+                    )
+                }.onSuccess {
+                    onFilePicked(it)
+                }.onFailure {
+                    onMessage(strings.unableToReadSelectedFile)
+                    onFilePicked(null)
+                }
+            }
+        }
+    }
 
     return PlatformServices(
         storageDriver = storageDriver,
@@ -137,6 +166,7 @@ actual fun rememberPlatformServices(
         fileSaveLauncher = fileSaveLauncher,
         projectIconPickerLauncher = projectIconPickerLauncher,
         brandLogoPickerLauncher = brandLogoPickerLauncher,
+        jsonFilePickerLauncher = jsonFilePickerLauncher,
     )
 }
 

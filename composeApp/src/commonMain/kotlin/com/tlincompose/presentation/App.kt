@@ -25,6 +25,7 @@ import com.tlincompose.core.di.appModules
 import com.tlincompose.core.invalidBrandingLogoMessage
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsController
+import com.tlincompose.presentation.accessibility.SettingsBackupController
 import com.tlincompose.presentation.catalog.ActivityCatalogController
 import com.tlincompose.presentation.layout.appBackgroundBrush
 import com.tlincompose.presentation.screen.TimesheetScreen
@@ -59,13 +60,15 @@ fun App() {
         val controller = koinInject<TimesheetController>()
         val accessibilityController = koinInject<AccessibilitySettingsController>()
         val activityCatalogController = koinInject<ActivityCatalogController>()
+        val settingsBackupController = koinInject<SettingsBackupController>()
         val appLogger = koinInject<Logger>()
 
-        DisposableEffect(controller, accessibilityController, activityCatalogController) {
+        DisposableEffect(controller, accessibilityController, activityCatalogController, settingsBackupController) {
             onDispose {
                 controller.dispose()
                 accessibilityController.dispose()
                 activityCatalogController.dispose()
+                settingsBackupController.dispose()
             }
         }
 
@@ -97,6 +100,7 @@ fun App() {
                         TimesheetScreen(
                             controller = controller,
                             activityCatalogController = activityCatalogController,
+                            settingsBackupController = settingsBackupController,
                             accessibilityState = accessibilityController.uiState,
                             onThemeModeChanged = accessibilityController::updateThemeMode,
                             onTextScaleChanged = accessibilityController::updateTextScale,
@@ -106,10 +110,14 @@ fun App() {
                             onLanguageChanged = accessibilityController::updateLanguage,
                             onStandardWorkdayChanged = accessibilityController::updateStandardWorkdayMinutes,
                             onExportUserFullNameChanged = accessibilityController::updateExportUserFullName,
+                            onExportOfficeNameChanged = accessibilityController::updateExportOfficeName,
+                            onExportEmployeeIdChanged = accessibilityController::updateExportEmployeeId,
+                            onExportPersonIdChanged = accessibilityController::updateExportPersonId,
                             onPdfExportStyleChanged = accessibilityController::updatePdfExportStyle,
                             fileSaveLauncher = platformServices.fileSaveLauncher,
                             brandLogoPickerLauncher = platformServices.brandLogoPickerLauncher,
                             projectIconPickerLauncher = platformServices.projectIconPickerLauncher,
+                            jsonFilePickerLauncher = platformServices.jsonFilePickerLauncher,
                             onPickBrandingLogo = { imageBytes ->
                                 accessibilityController.updateBrandingLogo(
                                     imageBytes = imageBytes,
@@ -126,6 +134,11 @@ fun App() {
                                 )
                             },
                             onClearBrandingLogo = accessibilityController::clearBrandingLogo,
+                            onRefreshAfterBackupImport = {
+                                accessibilityController.reload()
+                                activityCatalogController.refresh()
+                                controller.refreshCurrentMonth()
+                            },
                             showMessage = showMessage,
                             modifier = Modifier
                                 .fillMaxSize()

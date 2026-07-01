@@ -2,6 +2,7 @@ package com.tlincompose.data.export
 
 import com.tlincompose.domain.model.AppLanguage
 import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
 import java.io.ByteArrayInputStream
 import java.util.zip.ZipInputStream
 import kotlin.io.encoding.Base64
@@ -50,12 +51,78 @@ class DesktopSpreadsheetEncoderTest {
         assertFalse("xl/drawings/drawing1.xml" in entries)
     }
 
+    @Test
+    fun xlsxAddsStylesAndMergedTitleForStyledLayouts() {
+        val bytes = buildXlsx(
+            report = ExportReport(
+                periodLabel = "Maggio 2026",
+                exportedAt = Instant.parse("2026-05-20T14:35:00Z"),
+                rows = listOf(
+                    ExportRow(
+                        activityCode = "EXT-0001",
+                        activityTitle = "Attività Demo",
+                        typeLabel = "Project",
+                        periods = listOf(ExportPeriod(LocalDate(2026, 5, 5), LocalDate(2026, 5, 6))),
+                        hoursPerDayLabel = "8",
+                        days = 2,
+                        totalMinutes = 960,
+                    ),
+                ),
+                summary = ExportSummary(2, 1, 960),
+                language = AppLanguage.ITALIAN,
+            ),
+            title = "Export",
+        )
+
+        val entries = zipEntries(bytes)
+        val sheetXml = zipEntryText(bytes, "xl/worksheets/sheet1.xml")
+        assertTrue("xl/styles.xml" in entries)
+        assertTrue(sheetXml.contains("mergeCell ref=\"A1:G1\""))
+        assertTrue(sheetXml.contains("state=\"frozen\""))
+    }
+
+    @Test
+    fun xlsxDetailStyleUsesBlockLayout() {
+        val bytes = buildXlsx(
+            report = ExportReport(
+                periodLabel = "Maggio 2026",
+                exportedAt = Instant.parse("2026-05-20T14:35:00Z"),
+                rows = listOf(
+                    ExportRow(
+                        activityCode = "EXT-0001",
+                        activityTitle = "Attività Demo",
+                        typeLabel = "Project",
+                        periods = listOf(ExportPeriod(LocalDate(2026, 5, 5), LocalDate(2026, 5, 6))),
+                        hoursPerDayLabel = "8",
+                        days = 2,
+                        totalMinutes = 960,
+                    ),
+                ),
+                summary = ExportSummary(2, 1, 960),
+                language = AppLanguage.ITALIAN,
+                pdfExportStyle = com.tlincompose.domain.model.PdfExportStyle.DETAIL_BLOCKS,
+            ),
+            title = "Export",
+        )
+
+        val sheetXml = zipEntryText(bytes, "xl/worksheets/sheet1.xml")
+        assertTrue(sheetXml.contains("EXT-0001 - Attività Demo"))
+        assertFalse(sheetXml.contains("Codice attività"))
+    }
+
     private fun zipEntries(bytes: ByteArray): Set<String> = buildSet {
         ZipInputStream(ByteArrayInputStream(bytes)).use { input ->
             generateSequence { input.nextEntry }
                 .forEach { add(it.name) }
         }
     }
+
+    private fun zipEntryText(bytes: ByteArray, entryName: String): String =
+        ZipInputStream(ByteArrayInputStream(bytes)).use { input ->
+            generateSequence { input.nextEntry }
+                .first { it.name == entryName }
+            input.readBytes().decodeToString()
+        }
 }
 
 private fun minimalJpegBytes(width: Int, height: Int): ByteArray = byteArrayOf(

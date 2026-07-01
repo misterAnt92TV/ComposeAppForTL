@@ -32,6 +32,9 @@ class AccessibilitySettingsControllerTest {
                 language = AppLanguage.ITALIAN,
                 standardWorkdayMinutes = 450,
                 exportUserFullName = "Mario Rossi",
+                exportOfficeName = "Sede Torino",
+                exportEmployeeId = " EMP-001 ",
+                exportPersonId = " P-777 ",
                 brandingLogoBase64 = "AQID",
                 pdfExportStyle = PdfExportStyle.SIMPLE_TABLE,
             ),
@@ -52,6 +55,9 @@ class AccessibilitySettingsControllerTest {
         assertEquals(AppLanguage.ITALIAN, controller.uiState.language)
         assertEquals(450, controller.uiState.standardWorkdayMinutes)
         assertEquals("Mario Rossi", controller.uiState.exportUserFullName)
+        assertEquals("Sede Torino", controller.uiState.exportOfficeName)
+        assertEquals(" EMP-001 ", controller.uiState.exportEmployeeId)
+        assertEquals(" P-777 ", controller.uiState.exportPersonId)
         assertEquals("AQID", controller.uiState.brandingLogoBase64)
         assertEquals(PdfExportStyleUiState.SIMPLE_TABLE, controller.uiState.pdfExportStyle)
 
@@ -60,6 +66,9 @@ class AccessibilitySettingsControllerTest {
         controller.updateLanguage(AppLanguage.GERMAN)
         controller.updateStandardWorkdayMinutes(510)
         controller.updateExportUserFullName("  Mario   Rossi  ")
+        controller.updateExportOfficeName("  Sede   Milano   Centro ")
+        controller.updateExportEmployeeId("  EMP-123  ")
+        controller.updateExportPersonId("  P-456  ")
         controller.updatePdfExportStyle(PdfExportStyleUiState.DETAIL_BLOCKS)
         advanceUntilIdle()
 
@@ -76,6 +85,9 @@ class AccessibilitySettingsControllerTest {
                 language = AppLanguage.GERMAN,
                 standardWorkdayMinutes = 510,
                 exportUserFullName = "Mario Rossi",
+                exportOfficeName = "Sede Milano Centro",
+                exportEmployeeId = "EMP-123",
+                exportPersonId = "P-456",
                 brandingLogoBase64 = "AQID",
                 pdfExportStyle = PdfExportStyle.DETAIL_BLOCKS,
             ),
@@ -117,10 +129,19 @@ class AccessibilitySettingsControllerTest {
         assertEquals(PdfExportStyle.COMPACT_LIST, repository.savedPreferences?.pdfExportStyle)
 
         controller.updateExportUserFullName("  Anna   Bianchi ")
+        controller.updateExportOfficeName("  Sede   Roma ")
+        controller.updateExportEmployeeId("  EMP-222 ")
+        controller.updateExportPersonId("  P-333 ")
         advanceUntilIdle()
 
         assertEquals("Anna Bianchi", controller.uiState.exportUserFullName)
         assertEquals("Anna Bianchi", repository.savedPreferences?.exportUserFullName)
+        assertEquals("Sede Roma", controller.uiState.exportOfficeName)
+        assertEquals("Sede Roma", repository.savedPreferences?.exportOfficeName)
+        assertEquals("EMP-222", controller.uiState.exportEmployeeId)
+        assertEquals("EMP-222", repository.savedPreferences?.exportEmployeeId)
+        assertEquals("P-333", controller.uiState.exportPersonId)
+        assertEquals("P-333", repository.savedPreferences?.exportPersonId)
 
         controller.clearBrandingLogo()
         advanceUntilIdle()

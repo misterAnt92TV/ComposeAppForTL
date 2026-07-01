@@ -84,6 +84,10 @@
   - Usa `AppStrings[StringKey.MyKey]` nei composable tramite `LocalAppStrings` CompositionLocal
   - Implementa traduzioni in `AppStringsCompat` o estensioni dedicate per lingua
   - Evita `when(language)` sparsi nei file feature
+- **Informational Item Layout Rule**: per item UI informativi o descrittivi (per esempio librerie di terze parti, metadati, sorgenti, dettagli tecnici), privilegia card/list item full-width o colonne stabili rispetto a chip/flow compatti quando devono mostrare più di una informazione.
+  - Nome, versione, URL e metadati principali devono restare sempre leggibili senza che un bottone o una label accessoria rubi la maggior parte dello spazio orizzontale.
+  - Evita `fillMaxWidth()` su item figli dentro `FlowRow` o layout simili quando questo può alterare la misura del contenuto e comprimere il testo fino a renderlo illeggibile.
+  - Se un item contiene più campi testuali, preferisci stacking verticale del testo e usa CTA secondarie solo se non compromettono la leggibilità delle informazioni principali.
 - Se una schermata cresce, estrai:
   - `UiState` (con `data class` per immutabilità)
   - `UiEvent` o callback mirate

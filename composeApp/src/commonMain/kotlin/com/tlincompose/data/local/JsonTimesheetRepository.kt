@@ -42,6 +42,12 @@ class JsonTimesheetRepository(
         entries
     }
 
+    override suspend fun loadAll(): List<DailyEntry> = withContext(dispatcherProvider.io) {
+        loadAllEntries()
+            .values
+            .sortedWith(compareBy(LocalDateComparator) { it.date })
+    }
+
     override suspend fun saveEntry(entry: DailyEntry) = withContext(dispatcherProvider.io) {
         val allEntries = loadAllEntries()
         allEntries[entry.date] = entry
@@ -54,6 +60,11 @@ class JsonTimesheetRepository(
         allEntries.remove(date)
         persistEntries(allEntries.values)
         log.i { "Eliminato il giorno $date dal timesheet." }
+    }
+
+    override suspend fun replaceAll(entries: List<DailyEntry>) = withContext(dispatcherProvider.io) {
+        persistEntries(entries)
+        log.i { "Timesheet sostituito con ${entries.size} giorni salvati." }
     }
 
     override suspend fun syncActivitiesWithDefinition(

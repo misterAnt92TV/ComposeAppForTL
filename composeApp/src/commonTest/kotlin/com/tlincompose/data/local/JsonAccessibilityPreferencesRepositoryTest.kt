@@ -30,6 +30,9 @@ class JsonAccessibilityPreferencesRepositoryTest {
             language = AppLanguage.SPANISH,
             standardWorkdayMinutes = 540,
             exportUserFullName = "Mario Rossi",
+            exportOfficeName = "Sede Madrid",
+            exportEmployeeId = "EMP-321",
+            exportPersonId = "P-654",
             brandingLogoBase64 = "AQID",
             pdfExportStyle = PdfExportStyle.SIMPLE_TABLE,
         )

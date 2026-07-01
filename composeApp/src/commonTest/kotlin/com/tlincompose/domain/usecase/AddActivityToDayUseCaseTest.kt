@@ -87,6 +87,8 @@ class AddActivityToDayUseCaseTest {
         override suspend fun loadRange(range: DateRange): Map<LocalDate, DailyEntry> =
             entries.filterKeys(range::contains)
 
+        override suspend fun loadAll(): List<DailyEntry> = entries.values.toList()
+
         override suspend fun saveEntry(entry: DailyEntry) {
             entries[entry.date] = entry
             savedEntries += entry
@@ -94,6 +96,13 @@ class AddActivityToDayUseCaseTest {
 
         override suspend fun deleteEntry(date: LocalDate) {
             entries.remove(date)
+        }
+
+        override suspend fun replaceAll(entries: List<DailyEntry>) {
+            this.entries.clear()
+            entries.forEach { entry ->
+                this.entries[entry.date] = entry
+            }
         }
 
         override suspend fun syncActivitiesWithDefinition(

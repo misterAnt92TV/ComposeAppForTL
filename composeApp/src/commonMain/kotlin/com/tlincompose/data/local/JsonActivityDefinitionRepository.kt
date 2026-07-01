@@ -52,6 +52,11 @@ class JsonActivityDefinitionRepository(
         log.i { "Entità $extCode eliminata dal catalogo." }
     }
 
+    override suspend fun replaceAll(definitions: List<ActivityDefinition>) = withContext(dispatcherProvider.io) {
+        persistDefinitions(definitions)
+        log.i { "Catalogo attività sostituito con ${definitions.size} definizioni." }
+    }
+
     private fun loadDefinitionsMap(): MutableMap<String, ActivityDefinition> {
         val raw = storageDriver.read(fileName) ?: return mutableMapOf()
         val decoded = runCatching {

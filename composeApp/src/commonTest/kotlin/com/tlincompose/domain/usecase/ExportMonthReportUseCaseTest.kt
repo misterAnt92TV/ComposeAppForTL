@@ -41,16 +41,25 @@ class ExportMonthReportUseCaseTest {
             language = AppLanguage.ITALIAN,
             filter = ExportActivityTypeFilter(setOf(EntryType.PERMIT)),
             exportUserFullName = "Mario Rossi",
+            exportOfficeName = "Sede Milano",
+            exportEmployeeId = "EMP-123",
+            exportPersonId = "P-456",
         )
 
         assertEquals(listOf(EntryType.PERMIT), exporter.exportedEntries.single().activities.map(Activity::type))
         assertEquals("Mario Rossi", exporter.exportUserFullName)
+        assertEquals("Sede Milano", exporter.exportOfficeName)
+        assertEquals("EMP-123", exporter.exportEmployeeId)
+        assertEquals("P-456", exporter.exportPersonId)
         assertEquals("month.csv", result.fileName)
     }
 
     private class RecordingExporter : TimesheetExporter {
         var exportedEntries: List<DailyEntry> = emptyList()
         var exportUserFullName: String? = null
+        var exportOfficeName: String? = null
+        var exportEmployeeId: String? = null
+        var exportPersonId: String? = null
         var brandingLogoBase64: String? = null
         var pdfExportStyle: PdfExportStyle? = null
 
@@ -60,11 +69,17 @@ class ExportMonthReportUseCaseTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument {
             exportedEntries = entries
             this.exportUserFullName = exportUserFullName
+            this.exportOfficeName = exportOfficeName
+            this.exportEmployeeId = exportEmployeeId
+            this.exportPersonId = exportPersonId
             this.brandingLogoBase64 = brandingLogoBase64
             this.pdfExportStyle = pdfExportStyle
             return ExportDocument("month.csv", format.mimeType, byteArrayOf())
@@ -76,6 +91,9 @@ class ExportMonthReportUseCaseTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportDateRange should not be called in this test")
@@ -86,6 +104,9 @@ class ExportMonthReportUseCaseTest {
             format: ExportFormat,
             language: AppLanguage,
             exportUserFullName: String?,
+            exportOfficeName: String?,
+            exportEmployeeId: String?,
+            exportPersonId: String?,
             brandingLogoBase64: String?,
             pdfExportStyle: PdfExportStyle,
         ): ExportDocument = error("exportMonthRange should not be called in this test")

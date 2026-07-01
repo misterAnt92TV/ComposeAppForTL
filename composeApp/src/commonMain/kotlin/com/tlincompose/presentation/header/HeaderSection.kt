@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
@@ -247,26 +249,65 @@ internal fun HeaderSection(
                     standardWorkdayMinutes = accessibilityState.standardWorkdayMinutes,
                     layoutSpec = layoutSpec,
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    AppActionButton(
-                        text = if (isSelectingRange) strings.cancelRangeSelection else strings.selectExportRange,
-                        onClick = onToggleRangeSelection,
-                        variant = AppButtonVariant.SECONDARY,
-                        minHeight = layoutSpec.buttonMinHeight,
-                        modifier = Modifier.weight(1f),
-                        testTag = "range-selection-button",
-                    )
-                    AppActionButton(
-                        text = if (isSelectingRange) strings.exportSelectedRange else strings.exportVisibleMonth,
-                        onClick = onExport,
-                        enabled = isExportEnabled,
-                        minHeight = layoutSpec.buttonMinHeight,
-                        modifier = Modifier.weight(1f),
-                        testTag = "export-button",
-                    )
+                BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                    val useStackedActions = maxWidth < layoutSpec.wrapActionsBreakpoint
+                    if (useStackedActions) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            AppActionButton(
+                                text = if (isSelectingRange) strings.cancelRangeSelection else strings.selectExportRange,
+                                onClick = onToggleRangeSelection,
+                                variant = AppButtonVariant.SECONDARY,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                minWidth = layoutSpec.buttonPreferredWidth,
+                                modifier = Modifier.fillMaxWidth(),
+                                testTag = "range-selection-button",
+                            )
+                            AppActionButton(
+                                text = if (isSelectingRange) strings.exportSelectedRange else strings.exportVisibleMonth,
+                                onClick = onExport,
+                                enabled = isExportEnabled,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                minWidth = layoutSpec.buttonPreferredWidth,
+                                modifier = Modifier.fillMaxWidth(),
+                                testTag = "export-button",
+                            )
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            AppActionButton(
+                                text = if (isSelectingRange) strings.cancelRangeSelection else strings.selectExportRange,
+                                onClick = onToggleRangeSelection,
+                                variant = AppButtonVariant.SECONDARY,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                minWidth = layoutSpec.buttonPreferredWidth,
+                                maxWidth = 220.dp,
+                                modifier = Modifier.widthIn(
+                                    min = layoutSpec.buttonPreferredWidth,
+                                    max = 220.dp,
+                                ),
+                                testTag = "range-selection-button",
+                            )
+                            AppActionButton(
+                                text = if (isSelectingRange) strings.exportSelectedRange else strings.exportVisibleMonth,
+                                onClick = onExport,
+                                enabled = isExportEnabled,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                minWidth = layoutSpec.buttonPreferredWidth,
+                                maxWidth = 220.dp,
+                                modifier = Modifier.widthIn(
+                                    min = layoutSpec.buttonPreferredWidth,
+                                    max = 220.dp,
+                                ),
+                                testTag = "export-button",
+                            )
+                        }
+                    }
                 }
                 intervalMessage?.let { message ->
                     Surface(
@@ -399,13 +440,15 @@ private fun SettingsToggleButton(
     ) {
         IconButton(
             onClick = onClick,
-            modifier = Modifier.semantics {
-                contentDescription = if (isSettingsVisible) {
-                    strings.closeSettingsLabel
-                } else {
-                    strings.openSettingsLabel
-                }
-            },
+            modifier = Modifier
+                .sizeIn(minWidth = 44.dp, minHeight = 44.dp)
+                .semantics {
+                    contentDescription = if (isSettingsVisible) {
+                        strings.closeSettingsLabel
+                    } else {
+                        strings.openSettingsLabel
+                    }
+                },
         ) {
             Icon(
                 imageVector = Icons.Filled.Settings,

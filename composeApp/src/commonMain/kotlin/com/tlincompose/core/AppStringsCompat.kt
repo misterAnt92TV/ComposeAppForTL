@@ -840,6 +840,221 @@ val AppStrings.exportUserFullNamePlaceholder: String
         AppLanguage.SPANISH -> "Mario Rossi"
     }
 
+val AppStrings.exportMetadataTitle: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Export metadata"
+        AppLanguage.ITALIAN -> "Metadati export"
+        AppLanguage.GERMAN -> "Export-Metadaten"
+        AppLanguage.FRENCH -> "Métadonnées d'export"
+        AppLanguage.SPANISH -> "Metadatos de exportación"
+    }
+
+val AppStrings.exportMetadataDescription: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Add optional details shown only inside exported files."
+        AppLanguage.ITALIAN -> "Aggiungi dati opzionali mostrati solo all'interno dei file esportati."
+        AppLanguage.GERMAN -> "Füge optionale Angaben hinzu, die nur in exportierten Dateien angezeigt werden."
+        AppLanguage.FRENCH -> "Ajoute des informations facultatives affichées uniquement dans les fichiers exportés."
+        AppLanguage.SPANISH -> "Agrega datos opcionales que se muestran solo dentro de los archivos exportados."
+    }
+
+val AppStrings.backupJsonTitle: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "JSON backup"
+        AppLanguage.ITALIAN -> "Backup JSON"
+        AppLanguage.GERMAN -> "JSON-Backup"
+        AppLanguage.FRENCH -> "Sauvegarde JSON"
+        AppLanguage.SPANISH -> "Copia JSON"
+    }
+
+val AppStrings.backupJsonDescription: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Export a lightweight JSON backup with settings, activity catalog, and all saved timesheet days."
+        AppLanguage.ITALIAN -> "Esporta un backup JSON leggero con impostazioni, catalogo attività e tutte le giornate salvate del timesheet."
+        AppLanguage.GERMAN -> "Exportiere ein leichtes JSON-Backup mit Einstellungen, Aktivitätenkatalog und allen gespeicherten Timesheet-Tagen."
+        AppLanguage.FRENCH -> "Exporte une sauvegarde JSON légère avec paramètres, catalogue d'activités et toutes les journées enregistrées du timesheet."
+        AppLanguage.SPANISH -> "Exporta una copia JSON ligera con configuración, catálogo de actividades y todos los días guardados del timesheet."
+    }
+
+val AppStrings.backupJsonWarning: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Import replaces all local settings, activities, and saved days."
+        AppLanguage.ITALIAN -> "L'import sostituisce tutte le impostazioni locali, le attività e le giornate salvate."
+        AppLanguage.GERMAN -> "Der Import ersetzt alle lokalen Einstellungen, Aktivitäten und gespeicherten Tage."
+        AppLanguage.FRENCH -> "L'import remplace tous les paramètres locaux, les activités et les journées enregistrées."
+        AppLanguage.SPANISH -> "La importación sustituye toda la configuración local, las actividades y los días guardados."
+    }
+
+val AppStrings.backupJsonExportLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Export JSON backup"
+        AppLanguage.ITALIAN -> "Esporta backup JSON"
+        AppLanguage.GERMAN -> "JSON-Backup exportieren"
+        AppLanguage.FRENCH -> "Exporter la sauvegarde JSON"
+        AppLanguage.SPANISH -> "Exportar copia JSON"
+    }
+
+val AppStrings.backupJsonImportLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Import JSON backup"
+        AppLanguage.ITALIAN -> "Importa backup JSON"
+        AppLanguage.GERMAN -> "JSON-Backup importieren"
+        AppLanguage.FRENCH -> "Importer la sauvegarde JSON"
+        AppLanguage.SPANISH -> "Importar copia JSON"
+    }
+
+val AppStrings.backupJsonExportingLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Exporting backup..."
+        AppLanguage.ITALIAN -> "Esportazione backup..."
+        AppLanguage.GERMAN -> "Backup wird exportiert..."
+        AppLanguage.FRENCH -> "Export de la sauvegarde..."
+        AppLanguage.SPANISH -> "Exportando copia..."
+    }
+
+val AppStrings.backupImportingLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Importing backup..."
+        AppLanguage.ITALIAN -> "Importazione backup..."
+        AppLanguage.GERMAN -> "Backup wird importiert..."
+        AppLanguage.FRENCH -> "Import de la sauvegarde..."
+        AppLanguage.SPANISH -> "Importando copia..."
+    }
+
+val AppStrings.backupImportConfirmTitle: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Replace local data?"
+        AppLanguage.ITALIAN -> "Sostituire i dati locali?"
+        AppLanguage.GERMAN -> "Lokale Daten ersetzen?"
+        AppLanguage.FRENCH -> "Remplacer les données locales ?"
+        AppLanguage.SPANISH -> "¿Sustituir los datos locales?"
+    }
+
+fun AppStrings.backupImportConfirmBody(fileName: String): String = when (language) {
+    AppLanguage.ENGLISH -> "Importing $fileName will replace all local settings, activities, and saved timesheet days."
+    AppLanguage.ITALIAN -> "Importando $fileName verranno sostituite tutte le impostazioni locali, le attività e le giornate salvate del timesheet."
+    AppLanguage.GERMAN -> "Beim Import von $fileName werden alle lokalen Einstellungen, Aktivitäten und gespeicherten Timesheet-Tage ersetzt."
+    AppLanguage.FRENCH -> "L'import de $fileName remplacera tous les paramètres locaux, les activités et les journées enregistrées du timesheet."
+    AppLanguage.SPANISH -> "Al importar $fileName se sustituirán toda la configuración local, las actividades y los días guardados del timesheet."
+}
+
+val AppStrings.backupImportReplaceLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Import and replace"
+        AppLanguage.ITALIAN -> "Importa e sostituisci"
+        AppLanguage.GERMAN -> "Importieren und ersetzen"
+        AppLanguage.FRENCH -> "Importer et remplacer"
+        AppLanguage.SPANISH -> "Importar y sustituir"
+    }
+
+val AppStrings.backupImportSuccessMessage: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Backup imported successfully."
+        AppLanguage.ITALIAN -> "Backup importato correttamente."
+        AppLanguage.GERMAN -> "Backup erfolgreich importiert."
+        AppLanguage.FRENCH -> "Sauvegarde importée avec succès."
+        AppLanguage.SPANISH -> "Copia importada correctamente."
+    }
+
+val AppStrings.backupExportErrorMessage: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Unable to prepare the JSON backup."
+        AppLanguage.ITALIAN -> "Impossibile preparare il backup JSON."
+        AppLanguage.GERMAN -> "Das JSON-Backup konnte nicht vorbereitet werden."
+        AppLanguage.FRENCH -> "Impossible de préparer la sauvegarde JSON."
+        AppLanguage.SPANISH -> "No se pudo preparar la copia JSON."
+    }
+
+val AppStrings.backupImportInvalidJsonMessage: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "The selected file is not a valid TLInCompose backup."
+        AppLanguage.ITALIAN -> "Il file selezionato non è un backup TLInCompose valido."
+        AppLanguage.GERMAN -> "Die ausgewählte Datei ist kein gültiges TLInCompose-Backup."
+        AppLanguage.FRENCH -> "Le fichier sélectionné n'est pas une sauvegarde TLInCompose valide."
+        AppLanguage.SPANISH -> "El archivo seleccionado no es una copia válida de TLInCompose."
+    }
+
+val AppStrings.backupImportUnsupportedVersionMessage: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "The selected backup version is not supported."
+        AppLanguage.ITALIAN -> "La versione del backup selezionato non è supportata."
+        AppLanguage.GERMAN -> "Die ausgewählte Backup-Version wird nicht unterstützt."
+        AppLanguage.FRENCH -> "La version de la sauvegarde sélectionnée n'est pas prise en charge."
+        AppLanguage.SPANISH -> "La versión de la copia seleccionada no es compatible."
+    }
+
+val AppStrings.backupImportEmptyContentMessage: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "The selected backup file is empty."
+        AppLanguage.ITALIAN -> "Il file di backup selezionato è vuoto."
+        AppLanguage.GERMAN -> "Die ausgewählte Backup-Datei ist leer."
+        AppLanguage.FRENCH -> "Le fichier de sauvegarde sélectionné est vide."
+        AppLanguage.SPANISH -> "El archivo de copia seleccionado está vacío."
+    }
+
+val AppStrings.backupImportPersistenceErrorMessage: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Unable to apply the selected backup to local data."
+        AppLanguage.ITALIAN -> "Impossibile applicare il backup selezionato ai dati locali."
+        AppLanguage.GERMAN -> "Das ausgewählte Backup konnte nicht auf die lokalen Daten angewendet werden."
+        AppLanguage.FRENCH -> "Impossible d'appliquer la sauvegarde sélectionnée aux données locales."
+        AppLanguage.SPANISH -> "No se pudo aplicar la copia seleccionada a los datos locales."
+    }
+
+val AppStrings.exportOfficeNameLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Office name"
+        AppLanguage.ITALIAN -> "Nome sede"
+        AppLanguage.GERMAN -> "Standortname"
+        AppLanguage.FRENCH -> "Nom du site"
+        AppLanguage.SPANISH -> "Nombre de la sede"
+    }
+
+val AppStrings.exportOfficeNamePlaceholder: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Milan HQ"
+        AppLanguage.ITALIAN -> "Sede Milano"
+        AppLanguage.GERMAN -> "Standort Mailand"
+        AppLanguage.FRENCH -> "Site de Milan"
+        AppLanguage.SPANISH -> "Sede de Milán"
+    }
+
+val AppStrings.exportEmployeeIdLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Employee ID"
+        AppLanguage.ITALIAN -> "Dipendente ID"
+        AppLanguage.GERMAN -> "Mitarbeiter-ID"
+        AppLanguage.FRENCH -> "ID employé"
+        AppLanguage.SPANISH -> "ID empleado"
+    }
+
+val AppStrings.exportEmployeeIdPlaceholder: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "EMP-12345"
+        AppLanguage.ITALIAN -> "EMP-12345"
+        AppLanguage.GERMAN -> "EMP-12345"
+        AppLanguage.FRENCH -> "EMP-12345"
+        AppLanguage.SPANISH -> "EMP-12345"
+    }
+
+val AppStrings.exportPersonIdLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Person ID"
+        AppLanguage.ITALIAN -> "Person ID"
+        AppLanguage.GERMAN -> "Personen-ID"
+        AppLanguage.FRENCH -> "ID personne"
+        AppLanguage.SPANISH -> "ID persona"
+    }
+
+val AppStrings.exportPersonIdPlaceholder: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "P-67890"
+        AppLanguage.ITALIAN -> "P-67890"
+        AppLanguage.GERMAN -> "P-67890"
+        AppLanguage.FRENCH -> "P-67890"
+        AppLanguage.SPANISH -> "P-67890"
+    }
+
 val AppStrings.pdfExportStyleTitle: String
     get() = when (language) {
         AppLanguage.ENGLISH -> "PDF export style"
@@ -1029,6 +1244,18 @@ val AppStrings.privacyBody: String
         AppLanguage.FRENCH -> "Aucun compte, analytics, suivi ou envoi cloud n'est requis. Les données restent sur ton appareil jusqu'à un export explicite."
         AppLanguage.SPANISH -> "No se requiere cuenta, analítica, seguimiento ni carga en la nube. Los datos permanecen en tu dispositivo hasta que exportes un archivo de forma explícita."
     }
+
+val AppStrings.thirdPartyLibrariesTitle: String
+    get() = this[StringKey.ThirdPartyLibrariesTitle]
+
+val AppStrings.thirdPartyLibrariesDescription: String
+    get() = this[StringKey.ThirdPartyLibrariesDescription]
+
+fun AppStrings.thirdPartyLibraryContentDescription(name: String): String =
+    this[StringKey.ThirdPartyLibraryContentDescription(name)]
+
+val AppStrings.thirdPartyLibraryOpenSite: String
+    get() = this[StringKey.ThirdPartyLibraryOpenSite]
 
 val AppStrings.highContrastTitle: String
     get() = when (language) {
@@ -1850,6 +2077,33 @@ val AppStrings.imageFilesLabel: String
         AppLanguage.SPANISH -> "Imágenes"
     }
 
+val AppStrings.jsonFilesLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "JSON files"
+        AppLanguage.ITALIAN -> "File JSON"
+        AppLanguage.GERMAN -> "JSON-Dateien"
+        AppLanguage.FRENCH -> "Fichiers JSON"
+        AppLanguage.SPANISH -> "Archivos JSON"
+    }
+
+val AppStrings.chooseBackupFileDialogTitle: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Choose backup file"
+        AppLanguage.ITALIAN -> "Scegli file di backup"
+        AppLanguage.GERMAN -> "Backup-Datei auswählen"
+        AppLanguage.FRENCH -> "Choisir le fichier de sauvegarde"
+        AppLanguage.SPANISH -> "Elegir archivo de copia"
+    }
+
+val AppStrings.unableToReadSelectedFile: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Unable to read the selected file."
+        AppLanguage.ITALIAN -> "Impossibile leggere il file selezionato."
+        AppLanguage.GERMAN -> "Die ausgewählte Datei konnte nicht gelesen werden."
+        AppLanguage.FRENCH -> "Impossible de lire le fichier sélectionné."
+        AppLanguage.SPANISH -> "No se pudo leer el archivo seleccionado."
+    }
+
 val AppStrings.unableToReadSelectedImage: String
     get() = when (language) {
         AppLanguage.ENGLISH -> "Unable to read the selected image."
@@ -1902,6 +2156,33 @@ val AppStrings.exportUserLabel: String
         AppLanguage.GERMAN -> "Benutzer"
         AppLanguage.FRENCH -> "Utilisateur"
         AppLanguage.SPANISH -> "Usuario"
+    }
+
+val AppStrings.exportOfficeLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Office"
+        AppLanguage.ITALIAN -> "Sede"
+        AppLanguage.GERMAN -> "Standort"
+        AppLanguage.FRENCH -> "Site"
+        AppLanguage.SPANISH -> "Sede"
+    }
+
+val AppStrings.exportEmployeeIdMetadataLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Employee ID"
+        AppLanguage.ITALIAN -> "Dipendente ID"
+        AppLanguage.GERMAN -> "Mitarbeiter-ID"
+        AppLanguage.FRENCH -> "ID employé"
+        AppLanguage.SPANISH -> "ID empleado"
+    }
+
+val AppStrings.exportPersonIdMetadataLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Person ID"
+        AppLanguage.ITALIAN -> "Person ID"
+        AppLanguage.GERMAN -> "Personen-ID"
+        AppLanguage.FRENCH -> "ID personne"
+        AppLanguage.SPANISH -> "ID persona"
     }
 
 val AppStrings.exportRecordedDaysLabel: String

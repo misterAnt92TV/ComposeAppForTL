@@ -28,9 +28,13 @@ class LoadMonthEntriesUseCaseTest {
 
         override suspend fun loadRange(range: DateRange): Map<LocalDate, DailyEntry> = emptyMap()
 
+        override suspend fun loadAll(): List<DailyEntry> = loadResult.values.toList()
+
         override suspend fun saveEntry(entry: DailyEntry) = Unit
 
         override suspend fun deleteEntry(date: LocalDate) = Unit
+
+        override suspend fun replaceAll(entries: List<DailyEntry>) = Unit
 
         override suspend fun syncActivitiesWithDefinition(
             previousExtCode: String,

@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import co.touchlab.kermit.Logger
 import com.tlincompose.core.DispatcherProvider
 import com.tlincompose.core.MaxBrandingLogoBytes
+import com.tlincompose.core.normalizeExportMetadataIdentifier
 import com.tlincompose.core.normalizeUserFacingName
 import com.tlincompose.domain.usecase.LoadAccessibilityPreferencesUseCase
 import com.tlincompose.domain.usecase.SaveAccessibilityPreferencesUseCase
@@ -30,21 +31,16 @@ class AccessibilitySettingsController(
         private set
 
     init {
-        scope.launch {
-            runCatching {
-                loadAccessibilityPreferences()
-            }.onSuccess { preferences ->
-                if (hasLocalChanges) return@onSuccess
-                uiState = preferences.toUiState()
-                log.d { "Impostazioni accessibilita caricate correttamente." }
-            }.onFailure {
-                log.w(it) { "Impossibile caricare le impostazioni accessibilita. Uso i valori di default." }
-            }
-        }
+        loadStoredPreferences()
     }
 
     fun dispose() {
         scope.cancel()
+    }
+
+    fun reload() {
+        hasLocalChanges = false
+        loadStoredPreferences()
     }
 
     fun updateTextScale(textScale: AccessibilityTextScaleUiState) {
@@ -77,6 +73,18 @@ class AccessibilitySettingsController(
 
     fun updateExportUserFullName(fullName: String) {
         updatePreferences { copy(exportUserFullName = normalizeUserFacingName(fullName)) }
+    }
+
+    fun updateExportOfficeName(officeName: String) {
+        updatePreferences { copy(exportOfficeName = normalizeUserFacingName(officeName)) }
+    }
+
+    fun updateExportEmployeeId(employeeId: String) {
+        updatePreferences { copy(exportEmployeeId = normalizeExportMetadataIdentifier(employeeId)) }
+    }
+
+    fun updateExportPersonId(personId: String) {
+        updatePreferences { copy(exportPersonId = normalizeExportMetadataIdentifier(personId)) }
     }
 
     fun updatePdfExportStyle(style: PdfExportStyleUiState) {
@@ -116,6 +124,20 @@ class AccessibilitySettingsController(
                 saveAccessibilityPreferences(updatedState.toDomain())
             }.onFailure {
                 log.e(it) { "Impossibile salvare le impostazioni accessibilita." }
+            }
+        }
+    }
+
+    private fun loadStoredPreferences() {
+        scope.launch {
+            runCatching {
+                loadAccessibilityPreferences()
+            }.onSuccess { preferences ->
+                if (hasLocalChanges) return@onSuccess
+                uiState = preferences.toUiState()
+                log.d { "Impostazioni accessibilita caricate correttamente." }
+            }.onFailure {
+                log.w(it) { "Impossibile caricare le impostazioni accessibilita. Uso i valori di default." }
             }
         }
     }
