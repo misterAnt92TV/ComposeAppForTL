@@ -20,9 +20,11 @@ import com.tlincompose.domain.repository.TimesheetRepository
 import com.tlincompose.domain.usecase.AddActivityToDayUseCase
 import com.tlincompose.domain.usecase.BuildCalendarMonthGridUseCase
 import com.tlincompose.domain.usecase.CalculateMonthWorkSummaryUseCase
+import com.tlincompose.domain.usecase.ApplyDefaultExtActivityToMonthUseCase
 import com.tlincompose.domain.usecase.CreateDateRangeUseCase
 import com.tlincompose.domain.usecase.CreateMonthRangeUseCase
 import com.tlincompose.domain.usecase.DeleteActivityDefinitionUseCase
+import com.tlincompose.domain.usecase.EnsureDefaultActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.ExportAppBackupUseCase
 import com.tlincompose.domain.usecase.ExportDateRangeReportUseCase
 import com.tlincompose.domain.usecase.ExportMonthRangeReportUseCase
@@ -115,6 +117,7 @@ private val domainModule = module {
     single { CreateMonthRangeUseCase() }
     single { FilterExportEntriesUseCase() }
     single { DeleteActivityDefinitionUseCase(get()) }
+    single { EnsureDefaultActivityDefinitionsUseCase(get()) }
     single { GenerateNextExtCodeUseCase() }
     single { LoadActivityDefinitionsUseCase(get()) }
     single { LoadAccessibilityPreferencesUseCase(get()) }
@@ -128,6 +131,7 @@ private val domainModule = module {
     single { SaveDailyEntryUseCase(get()) }
     single { AddActivityToDayUseCase(get(), get()) }
     single { SaveDateRangeEntriesUseCase(get()) }
+    single { ApplyDefaultExtActivityToMonthUseCase(get(), get()) }
     single { SyncActivitiesWithDefinitionUseCase(get()) }
     single { ExportMonthReportUseCase(get(), get()) }
     single { ExportDateRangeReportUseCase(get(), get(), get()) }
@@ -161,12 +165,14 @@ private val presentationModule = module {
     }
     factory {
         ActivityCatalogController(
+            ensureDefaultActivityDefinitions = get(),
             loadActivityDefinitions = get(),
             generateNextExtCode = get(),
             validateActivityDefinition = get(),
             saveActivityDefinition = get(),
             syncActivitiesWithDefinition = get(),
             deleteActivityDefinition = get(),
+            applyDefaultExtActivityToMonth = get(),
             dispatcherProvider = get(),
             logger = get(),
         )

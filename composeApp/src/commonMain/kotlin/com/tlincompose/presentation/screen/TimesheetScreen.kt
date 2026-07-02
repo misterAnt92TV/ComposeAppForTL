@@ -30,8 +30,8 @@ import com.tlincompose.core.backupImportUnsupportedVersionMessage
 import com.tlincompose.core.checkDayFieldsBeforeSaving
 import com.tlincompose.core.checkEntityFieldsBeforeSaving
 import com.tlincompose.core.chooseLighterImage
-import com.tlincompose.core.hideActivityCatalog
-import com.tlincompose.core.showActivityCatalog
+import com.tlincompose.core.defaultExtAppliedMessage
+import com.tlincompose.core.defaultExtNothingToApplyMessage
 import com.tlincompose.core.unableToCopyDraggedActivity
 import com.tlincompose.core.unableToDeleteEntity
 import com.tlincompose.core.unableToPrepareExport
@@ -58,8 +58,6 @@ import com.tlincompose.presentation.catalog.ActivityCatalogController
 import com.tlincompose.presentation.catalog.ActivityCatalogSection
 import com.tlincompose.presentation.catalog.ActivityDefinitionEditorDialog
 import com.tlincompose.presentation.catalog.DeleteActivityDefinitionDialog
-import com.tlincompose.presentation.components.AppActionButton
-import com.tlincompose.presentation.components.AppButtonVariant
 import com.tlincompose.presentation.export.ExportDialog
 import com.tlincompose.presentation.header.HeaderSection
 import com.tlincompose.presentation.layout.accessibilityLayoutSpec
@@ -118,7 +116,6 @@ internal fun TimesheetScreen(
                 verticalArrangement = Arrangement.spacedBy(layoutSpec.sectionSpacing),
             ) {
                 HeaderSection(
-                    month = controller.currentMonth,
                     monthSummary = controller.monthSummary,
                     intervalMessage = controller.intervalSelectionMessage,
                     isSelectingRange = controller.rangeSelectionState.isSelecting,
@@ -127,14 +124,15 @@ internal fun TimesheetScreen(
                     brandingLogoBase64 = accessibilityState.brandingLogoBase64,
                     isSettingsVisible = isSettingsVisible,
                     layoutSpec = layoutSpec,
-                    onPreviousMonth = controller::loadPreviousMonth,
-                    onNextMonth = controller::loadNextMonth,
                     onToggleRangeSelection = controller::toggleRangeSelection,
                     onExport = controller::openExportDialog,
                     onToggleSettings = {
                         isSettingsVisible = !isSettingsVisible
                     },
-                    onMonthSelected = { month -> controller.goToMonth(month) }
+                    isActivityCatalogVisible = isActivityCatalogVisible,
+                    onToggleActivityCatalog = {
+                        isActivityCatalogVisible = !isActivityCatalogVisible
+                    },
                 )
                 if (isSettingsVisible) {
                     Box(
@@ -191,21 +189,35 @@ internal fun TimesheetScreen(
                         )
                     }
                 }
-                ActivityCatalogToggleButton(
-                    isVisible = isActivityCatalogVisible,
-                    layoutSpec = layoutSpec,
-                    onClick = {
-                        isActivityCatalogVisible = !isActivityCatalogVisible
-                    },
-                )
                 if (isActivityCatalogVisible) {
                     Box(modifier = Modifier.testTag("activity-catalog-panel")) {
                         ActivityCatalogSection(
                             definitions = activityCatalogController.definitions,
                             layoutSpec = layoutSpec,
                             defaultWorkdayMinutes = accessibilityState.standardWorkdayMinutes,
+                            defaultExtWorkMode = activityCatalogController.defaultExtWorkMode,
+                            isApplyingDefaultExt = activityCatalogController.isApplyingDefaultExt,
                             onCreateDefinition = {
                                 activityCatalogController.openCreateEditor(accessibilityState.standardWorkdayMinutes)
+                            },
+                            onDefaultExtWorkModeChanged = activityCatalogController::updateDefaultExtWorkMode,
+                            onApplyDefaultExt = {
+                                activityCatalogController.applyDefaultExtToCurrentMonth(
+                                    month = controller.currentMonth,
+                                    onSuccess = { appliedDays ->
+                                        controller.refreshCurrentMonth()
+                                        showMessage(
+                                            if (appliedDays > 0) {
+                                                strings.defaultExtAppliedMessage(appliedDays)
+                                            } else {
+                                                strings.defaultExtNothingToApplyMessage
+                                            },
+                                        )
+                                    },
+                                    onFailure = {
+                                        showMessage(strings.unableToSaveEntity)
+                                    },
+                                )
                             },
                             onEditDefinition = activityCatalogController::openEditEditor,
                             onDeleteDefinition = activityCatalogController::requestDelete,
@@ -216,9 +228,13 @@ internal fun TimesheetScreen(
                     }
                 }
                 CalendarSection(
+                    month = controller.currentMonth,
                     grid = controller.monthCells,
                     accessibilityState = accessibilityState,
                     layoutSpec = layoutSpec,
+                    onPreviousMonth = controller::loadPreviousMonth,
+                    onNextMonth = controller::loadNextMonth,
+                    onMonthSelected = controller::goToMonth,
                     onDaySelected = controller::onDayTapped,
                     onDayDragStarted = controller::startDayDragSelection,
                     onDayDragMoved = controller::updateDayDragSelection,
@@ -373,27 +389,4 @@ private fun PdfExportStyleUiState.toDomain(): com.tlincompose.domain.model.PdfEx
     PdfExportStyleUiState.SIMPLE_TABLE -> com.tlincompose.domain.model.PdfExportStyle.SIMPLE_TABLE
     PdfExportStyleUiState.COMPACT_LIST -> com.tlincompose.domain.model.PdfExportStyle.COMPACT_LIST
     PdfExportStyleUiState.DETAIL_BLOCKS -> com.tlincompose.domain.model.PdfExportStyle.DETAIL_BLOCKS
-}
-
-@Composable
-private fun ActivityCatalogToggleButton(
-    isVisible: Boolean,
-    layoutSpec: com.tlincompose.presentation.layout.AccessibilityLayoutSpec,
-    onClick: () -> Unit,
-) {
-    val strings = LocalAppStrings.current
-    AppActionButton(
-        text = if (isVisible) {
-            strings.hideActivityCatalog
-        } else {
-            strings.showActivityCatalog
-        },
-        onClick = onClick,
-        variant = AppButtonVariant.SECONDARY,
-        minHeight = layoutSpec.buttonMinHeight,
-        minWidth = 200.dp,
-        maxWidth = 280.dp,
-        modifier = Modifier
-            .testTag("activity-catalog-toggle-button"),
-    )
 }

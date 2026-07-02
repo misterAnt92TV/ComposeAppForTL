@@ -1,5 +1,6 @@
 package com.tlincompose.presentation.catalog
 
+import com.tlincompose.domain.model.BuiltInActivityDefinitions
 import com.tlincompose.domain.model.DefaultWorkdayMinutes
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ProjectIconPreset
@@ -27,6 +28,10 @@ data class ActivityDefinitionEditorUiState(
 ) {
     val isEditing: Boolean
         get() = mode == ActivityDefinitionEditorMode.EDIT
+
+    val isProtectedDefinition: Boolean
+        get() = originalExtCode?.let(BuiltInActivityDefinitions::isProtectedCode) == true ||
+            BuiltInActivityDefinitions.isProtectedCode(extCode)
 
     val hasProjectCustomIcon: Boolean
         get() = !projectCustomIconBase64.isNullOrBlank()

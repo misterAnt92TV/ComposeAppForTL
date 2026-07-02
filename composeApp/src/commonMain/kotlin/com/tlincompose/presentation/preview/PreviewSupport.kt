@@ -12,10 +12,13 @@ import androidx.compose.ui.unit.dp
 import com.tlincompose.core.AppStrings
 import com.tlincompose.core.activitySummaryLabel
 import com.tlincompose.core.appStrings
+import com.tlincompose.core.defaultExtActivityDescription
+import com.tlincompose.core.defaultExtActivityTitle
 import com.tlincompose.core.entryTypeLabel
 import com.tlincompose.core.holidayName
 import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.AppLanguage
+import com.tlincompose.domain.model.BuiltInActivityDefinitions
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DefaultWorkdayMinutes
 import com.tlincompose.domain.model.EntryType
@@ -115,6 +118,16 @@ internal val previewMonthSummary: MonthSummaryUiState = MonthSummaryUiState(
 
 internal fun previewActivityDefinitions(strings: AppStrings): List<ActivityDefinition> = listOf(
     ActivityDefinition(
+        extCode = BuiltInActivityDefinitions.DefaultExtCode,
+        type = EntryType.PROJECT,
+        title = strings.defaultExtActivityTitle,
+        description = strings.defaultExtActivityDescription,
+        defaultMinutes = 480,
+        createdDate = LocalDate(2026, 5, 1),
+        updatedDate = LocalDate(2026, 5, 20),
+        projectIconPreset = ProjectIconPreset.WORK,
+    ),
+    ActivityDefinition(
         extCode = "TLI-204",
         type = EntryType.PROJECT,
         title = previewProjectTitle(strings),
@@ -133,6 +146,24 @@ internal fun previewActivityDefinitions(strings: AppStrings): List<ActivityDefin
         defaultMinutes = 480,
         createdDate = LocalDate(2026, 1, 10),
         updatedDate = LocalDate(2026, 4, 12),
+    ),
+    ActivityDefinition(
+        extCode = BuiltInActivityDefinitions.BloodDonationCode,
+        type = EntryType.PERMIT,
+        title = "Donazione sangue",
+        description = "Permesso dedicato alla donazione sangue.",
+        defaultMinutes = 480,
+        createdDate = LocalDate(2026, 2, 5),
+        updatedDate = LocalDate(2026, 5, 16),
+    ),
+    ActivityDefinition(
+        extCode = BuiltInActivityDefinitions.MedicalVisitCode,
+        type = EntryType.PERMIT,
+        title = "Visita medica",
+        description = "Permesso per visita medica o accertamenti sanitari.",
+        defaultMinutes = 120,
+        createdDate = LocalDate(2026, 3, 3),
+        updatedDate = LocalDate(2026, 5, 12),
     ),
     ActivityDefinition(
         extCode = "PERM",
@@ -172,14 +203,13 @@ internal fun previewDayEditorState(strings: AppStrings): DayEditorUiState = DayE
 internal fun previewActivityDefinitionEditorState(strings: AppStrings): ActivityDefinitionEditorUiState =
     ActivityDefinitionEditorUiState(
         mode = ActivityDefinitionEditorMode.EDIT,
-        originalExtCode = "TLI-204",
-        extCode = "TLI-204",
+        originalExtCode = BuiltInActivityDefinitions.DefaultExtCode,
+        extCode = BuiltInActivityDefinitions.DefaultExtCode,
         type = EntryType.PROJECT,
-        title = previewProjectTitle(strings),
-        description = previewLightDarkDescription(strings),
+        title = strings.defaultExtActivityTitle,
+        description = strings.defaultExtActivityDescription,
         durationHoursText = "8",
-        projectUrl = previewProjectUrl(strings),
-        projectIconPreset = ProjectIconPreset.CODE,
+        projectIconPreset = ProjectIconPreset.WORK,
     )
 
 internal fun previewCalendarCells(strings: AppStrings): List<MonthCellUiModel> = buildList {

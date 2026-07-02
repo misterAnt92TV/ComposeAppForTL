@@ -32,6 +32,7 @@ import com.tlincompose.presentation.components.AppButtonVariant
 import com.tlincompose.presentation.components.BrandingLogoPreview
 import com.tlincompose.presentation.components.HeaderInfoPill
 import com.tlincompose.presentation.components.StatusPill
+import com.tlincompose.domain.model.DefaultExtWorkMode
 import com.tlincompose.presentation.export.ExportDialog
 import com.tlincompose.presentation.header.HeaderSection
 
@@ -88,7 +89,6 @@ private fun HeaderSectionWithBrandingLogoPreview() {
     ) {
         val strings = LocalAppStrings.current
         HeaderSection(
-            month = previewMonth,
             monthSummary = previewMonthSummary,
             intervalMessage = strings[StringKey.SelectedMonthsReadyMessage("12/05/2026 - 16/05/2026")],
             isSelectingRange = true,
@@ -97,12 +97,11 @@ private fun HeaderSectionWithBrandingLogoPreview() {
             brandingLogoBase64 = state.brandingLogoBase64,
             isSettingsVisible = false,
             layoutSpec = previewLayoutSpec(state),
-            onPreviousMonth = {},
-            onNextMonth = {},
             onToggleRangeSelection = {},
             onExport = {},
             onToggleSettings = {},
-            onMonthSelected = {}
+            isActivityCatalogVisible = true,
+            onToggleActivityCatalog = {},
         )
     }
 }
@@ -117,7 +116,6 @@ private fun HeaderSectionWithoutBrandingLogoPreview() {
     ) {
         val strings = LocalAppStrings.current
         HeaderSection(
-            month = previewMonth,
             monthSummary = previewMonthSummary,
             intervalMessage = strings[StringKey.SelectedMonthsReadyMessage("12/05/2026 - 16/05/2026")],
             isSelectingRange = false,
@@ -126,12 +124,11 @@ private fun HeaderSectionWithoutBrandingLogoPreview() {
             brandingLogoBase64 = null,
             isSettingsVisible = false,
             layoutSpec = previewLayoutSpec(state),
-            onPreviousMonth = {},
-            onNextMonth = {},
             onToggleRangeSelection = {},
             onExport = {},
             onToggleSettings = {},
-            onMonthSelected = {}
+            isActivityCatalogVisible = false,
+            onToggleActivityCatalog = {},
         )
     }
 }
@@ -145,9 +142,13 @@ private fun CalendarSectionPreview() {
     TLInComposePreviewSurface(state = state) {
         val strings = LocalAppStrings.current
         CalendarSection(
+            month = previewMonth,
             grid = previewCalendarCells(strings),
             accessibilityState = state,
             layoutSpec = previewLayoutSpec(state),
+            onPreviousMonth = {},
+            onNextMonth = {},
+            onMonthSelected = {},
             onDaySelected = {},
             onDayDragStarted = {},
             onDayDragMoved = {},
@@ -293,7 +294,11 @@ private fun ActivityCatalogSectionPreview() {
             definitions = previewActivityDefinitions(strings),
             layoutSpec = previewLayoutSpec(state),
             defaultWorkdayMinutes = state.standardWorkdayMinutes,
+            defaultExtWorkMode = DefaultExtWorkMode.OFFICE,
+            isApplyingDefaultExt = false,
             onCreateDefinition = {},
+            onDefaultExtWorkModeChanged = {},
+            onApplyDefaultExt = {},
             onEditDefinition = {},
             onDeleteDefinition = {},
             onClose = {},

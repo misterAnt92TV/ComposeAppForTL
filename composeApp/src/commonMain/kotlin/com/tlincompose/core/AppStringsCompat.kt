@@ -6,6 +6,7 @@ import com.tlincompose.domain.model.ActivityDefinitionFieldError
 import com.tlincompose.domain.model.Activity
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
+import com.tlincompose.domain.model.DefaultExtWorkMode
 import com.tlincompose.domain.model.DailyEntryValidationError
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ExportFormat
@@ -1328,6 +1329,86 @@ fun AppStrings.activityCatalogDescription(defaultHours: String): String = when (
     AppLanguage.SPANISH -> "Gestiona entidades reutilizables para proyecto, vacaciones y permiso. La duración estándar parte de ${defaultHours}h y el fin de semana suele considerarse no laborable."
 }
 
+val AppStrings.defaultExtActivityTitle: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Default EXT activity"
+        AppLanguage.ITALIAN -> "Attività EXT di default"
+        AppLanguage.GERMAN -> "Standard-EXT-Aktivität"
+        AppLanguage.FRENCH -> "Activité EXT par défaut"
+        AppLanguage.SPANISH -> "Actividad EXT predeterminada"
+    }
+
+val AppStrings.defaultExtActivityDescription: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Apply 8 hours on the current month only on working days that still do not contain activities."
+        AppLanguage.ITALIAN -> "Applica 8 ore sul mese corrente solo ai giorni lavorativi che non contengono ancora attività."
+        AppLanguage.GERMAN -> "Wendet 8 Stunden im aktuellen Monat nur auf Arbeitstage an, die noch keine Aktivitäten enthalten."
+        AppLanguage.FRENCH -> "Applique 8 heures sur le mois courant uniquement aux jours ouvrés qui ne contiennent pas encore d'activités."
+        AppLanguage.SPANISH -> "Aplica 8 horas en el mes actual solo a los días laborables que aún no contienen actividades."
+    }
+
+val AppStrings.applyDefaultExtToCurrentMonth: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Apply to current month"
+        AppLanguage.ITALIAN -> "Applica al mese corrente"
+        AppLanguage.GERMAN -> "Auf aktuellen Monat anwenden"
+        AppLanguage.FRENCH -> "Appliquer au mois courant"
+        AppLanguage.SPANISH -> "Aplicar al mes actual"
+    }
+
+val AppStrings.applyingDefaultExtToCurrentMonth: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Applying on current month"
+        AppLanguage.ITALIAN -> "Applicazione sul mese corrente"
+        AppLanguage.GERMAN -> "Wird auf aktuellen Monat angewendet"
+        AppLanguage.FRENCH -> "Application au mois courant"
+        AppLanguage.SPANISH -> "Aplicando al mes actual"
+    }
+
+val AppStrings.defaultExtWorkModeLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Working mode"
+        AppLanguage.ITALIAN -> "Modalità di lavoro"
+        AppLanguage.GERMAN -> "Arbeitsmodus"
+        AppLanguage.FRENCH -> "Mode de travail"
+        AppLanguage.SPANISH -> "Modo de trabajo"
+    }
+
+fun AppStrings.defaultExtWorkModeLabel(workMode: DefaultExtWorkMode): String = when (workMode) {
+    DefaultExtWorkMode.SMART_WORKING -> when (language) {
+        AppLanguage.ENGLISH -> "Smart working"
+        AppLanguage.ITALIAN -> "Smart working"
+        AppLanguage.GERMAN -> "Homeoffice"
+        AppLanguage.FRENCH -> "Télétravail"
+        AppLanguage.SPANISH -> "Teletrabajo"
+    }
+
+    DefaultExtWorkMode.OFFICE -> when (language) {
+        AppLanguage.ENGLISH -> "Office"
+        AppLanguage.ITALIAN -> "Ufficio"
+        AppLanguage.GERMAN -> "Büro"
+        AppLanguage.FRENCH -> "Bureau"
+        AppLanguage.SPANISH -> "Oficina"
+    }
+}
+
+fun AppStrings.defaultExtAppliedMessage(appliedDays: Int): String = when (language) {
+    AppLanguage.ENGLISH -> "Default EXT activity applied on $appliedDays working days."
+    AppLanguage.ITALIAN -> "Attività EXT di default applicata su $appliedDays giorni lavorativi."
+    AppLanguage.GERMAN -> "Standard-EXT-Aktivität auf $appliedDays Arbeitstage angewendet."
+    AppLanguage.FRENCH -> "Activité EXT par défaut appliquée sur $appliedDays jours ouvrés."
+    AppLanguage.SPANISH -> "Actividad EXT predeterminada aplicada en $appliedDays días laborables."
+}
+
+val AppStrings.defaultExtNothingToApplyMessage: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "No empty working days were found in the current month."
+        AppLanguage.ITALIAN -> "Nel mese corrente non ci sono giorni lavorativi vuoti da completare."
+        AppLanguage.GERMAN -> "Im aktuellen Monat wurden keine leeren Arbeitstage gefunden."
+        AppLanguage.FRENCH -> "Aucun jour ouvré vide n'a été trouvé dans le mois courant."
+        AppLanguage.SPANISH -> "No se encontraron días laborables vacíos en el mes actual."
+    }
+
 val AppStrings.newExtEntity: String
     get() = when (language) {
         AppLanguage.ENGLISH -> "New EXT entity"
@@ -1660,6 +1741,24 @@ val AppStrings.extCodeLabel: String
         AppLanguage.GERMAN -> "EXT-Code"
         AppLanguage.FRENCH -> "Code EXT"
         AppLanguage.SPANISH -> "Código EXT"
+    }
+
+val AppStrings.protectedExtCodeHelp: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "This built-in code is protected and cannot be changed."
+        AppLanguage.ITALIAN -> "Questo codice predefinito è protetto e non può essere modificato."
+        AppLanguage.GERMAN -> "Dieser vordefinierte Code ist geschützt und kann nicht geändert werden."
+        AppLanguage.FRENCH -> "Ce code prédéfini est protégé et ne peut pas être modifié."
+        AppLanguage.SPANISH -> "Este código predefinido está protegido y no se puede modificar."
+    }
+
+val AppStrings.protectedEntryTypeHelp: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "The type of this built-in activity is fixed."
+        AppLanguage.ITALIAN -> "Il tipo di questa attività predefinita è fisso."
+        AppLanguage.GERMAN -> "Der Typ dieser Standardaktivität ist festgelegt."
+        AppLanguage.FRENCH -> "Le type de cette activité prédéfinie est fixe."
+        AppLanguage.SPANISH -> "El tipo de esta actividad predefinida es fijo."
     }
 
 val AppStrings.titleFieldLabel: String

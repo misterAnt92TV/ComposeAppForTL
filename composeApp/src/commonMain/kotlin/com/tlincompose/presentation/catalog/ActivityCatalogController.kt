@@ -9,9 +9,14 @@ import com.tlincompose.core.message
 import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.ActivityDefinitionDraftInput
 import com.tlincompose.domain.model.AppLanguage
+import com.tlincompose.domain.model.BuiltInActivityDefinitions
+import com.tlincompose.domain.model.CalendarMonth
+import com.tlincompose.domain.model.DefaultExtWorkMode
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ProjectIconPreset
+import com.tlincompose.domain.usecase.ApplyDefaultExtActivityToMonthUseCase
 import com.tlincompose.domain.usecase.DeleteActivityDefinitionUseCase
+import com.tlincompose.domain.usecase.EnsureDefaultActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.GenerateNextExtCodeUseCase
 import com.tlincompose.domain.usecase.LoadActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.SaveActivityDefinitionUseCase
@@ -25,12 +30,14 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 class ActivityCatalogController(
+    private val ensureDefaultActivityDefinitions: EnsureDefaultActivityDefinitionsUseCase,
     private val loadActivityDefinitions: LoadActivityDefinitionsUseCase,
     private val generateNextExtCode: GenerateNextExtCodeUseCase,
     private val validateActivityDefinition: ValidateActivityDefinitionUseCase,
     private val saveActivityDefinition: SaveActivityDefinitionUseCase,
     private val syncActivitiesWithDefinition: SyncActivitiesWithDefinitionUseCase,
     private val deleteActivityDefinition: DeleteActivityDefinitionUseCase,
+    private val applyDefaultExtActivityToMonth: ApplyDefaultExtActivityToMonthUseCase,
     dispatcherProvider: DispatcherProvider,
     logger: Logger,
 ) {
@@ -49,6 +56,12 @@ class ActivityCatalogController(
         private set
 
     var definitionPendingDelete by mutableStateOf<ActivityDefinition?>(null)
+        private set
+
+    var defaultExtWorkMode by mutableStateOf(DefaultExtWorkMode.OFFICE)
+        private set
+
+    var isApplyingDefaultExt by mutableStateOf(false)
         private set
 
     init {
@@ -91,6 +104,7 @@ class ActivityCatalogController(
     }
 
     fun requestDelete(definition: ActivityDefinition) {
+        if (BuiltInActivityDefinitions.isProtectedCode(definition.extCode)) return
         definitionPendingDelete = definition
     }
 
@@ -99,6 +113,7 @@ class ActivityCatalogController(
     }
 
     fun updateDraftType(type: EntryType) {
+        if (editorState?.isProtectedDefinition == true) return
         updateEditorState {
             if (type == EntryType.PROJECT) {
                 copy(type = type)
@@ -113,6 +128,7 @@ class ActivityCatalogController(
     }
 
     fun updateDraftExtCode(extCode: String) {
+        if (editorState?.isProtectedDefinition == true) return
         updateEditorState { copy(extCode = extCode, extCodeError = null) }
     }
 
@@ -169,6 +185,36 @@ class ActivityCatalogController(
 
     fun updateLanguage(language: AppLanguage) {
         currentLanguage = language
+    }
+
+    fun updateDefaultExtWorkMode(workMode: DefaultExtWorkMode) {
+        defaultExtWorkMode = workMode
+    }
+
+    fun applyDefaultExtToCurrentMonth(
+        month: CalendarMonth,
+        onSuccess: (Int) -> Unit,
+        onFailure: () -> Unit,
+    ) {
+        if (isApplyingDefaultExt) return
+        val defaultDefinition = definitions.firstOrNull { it.extCode == BuiltInActivityDefinitions.DefaultExtCode }
+        isApplyingDefaultExt = true
+        scope.launch {
+            runCatching {
+                applyDefaultExtActivityToMonth(
+                    month = month,
+                    workMode = defaultExtWorkMode,
+                    definition = defaultDefinition,
+                )
+            }.onSuccess { appliedDays ->
+                isApplyingDefaultExt = false
+                onSuccess(appliedDays)
+            }.onFailure {
+                isApplyingDefaultExt = false
+                log.e(it) { "Impossibile applicare l'attività EXT di default al mese ${month.fileStamp}." }
+                onFailure()
+            }
+        }
     }
 
     fun saveEditor(
@@ -254,6 +300,7 @@ class ActivityCatalogController(
     private fun reloadDefinitions() {
         scope.launch {
             val loadedDefinitions = runCatching {
+                ensureDefaultActivityDefinitions()
                 loadActivityDefinitions()
             }.onFailure {
                 log.e(it) { "Impossibile caricare il catalogo EXT." }

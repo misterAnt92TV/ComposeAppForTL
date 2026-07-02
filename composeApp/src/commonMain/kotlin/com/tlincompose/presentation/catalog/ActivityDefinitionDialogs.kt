@@ -44,6 +44,8 @@ import com.tlincompose.core.projectIconDescription
 import com.tlincompose.core.projectIconTitle
 import com.tlincompose.core.projectUrlLabel
 import com.tlincompose.core.projectUrlPlaceholder
+import com.tlincompose.core.protectedEntryTypeHelp
+import com.tlincompose.core.protectedExtCodeHelp
 import com.tlincompose.core.removeIconLabel
 import com.tlincompose.core.saveEntityLabel
 import com.tlincompose.core.titleFieldLabel
@@ -108,10 +110,22 @@ internal fun ActivityDefinitionEditorDialog(
                     EntryType.entries.forEach { type ->
                         FilterChip(
                             selected = state.type == type,
-                            onClick = { onTypeChanged(type) },
+                            onClick = {
+                                if (!state.isProtectedDefinition) {
+                                    onTypeChanged(type)
+                                }
+                            },
+                            enabled = !state.isProtectedDefinition,
                             label = { Text(type.displayName(strings.language)) },
                         )
                     }
+                }
+                if (state.isProtectedDefinition) {
+                    Text(
+                        text = strings.protectedEntryTypeHelp,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 OutlinedTextField(
                     value = state.extCode,
@@ -119,8 +133,16 @@ internal fun ActivityDefinitionEditorDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text(strings.extCodeLabel) },
                     isError = state.extCodeError != null,
+                    enabled = !state.isProtectedDefinition,
                     singleLine = true,
                 )
+                if (state.isProtectedDefinition) {
+                    Text(
+                        text = strings.protectedExtCodeHelp,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 state.extCodeError?.let { error ->
                     Text(
                         text = error,

@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -95,6 +98,7 @@ internal fun SettingsBackupSection(
                     modifier = Modifier
                         .widthIn(min = 180.dp)
                         .testTag("export-backup-button"),
+                    leadingIcon = Icons.AutoMirrored.Outlined.ExitToApp,
                 )
                 AppActionButton(
                     text = if (state.isImporting) {
@@ -113,6 +117,7 @@ internal fun SettingsBackupSection(
                     modifier = Modifier
                         .widthIn(min = 180.dp)
                         .testTag("import-backup-button"),
+                    leadingIcon = Icons.Outlined.Code,
                 )
             }
         }

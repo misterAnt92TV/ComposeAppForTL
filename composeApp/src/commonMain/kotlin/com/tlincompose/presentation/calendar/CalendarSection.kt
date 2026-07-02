@@ -17,10 +17,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
@@ -46,24 +51,25 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import com.tlincompose.core.AppStrings
 import com.tlincompose.core.activityCountPhrase
-import com.tlincompose.core.calendarDescription
-import com.tlincompose.core.calendarTitle
 import com.tlincompose.core.compactHours
 import com.tlincompose.core.currentDayPhrase
 import com.tlincompose.core.dayCellDescription
 import com.tlincompose.core.dailyHoursExceededLabel
 import com.tlincompose.core.dailyHoursExceededMessage
+import com.tlincompose.core.displayLabel
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.insideSelectedRangePhrase
 import com.tlincompose.core.moreActivities
+import com.tlincompose.core.nextMonth
 import com.tlincompose.core.openDayDetail
 import com.tlincompose.core.outsideCurrentMonthPhrase
+import com.tlincompose.core.previousMonth
 import com.tlincompose.core.rangeEndPhrase
 import com.tlincompose.core.rangeLabelBoth
 import com.tlincompose.core.rangeLabelEnd
@@ -74,18 +80,24 @@ import com.tlincompose.core.todayLabel
 import com.tlincompose.core.totalHoursPhrase
 import com.tlincompose.core.weekdayLongLabelsMondayFirst
 import com.tlincompose.core.weekdayShortLabelsMondayFirst
+import com.tlincompose.presentation.header.MonthYearPickerDialog
 import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsUiState
 import com.tlincompose.presentation.catalog.ProjectIconAvatar
 import com.tlincompose.presentation.components.StatusPill
 import com.tlincompose.presentation.layout.AccessibilityLayoutSpec
+import com.tlincompose.domain.model.CalendarMonth
 import kotlinx.datetime.LocalDate
 
 @Composable
 internal fun CalendarSection(
+    month: CalendarMonth,
     grid: List<MonthCellUiModel>,
     accessibilityState: AccessibilitySettingsUiState,
     layoutSpec: AccessibilityLayoutSpec,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit,
+    onMonthSelected: (CalendarMonth) -> Unit,
     onDaySelected: (LocalDate) -> Unit,
     onDayDragStarted: (LocalDate) -> Unit,
     onDayDragMoved: (LocalDate) -> Unit,
@@ -98,6 +110,8 @@ internal fun CalendarSection(
 ) {
     val strings = LocalAppStrings.current
     val cellBounds = remember { mutableStateMapOf<LocalDate, Rect>() }
+    val showMonthDialog = remember { mutableStateOf(false) }
+    val selectedMonth = remember(month) { mutableStateOf(month) }
 
     LaunchedEffect(grid) {
         val validDates = grid.map(MonthCellUiModel::date).toSet()
@@ -118,18 +132,12 @@ internal fun CalendarSection(
                 .padding(layoutSpec.contentPadding),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text(
-                text = strings.calendarTitle,
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onSurface,
+            MonthSelectorBar(
+                month = month,
+                onPreviousMonth = onPreviousMonth,
+                onNextMonth = onNextMonth,
+                onOpenPicker = { showMonthDialog.value = true },
             )
-            if (layoutSpec.showSupportingCopy) {
-                Text(
-                    text = strings.calendarDescription,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
             WeekdayHeader()
             Box(
                 modifier = Modifier
@@ -168,6 +176,76 @@ internal fun CalendarSection(
                         }
                     }
                 }
+            }
+            if (showMonthDialog.value) {
+                MonthYearPickerDialog(
+                    initialMonth = selectedMonth.value,
+                    onDismissRequest = { showMonthDialog.value = false },
+                    onMonthYearSelected = { newMonth ->
+                        selectedMonth.value = newMonth
+                        showMonthDialog.value = false
+                        onMonthSelected(newMonth)
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthSelectorBar(
+    month: CalendarMonth,
+    onPreviousMonth: () -> Unit,
+    onNextMonth: () -> Unit,
+    onOpenPicker: () -> Unit,
+) {
+    val strings = LocalAppStrings.current
+    Surface(
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.48f),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            IconButton(
+                onClick = onPreviousMonth,
+                modifier = Modifier
+                    .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                    .testTag("previous-month-icon-button"),
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = strings.previousMonth,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            Text(
+                text = month.displayLabel(strings.language),
+                modifier = Modifier
+                    .clickable(onClick = onOpenPicker)
+                    .padding(horizontal = 12.dp)
+                    .weight(1f),
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+            )
+            IconButton(
+                onClick = onNextMonth,
+                modifier = Modifier
+                    .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                    .testTag("next-month-icon-button"),
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = strings.nextMonth,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                )
             }
         }
     }
