@@ -1,0 +1,107 @@
+{
+  "model": "gpt-4.1",
+  "project_name": "TLInCompose - Testing Agent",
+  "exclude_patterns": [
+    ".git/",
+    "build/",
+    "composeApp/build/",
+    "composeApp/bin/",
+    "*.iml",
+    ".gradle/",
+    ".idea/",
+    "*.class",
+    "*.jar",
+    "*.apk",
+    "*.keystore",
+    "*.DS_Store",
+    "*.log",
+    "local.properties",
+    ".env",
+    "node_modules/",
+    "artwork/icons/generated/",
+    "**/.DS_Store"
+  ],
+  "agents": [
+    {
+      "name": "TLInCompose Testing Agent",
+      "description": "Agente specializzato nella scrittura e manutenzione di unit test per TLInCompose, con uso sistematico di MockK, Turbine per testare Flow/StateFlow/SharedFlow e convenzioni di naming dei test senza backtick.",
+      "testing_stack": {
+        "mocking": "MockK",
+        "coroutines": "kotlinx.coroutines.test (runTest, StandardTestDispatcher, UnconfinedTestDispatcher)",
+        "flow_testing": "Turbine (app.cash.turbine)",
+        "assertions": "kotlin.test (o JUnit) + matcher espliciti"
+      },
+      "conventions": {
+        "test_function_naming": {
+          "rule": "Niente backtick (`) nei nomi dei test.",
+          "style": [
+            "nomeMetodo_condizione_risultatoAtteso",
+            "useCaseScenario_expectedOutcome"
+          ],
+          "examples_valid": [
+            "fun saveDailyEntry_whenInputValid_savesSuccessfully()",
+            "fun loadMonthEntries_withNoData_returnsEmptyList()",
+            "fun exportMonthReport_whenRepositoryFails_emitsErrorState()"
+          ],
+          "examples_invalid": [
+            "fun `save daily entry when input valid saves successfully`()",
+            "fun `export month report fails when repository throws`()"
+          ]
+        },
+        "file_naming": {
+          "rule": "Finire con Test.kt",
+          "examples": [
+            "CalculateMonthWorkSummaryUseCaseTest.kt",
+            "JsonTimesheetRepositoryTest.kt",
+            "TimesheetControllerTest.kt"
+          ]
+        },
+        "arrange_act_assert": [
+          "Organizzare i test in sezioni chiare: arrange / act / assert (con commenti o righe vuote).",
+          "Favorire test piccoli e focalizzati su un singolo comportamento."
+        ]
+      },
+      "mockk_guidelines": [
+        "Usare MockK per mockare repository, datasource, adapter di piattaforma e dipendenze esterne ai use case.",
+        "Preferire constructor injection nei componenti per rendere semplice la sostituzione con mock/fake nei test.",
+        "Usare every { ... } returns ... per definire comportamenti di base.",
+        "Usare coEvery { ... } returns ... per funzioni suspend.",
+        "Usare verify { ... } e coVerify { ... } per verificare le interazioni con i mock.",
+        "Usare clearMocks(...) o un nuovo mock per test per evitare leakage di stato tra test.",
+        "Evitare mocking eccessivo: se una dipendenza può essere un semplice fake in-memory, preferire il fake a un mock complesso."
+      ],
+      "coroutines_and_turbine_guidelines": [
+        "Usare runTest per tutti i test che coinvolgono coroutine.",
+        "Evitare l’uso di GlobalScope nei test e nella produzione.",
+        "Per flussi (Flow/StateFlow/SharedFlow) usare Turbine:",
+        "  - flow.test { ... }",
+        "  - expectMostRecentItem(), awaitItem(), awaitComplete(), ecc.",
+        "Usare DispatcherProvider o astrazione equivalente per iniettare dispatcher di test (es. TestDispatcherProvider in commonTest).",
+        "Verificare scenari di cancellazione, errori e timeout dove ha senso.",
+        "Per StateFlow/SharedFlow, verificare lo stato iniziale e le emissioni successive con Turbine."
+      ],
+      "review_checks": [
+        "Verificare che nessun test usi i backtick nei nomi delle funzioni.",
+        "Verificare che i nomi dei test descrivano chiaramente comportamento/condizione/risultato.",
+        "Verificare che per ogni use case non banale esista almeno un test unitario in commonTest.",
+        "Verificare che per la logica Flow/StateFlow siano presenti test con Turbine.",
+        "Verificare che le dipendenze esterne (repository, exporter, storage) siano mockate con MockK o fornite come fake dedicate.",
+        "Verificare che i test non dipendano da filesystem o rete reali, salvo test esplicitamente marcati come integration/end-to-end.",
+        "Verificare che eventuali dispatcher siano forniti tramite DispatcherProvider e sostituiti con test dispatcher durante i test."
+      ],
+      "preferred_patterns": [
+        "Test per use case con struttura: arrange (mock + input) / act (invoke) / assert (risultato + verify).",
+        "Test di mapper che coprono mapping diretto e edge case (null, valori limiti, default).",
+        "Test di repository con fake in-memory quando la logica di combinazione è significativa.",
+        "Uso di Turbine per verificare stati successivi in controller/state holder che espongono StateFlow."
+      ],
+      "anti_patterns": [
+        "Nomi di test con backtick o poco descrittivi (es. test1, testA).",
+        "Test che dipendono implicitamente da delay reali invece di usare runTest + dispatcher di test.",
+        "MockK usato per tutto anche quando un semplice fake in-memory sarebbe più leggibile e robusto.",
+        "Test che accedono a filesystem reale o rete senza motivazione chiara.",
+        "Test che verificano solo implementazione interna anziché comportamento osservabile (API pubblica)."
+      ]
+    }
+  ]
+}
