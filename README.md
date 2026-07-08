@@ -130,6 +130,21 @@ GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:installDebug
 adb shell am start -n com.tlincompose/.MainActivity
 ```
 
+Build Mac OS DMG:
+
+```bash
+GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:packageDmg
+```
+
+Generated DMG path:
+
+`/home/runner/work/ComposeAppForTL/ComposeAppForTL/composeApp/build/compose/binaries/main/dmg/`
+
+## Developer
+
+- GitHub: [@misterAnt92TV](https://github.com/misterAnt92TV)
+- Email: `simone.formica@emeal.nttdata.com`
+
 ## License
 
 This project is licensed under the **Apache License 2.0**.

@@ -23,6 +23,21 @@
 - Woche beginnt am Montag
 - Aktivitätstypen: `PROJECT`, `VACATION`, `PERMIT`
 
+## DMG-Build für Mac OS
+
+```bash
+GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:packageDmg
+```
+
+Pfad zur erzeugten DMG-Datei:
+
+`/home/runner/work/ComposeAppForTL/ComposeAppForTL/composeApp/build/compose/binaries/main/dmg/`
+
+## Entwickler
+
+- GitHub: [@misterAnt92TV](https://github.com/misterAnt92TV)
+- E-Mail: `simone.formica@emeal.nttdata.com`
+
 ## Lizenz
 
 Veröffentlicht unter der **Apache License 2.0**.
