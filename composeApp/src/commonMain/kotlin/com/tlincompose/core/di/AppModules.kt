@@ -20,9 +20,9 @@ import com.tlincompose.domain.repository.TimesheetRepository
 import com.tlincompose.domain.usecase.AddActivityToDayUseCase
 import com.tlincompose.domain.usecase.BuildCalendarMonthGridUseCase
 import com.tlincompose.domain.usecase.CalculateMonthWorkSummaryUseCase
-import com.tlincompose.domain.usecase.ApplyDefaultExtActivityToMonthUseCase
 import com.tlincompose.domain.usecase.CreateDateRangeUseCase
 import com.tlincompose.domain.usecase.CreateMonthRangeUseCase
+import com.tlincompose.domain.usecase.CoverIncompleteMonthWithActivityUseCase
 import com.tlincompose.domain.usecase.DeleteActivityDefinitionUseCase
 import com.tlincompose.domain.usecase.EnsureDefaultActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.ExportAppBackupUseCase
@@ -130,8 +130,8 @@ private val domainModule = module {
     single { ValidateDailyEntryUseCase() }
     single { SaveDailyEntryUseCase(get()) }
     single { AddActivityToDayUseCase(get(), get()) }
+    single { CoverIncompleteMonthWithActivityUseCase(get()) }
     single { SaveDateRangeEntriesUseCase(get()) }
-    single { ApplyDefaultExtActivityToMonthUseCase(get(), get()) }
     single { SyncActivitiesWithDefinitionUseCase(get()) }
     single { ExportMonthReportUseCase(get(), get()) }
     single { ExportDateRangeReportUseCase(get(), get(), get()) }
@@ -146,6 +146,7 @@ private val presentationModule = module {
             calculateMonthWorkSummary = get(),
             validateDailyEntry = get(),
             addActivityToDay = get(),
+            coverIncompleteMonthWithActivity = get(),
             saveDateRangeEntries = get(),
             exportMonthReport = get(),
             exportMonthRangeReport = get(),
@@ -172,7 +173,6 @@ private val presentationModule = module {
             saveActivityDefinition = get(),
             syncActivitiesWithDefinition = get(),
             deleteActivityDefinition = get(),
-            applyDefaultExtActivityToMonth = get(),
             dispatcherProvider = get(),
             logger = get(),
         )

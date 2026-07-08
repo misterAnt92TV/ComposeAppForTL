@@ -30,10 +30,9 @@ import com.tlincompose.core.backupImportUnsupportedVersionMessage
 import com.tlincompose.core.checkDayFieldsBeforeSaving
 import com.tlincompose.core.checkEntityFieldsBeforeSaving
 import com.tlincompose.core.chooseLighterImage
-import com.tlincompose.core.defaultExtAppliedMessage
-import com.tlincompose.core.defaultExtNothingToApplyMessage
 import com.tlincompose.core.unableToCopyDraggedActivity
 import com.tlincompose.core.unableToDeleteEntity
+import com.tlincompose.core.unableToCoverIncompleteMonth
 import com.tlincompose.core.unableToPrepareExport
 import com.tlincompose.core.unableToSaveEntity
 import com.tlincompose.core.unableToSaveSelectedDay
@@ -97,6 +96,10 @@ internal fun TimesheetScreen(
 
     LaunchedEffect(accessibilityState.standardWorkdayMinutes) {
         controller.updateStandardWorkdayMinutes(accessibilityState.standardWorkdayMinutes)
+    }
+
+    LaunchedEffect(activityCatalogController.definitions) {
+        controller.updateAvailableDefinitions(activityCatalogController.definitions)
     }
 
     Column(
@@ -195,29 +198,8 @@ internal fun TimesheetScreen(
                             definitions = activityCatalogController.definitions,
                             layoutSpec = layoutSpec,
                             defaultWorkdayMinutes = accessibilityState.standardWorkdayMinutes,
-                            defaultExtWorkMode = activityCatalogController.defaultExtWorkMode,
-                            isApplyingDefaultExt = activityCatalogController.isApplyingDefaultExt,
                             onCreateDefinition = {
                                 activityCatalogController.openCreateEditor(accessibilityState.standardWorkdayMinutes)
-                            },
-                            onDefaultExtWorkModeChanged = activityCatalogController::updateDefaultExtWorkMode,
-                            onApplyDefaultExt = {
-                                activityCatalogController.applyDefaultExtToCurrentMonth(
-                                    month = controller.currentMonth,
-                                    onSuccess = { appliedDays ->
-                                        controller.refreshCurrentMonth()
-                                        showMessage(
-                                            if (appliedDays > 0) {
-                                                strings.defaultExtAppliedMessage(appliedDays)
-                                            } else {
-                                                strings.defaultExtNothingToApplyMessage
-                                            },
-                                        )
-                                    },
-                                    onFailure = {
-                                        showMessage(strings.unableToSaveEntity)
-                                    },
-                                )
                             },
                             onEditDefinition = activityCatalogController::openEditEditor,
                             onDeleteDefinition = activityCatalogController::requestDelete,
@@ -275,6 +257,7 @@ internal fun TimesheetScreen(
             onTypeChanged = controller::updateDraftType,
             onDefinitionSelected = controller::updateDraftSelection,
             onHoursChanged = controller::updateDraftHours,
+            onWorkLocationChanged = controller::updateDraftWorkLocation,
             onSave = {
                 controller.saveEditor(
                     language = accessibilityState.language,
@@ -289,6 +272,17 @@ internal fun TimesheetScreen(
                                 strings.unableToSaveSelectedDay
                             },
                         )
+                    },
+                )
+            },
+            onCoverIncompleteMonth = {
+                controller.coverIncompleteMonth(
+                    language = accessibilityState.language,
+                    onValidationError = {
+                        showMessage(strings.checkDayFieldsBeforeSaving)
+                    },
+                    onPersistenceError = {
+                        showMessage(strings.unableToCoverIncompleteMonth)
                     },
                 )
             },

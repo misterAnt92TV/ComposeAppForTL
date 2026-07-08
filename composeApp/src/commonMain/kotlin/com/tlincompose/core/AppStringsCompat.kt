@@ -4,9 +4,9 @@ package com.tlincompose.core
 
 import com.tlincompose.domain.model.ActivityDefinitionFieldError
 import com.tlincompose.domain.model.Activity
+import com.tlincompose.domain.model.ActivityWorkLocation
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
-import com.tlincompose.domain.model.DefaultExtWorkMode
 import com.tlincompose.domain.model.DailyEntryValidationError
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ExportFormat
@@ -27,6 +27,8 @@ fun MonthRange.displayLabel(language: AppLanguage): String =
     }
 
 fun EntryType.displayName(language: AppLanguage): String = appStrings(language).entryTypeLabel(this)
+
+fun ActivityWorkLocation.displayName(language: AppLanguage): String = appStrings(language).activityWorkLocationLabel(this)
 
 fun Activity.displayLabel(language: AppLanguage): String = buildString {
     extCode?.takeIf(String::isNotBlank)?.let {
@@ -193,6 +195,34 @@ fun AppStrings.entryTypeLabel(type: EntryType): String = when (language) {
         EntryType.COURSE -> "Cursos"
         EntryType.VACATION -> "Vacaciones"
         EntryType.PERMIT -> "Permiso"
+    }
+}
+
+fun AppStrings.activityWorkLocationLabel(location: ActivityWorkLocation): String = when (language) {
+    AppLanguage.ENGLISH -> when (location) {
+        ActivityWorkLocation.SMART_WORKING -> "Smart working"
+        ActivityWorkLocation.OFFICE -> "Office"
+        ActivityWorkLocation.CLIENT_SITE -> "Client site"
+    }
+    AppLanguage.ITALIAN -> when (location) {
+        ActivityWorkLocation.SMART_WORKING -> "Smart working"
+        ActivityWorkLocation.OFFICE -> "In sede"
+        ActivityWorkLocation.CLIENT_SITE -> "Dal cliente"
+    }
+    AppLanguage.GERMAN -> when (location) {
+        ActivityWorkLocation.SMART_WORKING -> "Homeoffice"
+        ActivityWorkLocation.OFFICE -> "Im Büro"
+        ActivityWorkLocation.CLIENT_SITE -> "Beim Kunden"
+    }
+    AppLanguage.FRENCH -> when (location) {
+        ActivityWorkLocation.SMART_WORKING -> "Télétravail"
+        ActivityWorkLocation.OFFICE -> "Au bureau"
+        ActivityWorkLocation.CLIENT_SITE -> "Chez le client"
+    }
+    AppLanguage.SPANISH -> when (location) {
+        ActivityWorkLocation.SMART_WORKING -> "Teletrabajo"
+        ActivityWorkLocation.OFFICE -> "En sede"
+        ActivityWorkLocation.CLIENT_SITE -> "En cliente"
     }
 }
 
@@ -724,6 +754,15 @@ val AppStrings.exportTypeFilterRequiredMessage: String
         AppLanguage.SPANISH -> "Selecciona al menos un tipo para habilitar la exportación."
     }
 
+val AppStrings.activityWorkLocationFieldLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Work location"
+        AppLanguage.ITALIAN -> "Svolta in"
+        AppLanguage.GERMAN -> "Arbeitsort"
+        AppLanguage.FRENCH -> "Lieu de travail"
+        AppLanguage.SPANISH -> "Lugar de trabajo"
+    }
+
 val AppStrings.settingsTitle: String
     get() = when (language) {
         AppLanguage.ENGLISH -> "Settings"
@@ -1011,6 +1050,15 @@ val AppStrings.exportOfficeNameLabel: String
         AppLanguage.SPANISH -> "Nombre de la sede"
     }
 
+val AppStrings.exportWorkLocationLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Work location"
+        AppLanguage.ITALIAN -> "Svolta in"
+        AppLanguage.GERMAN -> "Arbeitsort"
+        AppLanguage.FRENCH -> "Lieu de travail"
+        AppLanguage.SPANISH -> "Lugar de trabajo"
+    }
+
 val AppStrings.exportOfficeNamePlaceholder: String
     get() = when (language) {
         AppLanguage.ENGLISH -> "Milan HQ"
@@ -1076,31 +1124,31 @@ val AppStrings.pdfExportStyleDescription: String
 
 fun AppStrings.pdfExportStyleLabel(style: PdfExportStyle): String = when (language) {
     AppLanguage.ENGLISH -> when (style) {
-        PdfExportStyle.RETRO -> "Retro"
+        PdfExportStyle.RETRO -> "Classic table"
         PdfExportStyle.SIMPLE_TABLE -> "Simple table"
         PdfExportStyle.COMPACT_LIST -> "Compact list"
         PdfExportStyle.DETAIL_BLOCKS -> "Detail blocks"
     }
     AppLanguage.ITALIAN -> when (style) {
-        PdfExportStyle.RETRO -> "Retro"
+        PdfExportStyle.RETRO -> "Tabella classica"
         PdfExportStyle.SIMPLE_TABLE -> "Tabella semplice"
         PdfExportStyle.COMPACT_LIST -> "Elenco compatto"
         PdfExportStyle.DETAIL_BLOCKS -> "Blocchi dettaglio"
     }
     AppLanguage.GERMAN -> when (style) {
-        PdfExportStyle.RETRO -> "Retro"
+        PdfExportStyle.RETRO -> "Klassische Tabelle"
         PdfExportStyle.SIMPLE_TABLE -> "Einfache Tabelle"
         PdfExportStyle.COMPACT_LIST -> "Kompakte Liste"
         PdfExportStyle.DETAIL_BLOCKS -> "Detailblöcke"
     }
     AppLanguage.FRENCH -> when (style) {
-        PdfExportStyle.RETRO -> "Retro"
+        PdfExportStyle.RETRO -> "Tableau classique"
         PdfExportStyle.SIMPLE_TABLE -> "Table simple"
         PdfExportStyle.COMPACT_LIST -> "Liste compacte"
         PdfExportStyle.DETAIL_BLOCKS -> "Blocs détail"
     }
     AppLanguage.SPANISH -> when (style) {
-        PdfExportStyle.RETRO -> "Retro"
+        PdfExportStyle.RETRO -> "Tabla clásica"
         PdfExportStyle.SIMPLE_TABLE -> "Tabla simple"
         PdfExportStyle.COMPACT_LIST -> "Lista compacta"
         PdfExportStyle.DETAIL_BLOCKS -> "Bloques detalle"
@@ -1109,32 +1157,32 @@ fun AppStrings.pdfExportStyleLabel(style: PdfExportStyle): String = when (langua
 
 fun AppStrings.pdfExportStyleOptionDescription(style: PdfExportStyle): String = when (language) {
     AppLanguage.ENGLISH -> when (style) {
-        PdfExportStyle.RETRO -> "Keeps the current boxed table with pipes and classic monospace separators."
-        PdfExportStyle.SIMPLE_TABLE -> "Uses a lighter table layout without pipes, with aligned columns and clean separators."
+        PdfExportStyle.RETRO -> "Uses a formal table with aligned columns and a dedicated line for each activity period."
+        PdfExportStyle.SIMPLE_TABLE -> "Uses a lighter aligned table with clean spacing and separate period details."
         PdfExportStyle.COMPACT_LIST -> "Presents each activity as a compact list item with the key values on a few lines."
         PdfExportStyle.DETAIL_BLOCKS -> "Separates each activity into stacked detail blocks for easier reading."
     }
     AppLanguage.ITALIAN -> when (style) {
-        PdfExportStyle.RETRO -> "Mantiene la tabella attuale incorniciata con pipe e separatori monospaziati classici."
-        PdfExportStyle.SIMPLE_TABLE -> "Usa una tabella più leggera senza pipe, con colonne allineate e separatori puliti."
+        PdfExportStyle.RETRO -> "Usa una tabella formale con colonne allineate e una riga dedicata ai periodi di ogni attività."
+        PdfExportStyle.SIMPLE_TABLE -> "Usa una tabella più leggera con spaziatura pulita e dettagli dei periodi separati."
         PdfExportStyle.COMPACT_LIST -> "Presenta ogni attività come elemento compatto con i valori chiave su poche righe."
         PdfExportStyle.DETAIL_BLOCKS -> "Separa ogni attività in blocchi di dettaglio impilati, più facili da leggere."
     }
     AppLanguage.GERMAN -> when (style) {
-        PdfExportStyle.RETRO -> "Behalt die aktuelle eingerahmte Tabelle mit Pipes und klassischen Monospace-Trennern bei."
-        PdfExportStyle.SIMPLE_TABLE -> "Verwendet eine leichtere Tabelle ohne Pipes mit ausgerichteten Spalten."
+        PdfExportStyle.RETRO -> "Verwendet eine formale Tabelle mit ausgerichteten Spalten und einer eigenen Zeile für jeden Zeitraum."
+        PdfExportStyle.SIMPLE_TABLE -> "Verwendet eine leichtere ausgerichtete Tabelle mit sauberem Abstand und separaten Zeitraumdetails."
         PdfExportStyle.COMPACT_LIST -> "Zeigt jede Aktivität als kompakten Listeneintrag mit den wichtigsten Werten."
         PdfExportStyle.DETAIL_BLOCKS -> "Trennt jede Aktivität in gestapelte Detailblöcke für leichteres Lesen."
     }
     AppLanguage.FRENCH -> when (style) {
-        PdfExportStyle.RETRO -> "Conserve le tableau encadré actuel avec des pipes et des séparateurs monospace."
-        PdfExportStyle.SIMPLE_TABLE -> "Utilise un tableau plus léger sans pipes, avec des colonnes alignées."
+        PdfExportStyle.RETRO -> "Utilise un tableau formel avec des colonnes alignées et une ligne dédiée à chaque période."
+        PdfExportStyle.SIMPLE_TABLE -> "Utilise un tableau plus léger, bien espacé, avec les périodes sur une ligne séparée."
         PdfExportStyle.COMPACT_LIST -> "Affiche chaque activité comme une ligne compacte avec les valeurs principales."
         PdfExportStyle.DETAIL_BLOCKS -> "Sépare chaque activité en blocs de détail empilés plus faciles à lire."
     }
     AppLanguage.SPANISH -> when (style) {
-        PdfExportStyle.RETRO -> "Mantiene la tabla actual enmarcada con pipes y separadores monoespaciados clásicos."
-        PdfExportStyle.SIMPLE_TABLE -> "Usa una tabla más ligera sin pipes, con columnas alineadas y separadores limpios."
+        PdfExportStyle.RETRO -> "Usa una tabla formal con columnas alineadas y una línea dedicada a cada periodo de actividad."
+        PdfExportStyle.SIMPLE_TABLE -> "Usa una tabla más ligera, con espaciado limpio y los periodos en una línea separada."
         PdfExportStyle.COMPACT_LIST -> "Presenta cada actividad cómo un elemento compacto con los valores clave en pocas líneas."
         PdfExportStyle.DETAIL_BLOCKS -> "Separa cada actividad en bloques de detalle apilados para facilitar la lectura."
     }
@@ -1328,86 +1376,6 @@ fun AppStrings.activityCatalogDescription(defaultHours: String): String = when (
     AppLanguage.FRENCH -> "Gère les entités réutilisables pour projet, congés et autorisation. La durée standard commence à ${defaultHours}h et le week-end est généralement non travaillé."
     AppLanguage.SPANISH -> "Gestiona entidades reutilizables para proyecto, vacaciones y permiso. La duración estándar parte de ${defaultHours}h y el fin de semana suele considerarse no laborable."
 }
-
-val AppStrings.defaultExtActivityTitle: String
-    get() = when (language) {
-        AppLanguage.ENGLISH -> "Default EXT activity"
-        AppLanguage.ITALIAN -> "Attività EXT di default"
-        AppLanguage.GERMAN -> "Standard-EXT-Aktivität"
-        AppLanguage.FRENCH -> "Activité EXT par défaut"
-        AppLanguage.SPANISH -> "Actividad EXT predeterminada"
-    }
-
-val AppStrings.defaultExtActivityDescription: String
-    get() = when (language) {
-        AppLanguage.ENGLISH -> "Apply 8 hours on the current month only on working days that still do not contain activities."
-        AppLanguage.ITALIAN -> "Applica 8 ore sul mese corrente solo ai giorni lavorativi che non contengono ancora attività."
-        AppLanguage.GERMAN -> "Wendet 8 Stunden im aktuellen Monat nur auf Arbeitstage an, die noch keine Aktivitäten enthalten."
-        AppLanguage.FRENCH -> "Applique 8 heures sur le mois courant uniquement aux jours ouvrés qui ne contiennent pas encore d'activités."
-        AppLanguage.SPANISH -> "Aplica 8 horas en el mes actual solo a los días laborables que aún no contienen actividades."
-    }
-
-val AppStrings.applyDefaultExtToCurrentMonth: String
-    get() = when (language) {
-        AppLanguage.ENGLISH -> "Apply to current month"
-        AppLanguage.ITALIAN -> "Applica al mese corrente"
-        AppLanguage.GERMAN -> "Auf aktuellen Monat anwenden"
-        AppLanguage.FRENCH -> "Appliquer au mois courant"
-        AppLanguage.SPANISH -> "Aplicar al mes actual"
-    }
-
-val AppStrings.applyingDefaultExtToCurrentMonth: String
-    get() = when (language) {
-        AppLanguage.ENGLISH -> "Applying on current month"
-        AppLanguage.ITALIAN -> "Applicazione sul mese corrente"
-        AppLanguage.GERMAN -> "Wird auf aktuellen Monat angewendet"
-        AppLanguage.FRENCH -> "Application au mois courant"
-        AppLanguage.SPANISH -> "Aplicando al mes actual"
-    }
-
-val AppStrings.defaultExtWorkModeLabel: String
-    get() = when (language) {
-        AppLanguage.ENGLISH -> "Working mode"
-        AppLanguage.ITALIAN -> "Modalità di lavoro"
-        AppLanguage.GERMAN -> "Arbeitsmodus"
-        AppLanguage.FRENCH -> "Mode de travail"
-        AppLanguage.SPANISH -> "Modo de trabajo"
-    }
-
-fun AppStrings.defaultExtWorkModeLabel(workMode: DefaultExtWorkMode): String = when (workMode) {
-    DefaultExtWorkMode.SMART_WORKING -> when (language) {
-        AppLanguage.ENGLISH -> "Smart working"
-        AppLanguage.ITALIAN -> "Smart working"
-        AppLanguage.GERMAN -> "Homeoffice"
-        AppLanguage.FRENCH -> "Télétravail"
-        AppLanguage.SPANISH -> "Teletrabajo"
-    }
-
-    DefaultExtWorkMode.OFFICE -> when (language) {
-        AppLanguage.ENGLISH -> "Office"
-        AppLanguage.ITALIAN -> "Ufficio"
-        AppLanguage.GERMAN -> "Büro"
-        AppLanguage.FRENCH -> "Bureau"
-        AppLanguage.SPANISH -> "Oficina"
-    }
-}
-
-fun AppStrings.defaultExtAppliedMessage(appliedDays: Int): String = when (language) {
-    AppLanguage.ENGLISH -> "Default EXT activity applied on $appliedDays working days."
-    AppLanguage.ITALIAN -> "Attività EXT di default applicata su $appliedDays giorni lavorativi."
-    AppLanguage.GERMAN -> "Standard-EXT-Aktivität auf $appliedDays Arbeitstage angewendet."
-    AppLanguage.FRENCH -> "Activité EXT par défaut appliquée sur $appliedDays jours ouvrés."
-    AppLanguage.SPANISH -> "Actividad EXT predeterminada aplicada en $appliedDays días laborables."
-}
-
-val AppStrings.defaultExtNothingToApplyMessage: String
-    get() = when (language) {
-        AppLanguage.ENGLISH -> "No empty working days were found in the current month."
-        AppLanguage.ITALIAN -> "Nel mese corrente non ci sono giorni lavorativi vuoti da completare."
-        AppLanguage.GERMAN -> "Im aktuellen Monat wurden keine leeren Arbeitstage gefunden."
-        AppLanguage.FRENCH -> "Aucun jour ouvré vide n'a été trouvé dans le mois courant."
-        AppLanguage.SPANISH -> "No se encontraron días laborables vacíos en el mes actual."
-    }
 
 val AppStrings.newExtEntity: String
     get() = when (language) {
@@ -1657,6 +1625,15 @@ val AppStrings.hoursOrFractionsLabel: String
         AppLanguage.SPANISH -> "Horas o fracciones"
     }
 
+val AppStrings.workLocationLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Work location"
+        AppLanguage.ITALIAN -> "Luogo di lavoro"
+        AppLanguage.GERMAN -> "Arbeitsort"
+        AppLanguage.FRENCH -> "Lieu de travail"
+        AppLanguage.SPANISH -> "Lugar de trabajo"
+    }
+
 val AppStrings.hoursPlaceholder: String
     get() = when (language) {
         AppLanguage.ENGLISH -> "E.g. 4 or 7.5"
@@ -1700,6 +1677,24 @@ fun AppStrings.saveSelectedDaysLabel(dayCount: Int): String = when (language) {
     AppLanguage.FRENCH -> "Enregistrer sur $dayCount jours"
     AppLanguage.SPANISH -> "Guardar en $dayCount días"
 }
+
+val AppStrings.coverIncompleteMonthLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Cover incomplete month"
+        AppLanguage.ITALIAN -> "Copri mese incompleto"
+        AppLanguage.GERMAN -> "Unvollständigen Monat abdecken"
+        AppLanguage.FRENCH -> "Couvrir le mois incomplet"
+        AppLanguage.SPANISH -> "Cubrir mes incompleto"
+    }
+
+val AppStrings.coverIncompleteMonthDescription: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Applies this activity only to workdays that are still below the daily standard."
+        AppLanguage.ITALIAN -> "Applica questa attività solo ai giorni lavorativi ancora sotto la giornata standard."
+        AppLanguage.GERMAN -> "Wendet diese Aktivität nur auf Arbeitstage an, die noch unter dem Standardtag liegen."
+        AppLanguage.FRENCH -> "Applique cette activité uniquement aux jours travaillés encore en dessous de la journée standard."
+        AppLanguage.SPANISH -> "Aplica esta actividad solo a los días laborables que aún están por debajo de la jornada estándar."
+    }
 
 fun AppStrings.chooseEntityForType(type: EntryType): String = when (language) {
     AppLanguage.ENGLISH -> "Choose ${entryTypeLabel(type).lowercase()} entity"
@@ -2061,6 +2056,15 @@ val AppStrings.unableToSaveSelectedDays: String
         AppLanguage.SPANISH -> "No se pudieron guardar los días seleccionados."
     }
 
+val AppStrings.unableToCoverIncompleteMonth: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Unable to cover the incomplete month."
+        AppLanguage.ITALIAN -> "Impossibile coprire il mese incompleto."
+        AppLanguage.GERMAN -> "Der unvollständige Monat konnte nicht abgedeckt werden."
+        AppLanguage.FRENCH -> "Impossible de couvrir le mois incomplet."
+        AppLanguage.SPANISH -> "No se pudo cubrir el mes incompleto."
+    }
+
 fun AppStrings.chooseLighterImage(maxKilobytes: Int): String = when (language) {
     AppLanguage.ENGLISH -> "Choose a lighter image: maximum ${maxKilobytes} KB."
     AppLanguage.ITALIAN -> "Scegli un'immagine più leggera: massimo ${maxKilobytes} KB."
@@ -2330,6 +2334,56 @@ val AppStrings.exportGeneratedAtLabel: String
     }
 
 fun AppStrings.exportGeneratedAtValue(instant: Instant): String = formatInstant(instant)
+
+fun AppStrings.exportReadableDate(date: kotlinx.datetime.LocalDate): String = when (language) {
+    AppLanguage.ENGLISH -> "${monthNames[date.month.ordinal]} ${date.day}, ${date.year}"
+    AppLanguage.ITALIAN -> "${date.day} ${monthNames[date.month.ordinal]} ${date.year}"
+    AppLanguage.GERMAN -> "${date.day}. ${monthNames[date.month.ordinal]} ${date.year}"
+    AppLanguage.FRENCH -> "${date.day} ${monthNames[date.month.ordinal]} ${date.year}"
+    AppLanguage.SPANISH -> "${date.day} de ${monthNames[date.month.ordinal]} de ${date.year}"
+}
+
+fun AppStrings.exportReadableDateRange(
+    startDate: kotlinx.datetime.LocalDate,
+    endDate: kotlinx.datetime.LocalDate,
+): String {
+    if (startDate == endDate) return exportReadableDate(startDate)
+
+    val sameYear = startDate.year == endDate.year
+    val sameMonth = sameYear && startDate.month == endDate.month
+
+    return when (language) {
+        AppLanguage.ENGLISH -> when {
+            sameMonth -> "from ${monthNames[startDate.month.ordinal]} ${startDate.day} to ${endDate.day}, ${startDate.year}"
+            sameYear -> "from ${monthNames[startDate.month.ordinal]} ${startDate.day} to ${monthNames[endDate.month.ordinal]} ${endDate.day}, ${startDate.year}"
+            else -> "from ${exportReadableDate(startDate)} to ${exportReadableDate(endDate)}"
+        }
+
+        AppLanguage.ITALIAN -> when {
+            sameMonth -> "dal ${startDate.day} al ${endDate.day} ${monthNames[startDate.month.ordinal]} ${startDate.year}"
+            sameYear -> "dal ${startDate.day} ${monthNames[startDate.month.ordinal]} al ${endDate.day} ${monthNames[endDate.month.ordinal]} ${startDate.year}"
+            else -> "dal ${exportReadableDate(startDate)} al ${exportReadableDate(endDate)}"
+        }
+
+        AppLanguage.GERMAN -> when {
+            sameMonth -> "vom ${startDate.day}. bis ${endDate.day}. ${monthNames[startDate.month.ordinal]} ${startDate.year}"
+            sameYear -> "vom ${startDate.day}. ${monthNames[startDate.month.ordinal]} bis ${endDate.day}. ${monthNames[endDate.month.ordinal]} ${startDate.year}"
+            else -> "vom ${exportReadableDate(startDate)} bis ${exportReadableDate(endDate)}"
+        }
+
+        AppLanguage.FRENCH -> when {
+            sameMonth -> "du ${startDate.day} au ${endDate.day} ${monthNames[startDate.month.ordinal]} ${startDate.year}"
+            sameYear -> "du ${startDate.day} ${monthNames[startDate.month.ordinal]} au ${endDate.day} ${monthNames[endDate.month.ordinal]} ${startDate.year}"
+            else -> "du ${exportReadableDate(startDate)} au ${exportReadableDate(endDate)}"
+        }
+
+        AppLanguage.SPANISH -> when {
+            sameMonth -> "del ${startDate.day} al ${endDate.day} de ${monthNames[startDate.month.ordinal]} de ${startDate.year}"
+            sameYear -> "del ${startDate.day} de ${monthNames[startDate.month.ordinal]} al ${endDate.day} de ${monthNames[endDate.month.ordinal]} de ${startDate.year}"
+            else -> "del ${exportReadableDate(startDate)} al ${exportReadableDate(endDate)}"
+        }
+    }
+}
 
 val AppStrings.exportActivityCodeLabel: String
     get() = when (language) {

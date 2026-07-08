@@ -22,6 +22,7 @@ internal data class AccessibilityLayoutSpec(
     val optionMinHeight: Dp,
     val dialogMaxHeight: Dp,
     val compactBreakpoint: Dp,
+    val headerCompactBreakpoint: Dp,
     val wrapActionsBreakpoint: Dp,
     val twoColumnBreakpoint: Dp,
     val visibleSummaryCount: Int,
@@ -53,6 +54,7 @@ internal fun accessibilityLayoutSpec(state: AccessibilitySettingsUiState): Acces
         optionMinHeight = if (comfortableSpacing) 88.dp else 76.dp,
         dialogMaxHeight = if (comfortableSpacing) 520.dp else 440.dp,
         compactBreakpoint = 560.dp,
+        headerCompactBreakpoint = 820.dp,
         wrapActionsBreakpoint = 720.dp,
         twoColumnBreakpoint = 960.dp,
         visibleSummaryCount = if (

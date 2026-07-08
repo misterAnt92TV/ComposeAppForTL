@@ -1,6 +1,7 @@
 package com.tlincompose.presentation.calendar
 
 import com.tlincompose.core.DateMath
+import com.tlincompose.domain.model.ActivityWorkLocation
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DateRange
 import com.tlincompose.domain.model.EntryType
@@ -38,6 +39,7 @@ data class ActivityDraftUiState(
     val description: String = "",
     val projectUrl: String = "",
     val hoursText: String = "",
+    val workLocation: ActivityWorkLocation = ActivityWorkLocation.SMART_WORKING,
 )
 
 data class DayEditTargetUiState(
@@ -60,6 +62,7 @@ data class DayEditorUiState(
     val target: DayEditTargetUiState,
     val rows: List<ActivityDraftUiState>,
     val errors: List<String?>,
+    val canCoverIncompleteMonth: Boolean = false,
 )
 
 data class DayDragSelectionUiState(

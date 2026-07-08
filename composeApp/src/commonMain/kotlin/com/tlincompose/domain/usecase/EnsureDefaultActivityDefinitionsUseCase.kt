@@ -5,7 +5,6 @@ import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.BuiltInActivityDefinitions
 import com.tlincompose.domain.model.DefaultWorkdayMinutes
 import com.tlincompose.domain.model.EntryType
-import com.tlincompose.domain.model.ProjectIconPreset
 import com.tlincompose.domain.repository.ActivityDefinitionRepository
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.todayIn
@@ -29,16 +28,6 @@ class EnsureDefaultActivityDefinitionsUseCase(
     }
 
     private fun defaultDefinitions(today: LocalDate): List<ActivityDefinition> = listOf(
-        ActivityDefinition(
-            extCode = BuiltInActivityDefinitions.DefaultExtCode,
-            type = EntryType.PROJECT,
-            title = "Attività EXT di default",
-            description = "Usa questa attività per coprire automaticamente i giorni lavorativi senza attività nel mese corrente.",
-            defaultMinutes = DefaultWorkdayMinutes,
-            createdDate = today,
-            updatedDate = today,
-            projectIconPreset = ProjectIconPreset.WORK,
-        ),
         ActivityDefinition(
             extCode = BuiltInActivityDefinitions.BloodDonationCode,
             type = EntryType.PERMIT,

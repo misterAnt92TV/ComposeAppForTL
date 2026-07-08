@@ -6,6 +6,7 @@ import com.tlincompose.core.displayLabel
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.label
 import com.tlincompose.domain.model.ActivityDraftInput
+import com.tlincompose.domain.model.ActivityWorkLocation
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarDay
 import com.tlincompose.domain.model.DailyEntry
@@ -57,6 +58,7 @@ fun List<CalendarDay>.toUiModels(
 
 fun DailyEntry?.toDayEditorUiState(
     target: DayEditTargetUiState,
+    canCoverIncompleteMonth: Boolean = false,
 ): DayEditorUiState {
     val rows = this?.activities?.map {
         ActivityDraftUiState(
@@ -66,13 +68,15 @@ fun DailyEntry?.toDayEditorUiState(
             description = it.description,
             projectUrl = it.projectUrl.orEmpty(),
             hoursText = formatHours(it.minutes),
+            workLocation = it.workLocation,
         )
-    } ?: listOf(ActivityDraftUiState())
+    } ?: listOf(ActivityDraftUiState(workLocation = ActivityWorkLocation.SMART_WORKING))
 
     return DayEditorUiState(
         target = target,
         rows = rows,
         errors = List(rows.size) { null },
+        canCoverIncompleteMonth = canCoverIncompleteMonth,
     )
 }
 
@@ -89,6 +93,7 @@ fun ActivityDraftUiState.toDomainInput(): ActivityDraftInput =
         description = description,
         projectUrl = projectUrl.ifBlank { null },
         hoursText = hoursText,
+        workLocation = workLocation,
     )
 
 fun MonthWorkSummary.toUiState(): MonthSummaryUiState =

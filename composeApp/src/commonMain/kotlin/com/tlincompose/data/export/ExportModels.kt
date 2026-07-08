@@ -17,16 +17,14 @@ import com.tlincompose.core.exportGeneratedAtValue
 import com.tlincompose.core.exportHoursPerDayLabel
 import com.tlincompose.core.exportNoActivitiesForSelectedPeriod
 import com.tlincompose.core.exportOfficeLabel
-import com.tlincompose.core.exportPeriodLabel
 import com.tlincompose.core.exportPersonIdMetadataLabel
+import com.tlincompose.core.exportPeriodLabel
 import com.tlincompose.core.exportPeriodsLabel
 import com.tlincompose.core.exportRecordedDaysLabel
-import com.tlincompose.core.exportReportLabel
+import com.tlincompose.core.exportReadableDateRange
 import com.tlincompose.core.exportTotalHoursLabel
 import com.tlincompose.core.exportTypeLabel
 import com.tlincompose.core.exportUserLabel
-import com.tlincompose.core.formatDate
-import com.tlincompose.core.formatDateRange
 import com.tlincompose.core.formatHours
 import com.tlincompose.domain.model.Activity
 import com.tlincompose.domain.model.AppLanguage
@@ -40,8 +38,7 @@ data class ExportPeriod(
     val startDate: LocalDate,
     val endDate: LocalDate,
 ) {
-    val label: String
-        get() = if (startDate == endDate) formatDate(startDate) else formatDateRange(startDate, endDate)
+    fun label(strings: AppStrings): String = strings.exportReadableDateRange(startDate, endDate)
 }
 
 data class ExportRow(
@@ -53,9 +50,24 @@ data class ExportRow(
     val days: Int,
     val totalMinutes: Int,
 ) {
+    fun periodsLabel(strings: AppStrings): String =
+        periods.joinToString(separator = "; ") { it.label(strings) }
 
-    val periodsLabel: String
-        get() = periods.joinToString(separator = ", ") { it.label }
+    fun activitySummaryLabel(): String {
+        val titles = activityTitle
+            .split(" / ")
+            .map(String::trim)
+            .filter(String::isNotBlank)
+            .distinct()
+
+        if (titles.size <= 1 || activityCode == "-") {
+            return activityTitle
+        }
+
+        return titles.joinToString(separator = " / ") { title ->
+            "$title ($activityCode)"
+        }
+    }
 }
 
 data class ExportSummary(
@@ -191,9 +203,12 @@ fun groupActivitiesForExport(
         )
 }
 
-fun ExportReport.toCsv(): String {
+fun ExportReport.toCsv(title: String): String {
     val strings = appStrings(language)
     val rows = buildList<List<String>> {
+        add(listOf(title))
+        add(emptyList())
+        add(listOf(strings.exportPeriodLabel, periodLabel))
         metadataRows(strings).forEach { row ->
             add(listOf(row.label, row.value))
         }
@@ -248,7 +263,7 @@ private fun ExportReport.tabularCsvRows(strings: AppStrings): List<List<String>>
     add(listOf(strings.exportActivitiesLabel))
     add(columns.map(ExportTableColumn::header))
     rows.forEach { row ->
-        add(columns.map { column -> row.valueFor(column.key) })
+        add(columns.map { column -> row.valueFor(column.key, strings) })
     }
     if (rows.isEmpty()) {
         add(listOf(strings.exportNoActivitiesForSelectedPeriod))
@@ -265,7 +280,7 @@ private fun ExportReport.compactCsvRows(strings: AppStrings): List<List<String>>
         add(
             listOf(
                 strings.exportActivityLabel,
-                row.activityTitle,
+                row.activitySummaryLabel(),
                 strings.exportActivityCodeLabel,
                 row.activityCode,
             ),
@@ -273,7 +288,7 @@ private fun ExportReport.compactCsvRows(strings: AppStrings): List<List<String>>
         add(
             listOf(
                 strings.exportPeriodsLabel,
-                row.periodsLabel,
+                row.periodsLabel(strings),
                 strings.exportTypeLabel,
                 row.typeLabel,
             ),
@@ -301,7 +316,7 @@ private fun ExportReport.detailCsvRows(strings: AppStrings): List<List<String>> 
     rows.forEach { row ->
         add(listOf(strings.exportActivityLabel, row.heading()))
         add(listOf(strings.exportTypeLabel, row.typeLabel))
-        add(listOf(strings.exportPeriodsLabel, row.periodsLabel))
+        add(listOf(strings.exportPeriodsLabel, row.periodsLabel(strings)))
         add(listOf(strings.exportHoursPerDayLabel, row.hoursPerDayLabel))
         add(listOf(strings.exportDaysLabel, row.days.toString()))
         add(listOf(strings.exportTotalHoursLabel, formatHours(row.totalMinutes)))
@@ -332,7 +347,7 @@ private fun ExportReport.buildTabularSpreadsheetSheet(
             cells = columns.mapIndexed { index, column ->
                 SpreadsheetPositionedCell(
                     columnIndex = index,
-                    cell = row.spreadsheetCellFor(column.key),
+                    cell = row.spreadsheetCellFor(column.key, strings),
                 )
             },
         )
@@ -386,7 +401,7 @@ private fun ExportReport.buildCompactSpreadsheetSheet(
                     SpreadsheetPositionedCell(
                         columnIndex = 0,
                         cell = SpreadsheetCell.Text(
-                            value = row.activityTitle,
+                            value = row.activitySummaryLabel(),
                             style = SpreadsheetCellStyle.BLOCK_HEADER,
                             mergeAcross = 3,
                         ),
@@ -411,7 +426,7 @@ private fun ExportReport.buildCompactSpreadsheetSheet(
             sheetRows += labeledSpreadsheetRow(
                 label = strings.exportPeriodsLabel,
                 value = SpreadsheetCell.Text(
-                    value = row.periodsLabel,
+                    value = row.periodsLabel(strings),
                     style = SpreadsheetCellStyle.METADATA_VALUE,
                     mergeAcross = 5,
                 ),
@@ -473,7 +488,10 @@ private fun ExportReport.buildDetailSpreadsheetSheet(
                 ),
             )
             sheetRows += labeledSpreadsheetRow(strings.exportTypeLabel, SpreadsheetCell.Text(row.typeLabel, SpreadsheetCellStyle.METADATA_VALUE, mergeAcross = 5))
-            sheetRows += labeledSpreadsheetRow(strings.exportPeriodsLabel, SpreadsheetCell.Text(row.periodsLabel, SpreadsheetCellStyle.METADATA_VALUE, mergeAcross = 5))
+            sheetRows += labeledSpreadsheetRow(
+                strings.exportPeriodsLabel,
+                SpreadsheetCell.Text(row.periodsLabel(strings), SpreadsheetCellStyle.METADATA_VALUE, mergeAcross = 5),
+            )
             sheetRows += labeledSpreadsheetRow(strings.exportHoursPerDayLabel, SpreadsheetCell.Text(row.hoursPerDayLabel, SpreadsheetCellStyle.METADATA_VALUE, mergeAcross = 5))
             sheetRows += labeledSpreadsheetRow(strings.exportDaysLabel, SpreadsheetCell.Number(row.days.toString(), mergeAcross = 5))
             sheetRows += labeledSpreadsheetRow(strings.exportTotalHoursLabel, SpreadsheetCell.Number(formatHours(row.totalMinutes), mergeAcross = 5))
@@ -501,6 +519,16 @@ private fun ExportReport.buildBaseSpreadsheetRows(
                         mergeAcross = 6,
                     ),
                 ),
+            ),
+        ),
+    )
+    add(
+        labeledSpreadsheetRow(
+            label = strings.exportPeriodLabel,
+            value = SpreadsheetCell.Text(
+                value = periodLabel,
+                style = SpreadsheetCellStyle.METADATA_VALUE,
+                mergeAcross = 5,
             ),
         ),
     )
@@ -582,30 +610,44 @@ private fun simpleTableColumns(strings: AppStrings): List<ExportTableColumn> = l
 
 private fun ExportRow.valueFor(key: ExportTableColumnKey): String = when (key) {
     ExportTableColumnKey.ACTIVITY_CODE -> activityCode
-    ExportTableColumnKey.ACTIVITY_TITLE -> activityTitle
+    ExportTableColumnKey.ACTIVITY_TITLE -> activitySummaryLabel()
     ExportTableColumnKey.TYPE -> typeLabel
-    ExportTableColumnKey.PERIODS -> periodsLabel
+    ExportTableColumnKey.PERIODS -> error("Periods label requires localized strings")
     ExportTableColumnKey.HOURS_PER_DAY -> hoursPerDayLabel
     ExportTableColumnKey.DAYS -> days.toString()
     ExportTableColumnKey.TOTAL_HOURS -> formatHours(totalMinutes)
 }
 
-private fun ExportRow.spreadsheetCellFor(key: ExportTableColumnKey): SpreadsheetCell = when (key) {
+private fun ExportRow.valueFor(
+    key: ExportTableColumnKey,
+    strings: AppStrings,
+): String = when (key) {
+    ExportTableColumnKey.PERIODS -> periodsLabel(strings)
+    else -> valueFor(key)
+}
+
+private fun ExportRow.spreadsheetCellFor(
+    key: ExportTableColumnKey,
+    strings: AppStrings,
+): SpreadsheetCell = when (key) {
     ExportTableColumnKey.DAYS -> SpreadsheetCell.Number(days.toString())
     ExportTableColumnKey.TOTAL_HOURS -> SpreadsheetCell.Number(formatHours(totalMinutes))
-    else -> SpreadsheetCell.Text(valueFor(key))
+    else -> SpreadsheetCell.Text(valueFor(key, strings))
 }
 
 private fun ExportRow.heading(): String =
     if (activityCode == "-") {
-        activityTitle
+        activitySummaryLabel()
     } else {
-        "$activityCode - $activityTitle"
+        val summary = activitySummaryLabel()
+        if (summary.contains("($activityCode)")) {
+            summary
+        } else {
+            "$activityCode - $summary"
+        }
     }
 
 fun ExportReport.metadataRows(strings: AppStrings): List<ExportMetadataRow> = buildList {
-    add(ExportMetadataRow(strings.exportReportLabel, strings.appName))
-    add(ExportMetadataRow(strings.exportPeriodLabel, periodLabel))
     exportUserFullName?.takeIf(String::isNotBlank)?.let { fullName ->
         add(ExportMetadataRow(strings.exportUserLabel, fullName))
     }

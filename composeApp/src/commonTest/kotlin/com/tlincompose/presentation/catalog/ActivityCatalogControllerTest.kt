@@ -9,18 +9,15 @@ import com.tlincompose.domain.model.BuiltInActivityDefinitions
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DailyEntry
 import com.tlincompose.domain.model.DateRange
-import com.tlincompose.domain.model.DefaultExtWorkMode
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ProjectIconPreset
 import com.tlincompose.domain.repository.ActivityDefinitionRepository
 import com.tlincompose.domain.repository.TimesheetRepository
-import com.tlincompose.domain.usecase.ApplyDefaultExtActivityToMonthUseCase
 import com.tlincompose.domain.usecase.DeleteActivityDefinitionUseCase
 import com.tlincompose.domain.usecase.EnsureDefaultActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.GenerateNextExtCodeUseCase
 import com.tlincompose.domain.usecase.LoadActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.SaveActivityDefinitionUseCase
-import com.tlincompose.domain.usecase.SaveDailyEntryUseCase
 import com.tlincompose.domain.usecase.SyncActivitiesWithDefinitionUseCase
 import com.tlincompose.domain.usecase.ValidateActivityDefinitionUseCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -65,10 +62,6 @@ class ActivityCatalogControllerTest {
             ),
             syncActivitiesWithDefinition = SyncActivitiesWithDefinitionUseCase(FakeTimesheetRepository()),
             deleteActivityDefinition = DeleteActivityDefinitionUseCase(repository),
-            applyDefaultExtActivityToMonth = ApplyDefaultExtActivityToMonthUseCase(
-                repository = FakeTimesheetRepository(),
-                saveDailyEntry = SaveDailyEntryUseCase(FakeTimesheetRepository()),
-            ),
             dispatcherProvider = TestDispatcherProvider(dispatcher),
             logger = Logger.withTag("ActivityCatalogControllerTest"),
         )
@@ -95,7 +88,6 @@ class ActivityCatalogControllerTest {
         )
         assertEquals(
             setOf(
-                BuiltInActivityDefinitions.DefaultExtCode,
                 BuiltInActivityDefinitions.BloodDonationCode,
                 BuiltInActivityDefinitions.MedicalVisitCode,
             ),
@@ -139,16 +131,12 @@ class ActivityCatalogControllerTest {
             ),
             syncActivitiesWithDefinition = SyncActivitiesWithDefinitionUseCase(timesheetRepository),
             deleteActivityDefinition = DeleteActivityDefinitionUseCase(repository),
-            applyDefaultExtActivityToMonth = ApplyDefaultExtActivityToMonthUseCase(
-                repository = timesheetRepository,
-                saveDailyEntry = SaveDailyEntryUseCase(timesheetRepository),
-            ),
             dispatcherProvider = TestDispatcherProvider(dispatcher),
             logger = Logger.withTag("ActivityCatalogControllerTest"),
         )
 
         advanceUntilIdle()
-        assertEquals(4, controller.definitions.size)
+        assertEquals(3, controller.definitions.size)
         assertTrue(controller.definitions.any { it.extCode == BuiltInActivityDefinitions.BloodDonationCode })
         assertTrue(controller.definitions.any { it.extCode == BuiltInActivityDefinitions.MedicalVisitCode })
 
@@ -169,7 +157,7 @@ class ActivityCatalogControllerTest {
 
         advanceUntilIdle()
 
-        assertEquals(5, controller.definitions.size)
+        assertEquals(4, controller.definitions.size)
         assertEquals("EXT-0002", controller.definitions.first { it.extCode == "EXT-0002" }.extCode)
         assertEquals(EntryType.PROJECT, controller.definitions.first { it.extCode == "EXT-0002" }.type)
         assertEquals(ProjectIconPreset.CODE, controller.definitions.first { it.extCode == "EXT-0002" }.projectIconPreset)
@@ -182,7 +170,6 @@ class ActivityCatalogControllerTest {
 
         assertEquals(
             setOf(
-                BuiltInActivityDefinitions.DefaultExtCode,
                 BuiltInActivityDefinitions.BloodDonationCode,
                 BuiltInActivityDefinitions.MedicalVisitCode,
                 "EXT-0002",
@@ -239,10 +226,6 @@ class ActivityCatalogControllerTest {
             ),
             syncActivitiesWithDefinition = SyncActivitiesWithDefinitionUseCase(timesheetRepository),
             deleteActivityDefinition = DeleteActivityDefinitionUseCase(repository),
-            applyDefaultExtActivityToMonth = ApplyDefaultExtActivityToMonthUseCase(
-                repository = timesheetRepository,
-                saveDailyEntry = SaveDailyEntryUseCase(timesheetRepository),
-            ),
             dispatcherProvider = TestDispatcherProvider(dispatcher),
             logger = Logger.withTag("ActivityCatalogControllerTest"),
         )
@@ -263,71 +246,6 @@ class ActivityCatalogControllerTest {
         assertEquals("EXT-0042", repository.definitions.first { it.extCode == "EXT-0042" }.extCode)
         assertEquals("EXT-0042", timesheetRepository.entries.values.single().activities.single().extCode)
         assertEquals("Apollo aggiornato", timesheetRepository.entries.values.single().activities.single().title)
-        controller.dispose()
-    }
-
-    @Test
-    fun controllerAppliesDefaultExtOnlyOnEmptyWorkingDaysOfCurrentMonth() = runTest {
-        val dispatcher = StandardTestDispatcher(testScheduler)
-        val repository = FakeActivityDefinitionRepository(definitions = mutableListOf())
-        val timesheetRepository = FakeTimesheetRepository(
-            entries = mutableMapOf(
-                LocalDate(2026, 5, 5) to DailyEntry(
-                    date = LocalDate(2026, 5, 5),
-                    activities = listOf(
-                        Activity(
-                            type = EntryType.PROJECT,
-                            extCode = "EXT-0009",
-                            title = "Già presente",
-                            minutes = 480,
-                        ),
-                    ),
-                ),
-            ),
-        )
-        val controller = ActivityCatalogController(
-            ensureDefaultActivityDefinitions = EnsureDefaultActivityDefinitionsUseCase(
-                repository = repository,
-                todayProvider = { LocalDate(2026, 5, 10) },
-            ),
-            loadActivityDefinitions = LoadActivityDefinitionsUseCase(repository),
-            generateNextExtCode = GenerateNextExtCodeUseCase(),
-            validateActivityDefinition = ValidateActivityDefinitionUseCase(),
-            saveActivityDefinition = SaveActivityDefinitionUseCase(
-                repository = repository,
-                todayProvider = { LocalDate(2026, 5, 10) },
-            ),
-            syncActivitiesWithDefinition = SyncActivitiesWithDefinitionUseCase(timesheetRepository),
-            deleteActivityDefinition = DeleteActivityDefinitionUseCase(repository),
-            applyDefaultExtActivityToMonth = ApplyDefaultExtActivityToMonthUseCase(
-                repository = timesheetRepository,
-                saveDailyEntry = SaveDailyEntryUseCase(timesheetRepository),
-            ),
-            dispatcherProvider = TestDispatcherProvider(dispatcher),
-            logger = Logger.withTag("ActivityCatalogControllerTest"),
-        )
-
-        advanceUntilIdle()
-        controller.updateDefaultExtWorkMode(DefaultExtWorkMode.SMART_WORKING)
-        var appliedDays = -1
-
-        controller.applyDefaultExtToCurrentMonth(
-            month = CalendarMonth(2026, 5),
-            onSuccess = { appliedDays = it },
-            onFailure = {},
-        )
-
-        advanceUntilIdle()
-
-        assertEquals(19, appliedDays)
-        assertEquals(
-            "Attività EXT di default (Smart working)",
-            timesheetRepository.entries.getValue(LocalDate(2026, 5, 4)).activities.single().title,
-        )
-        assertEquals(
-            "Già presente",
-            timesheetRepository.entries.getValue(LocalDate(2026, 5, 5)).activities.single().title,
-        )
         controller.dispose()
     }
 }

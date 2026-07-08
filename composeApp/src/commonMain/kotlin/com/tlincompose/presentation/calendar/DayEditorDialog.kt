@@ -38,6 +38,8 @@ import com.tlincompose.core.baseDuration
 import com.tlincompose.core.cancelLabel
 import com.tlincompose.core.chooseEntityForType
 import com.tlincompose.core.closeLabel
+import com.tlincompose.core.coverIncompleteMonthDescription
+import com.tlincompose.core.coverIncompleteMonthLabel
 import com.tlincompose.core.dayDialogDescription
 import com.tlincompose.core.dayDialogTitle
 import com.tlincompose.core.dayRangeDialogDescription
@@ -56,7 +58,9 @@ import com.tlincompose.core.saveSelectedDaysLabel
 import com.tlincompose.core.selectExtEntity
 import com.tlincompose.core.weekendDayDialogNote
 import com.tlincompose.domain.model.ActivityDefinition
+import com.tlincompose.domain.model.ActivityWorkLocation
 import com.tlincompose.domain.model.EntryType
+import com.tlincompose.core.workLocationLabel
 import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.catalog.ProjectIconAvatar
 import com.tlincompose.presentation.components.AppActionButton
@@ -75,7 +79,9 @@ internal fun DayEditorDialog(
     onTypeChanged: (Int, EntryType) -> Unit,
     onDefinitionSelected: (Int, ActivityDefinition) -> Unit,
     onHoursChanged: (Int, String) -> Unit,
+    onWorkLocationChanged: (Int, ActivityWorkLocation) -> Unit,
     onSave: () -> Unit,
+    onCoverIncompleteMonth: () -> Unit,
 ) {
     val strings = LocalAppStrings.current
     var pickerRowIndex by remember(state.target.sourceDate, state.rows.size) { mutableStateOf<Int?>(null) }
@@ -125,6 +131,11 @@ internal fun DayEditorDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
+                val canSubmitIncompleteMonthCoverage = state.rows.size == 1 &&
+                    state.rows.single().extCode != null &&
+                    state.rows.single().title.isNotBlank() &&
+                    state.rows.single().hoursText.isNotBlank()
+
                 state.rows.forEachIndexed { index, row ->
                     val errorMessage = state.errors.getOrNull(index)
                     val typeDefinitions = availableDefinitions.filter { it.type == row.type }
@@ -255,6 +266,34 @@ internal fun DayEditorDialog(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 )
                             }
+                            if (row.extCode != null) {
+                                Column(
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    Text(
+                                        text = strings.workLocationLabel,
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    ) {
+                                        ActivityWorkLocation.entries.forEach { workLocation ->
+                                            FilterChip(
+                                                selected = row.workLocation == workLocation,
+                                                onClick = { onWorkLocationChanged(index, workLocation) },
+                                                label = {
+                                                    Text(workLocation.displayName(strings.language))
+                                                },
+                                                modifier = Modifier.testTag(
+                                                    "work-location-$index-${workLocation.name.lowercase()}",
+                                                ),
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                             OutlinedTextField(
                                 value = row.hoursText,
                                 onValueChange = { onHoursChanged(index, it) },
@@ -291,6 +330,36 @@ internal fun DayEditorDialog(
                         .fillMaxWidth()
                         .testTag("add-activity-row-button"),
                 )
+
+                if (state.canCoverIncompleteMonth && !state.target.isRange && state.rows.size == 1) {
+                    Surface(
+                        shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                        color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.5f),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            Text(
+                                text = strings.coverIncompleteMonthDescription,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                            AppActionButton(
+                                text = strings.coverIncompleteMonthLabel,
+                                onClick = onCoverIncompleteMonth,
+                                variant = AppButtonVariant.SECONDARY,
+                                minHeight = layoutSpec.buttonMinHeight,
+                                enabled = canSubmitIncompleteMonthCoverage,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("cover-incomplete-month-button"),
+                            )
+                        }
+                    }
+                }
             }
         },
         dismissButton = {

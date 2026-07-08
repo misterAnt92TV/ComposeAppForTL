@@ -187,7 +187,7 @@ class DefaultMonthExporter(
         )
 
         val bytes = when (format) {
-            ExportFormat.CSV -> report.toCsv().encodeToByteArray()
+            ExportFormat.CSV -> report.toCsv(title).encodeToByteArray()
             ExportFormat.XLSX -> xlsxEncoder(report, title)
             ExportFormat.PDF -> pdfEncoder(report, title, pdfFontProvider)
         }

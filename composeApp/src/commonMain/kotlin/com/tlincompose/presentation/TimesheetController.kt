@@ -20,6 +20,7 @@ import com.tlincompose.core.selectFirstMonthInstruction
 import com.tlincompose.core.selectLastMonthInstruction
 import com.tlincompose.core.selectedMonthsReadyMessage
 import com.tlincompose.domain.model.ActivityDefinition
+import com.tlincompose.domain.model.ActivityWorkLocation
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DailyEntry
@@ -33,6 +34,7 @@ import com.tlincompose.domain.model.PdfExportStyle
 import com.tlincompose.domain.usecase.AddActivityToDayUseCase
 import com.tlincompose.domain.usecase.BuildCalendarMonthGridUseCase
 import com.tlincompose.domain.usecase.CalculateMonthWorkSummaryUseCase
+import com.tlincompose.domain.usecase.CoverIncompleteMonthWithActivityUseCase
 import com.tlincompose.domain.usecase.CreateDateRangeUseCase
 import com.tlincompose.domain.usecase.CreateMonthRangeUseCase
 import com.tlincompose.domain.usecase.ExportMonthRangeReportUseCase
@@ -66,6 +68,7 @@ class TimesheetController(
     private val calculateMonthWorkSummary: CalculateMonthWorkSummaryUseCase,
     private val validateDailyEntry: ValidateDailyEntryUseCase,
     private val addActivityToDay: AddActivityToDayUseCase,
+    private val coverIncompleteMonthWithActivity: CoverIncompleteMonthWithActivityUseCase,
     private val saveDateRangeEntries: SaveDateRangeEntriesUseCase,
     private val exportMonthReport: ExportMonthReportUseCase,
     private val exportMonthRangeReport: ExportMonthRangeReportUseCase,
@@ -79,6 +82,7 @@ class TimesheetController(
     private val log = logger.withTag("TimesheetController")
     private var currentLanguage: AppLanguage = AppLanguage.ENGLISH
     private var standardWorkdayMinutes: Int = DefaultWorkdayMinutes
+    private var availableDefinitions: List<ActivityDefinition> = emptyList()
     private val currentStrings: AppStrings
         get() = appStrings(currentLanguage)
 
@@ -326,13 +330,18 @@ class TimesheetController(
         updateMonthCells()
     }
 
+    fun updateAvailableDefinitions(definitions: List<ActivityDefinition>) {
+        if (availableDefinitions == definitions) return
+        availableDefinitions = definitions
+    }
+
     fun refreshCurrentMonth() {
         log.d { "Ricarica richiesta per il mese ${currentMonth.fileStamp}." }
         reloadMonth()
     }
 
     fun addDraftRow() {
-        updateEditorRows { rows -> rows + ActivityDraftUiState() }
+        updateEditorRows { rows -> rows + defaultDraftRow() }
     }
 
     fun removeDraftRow(index: Int) {
@@ -342,13 +351,11 @@ class TimesheetController(
     fun updateDraftType(index: Int, type: com.tlincompose.domain.model.EntryType) {
         updateEditorRows { rows ->
             rows.toMutableList().apply {
-                this[index] = this[index].copy(
-                    type = type,
-                    extCode = null,
-                    title = "",
-                    description = "",
-                    projectUrl = "",
-                    hoursText = "",
+                val currentRow = this[index]
+                this[index] = defaultDraftRow(
+                    preferredType = type,
+                    allowSingleGlobalOverride = false,
+                    workLocation = currentRow.workLocation,
                 )
             }
         }
@@ -373,6 +380,14 @@ class TimesheetController(
         updateEditorRows { rows ->
             rows.toMutableList().apply {
                 this[index] = this[index].copy(hoursText = hoursText)
+            }
+        }
+    }
+
+    fun updateDraftWorkLocation(index: Int, workLocation: ActivityWorkLocation) {
+        updateEditorRows { rows ->
+            rows.toMutableList().apply {
+                this[index] = this[index].copy(workLocation = workLocation)
             }
         }
     }
@@ -414,6 +429,49 @@ class TimesheetController(
                     "Errore durante il salvataggio del target " +
                         "${currentEditor.target.startDate} - ${currentEditor.target.endDate}."
                 }
+                onPersistenceError()
+            }
+        }
+    }
+
+    fun coverIncompleteMonth(
+        language: AppLanguage,
+        onValidationError: () -> Unit,
+        onPersistenceError: () -> Unit,
+    ) {
+        val currentEditor = editorState ?: return
+        currentLanguage = language
+        val validation = validateDailyEntry(currentEditor.rows.map(ActivityDraftUiState::toDomainInput))
+        if (validation.hasErrors || validation.activities.size != 1) {
+            log.w { "Copertura mese non valida per il mese ${currentMonth.fileStamp}." }
+            editorState = currentEditor.copy(errors = validation.errors.map { it?.message(language) })
+            onValidationError()
+            return
+        }
+
+        scope.launch {
+            runCatching {
+                coverIncompleteMonthWithActivity(
+                    month = currentMonth,
+                    existingEntries = entriesByDate,
+                    activityTemplate = validation.activities.single(),
+                    standardWorkdayMinutes = standardWorkdayMinutes,
+                )
+            }.onSuccess { updatedEntries ->
+                log.i {
+                    "Copertura mese completata su ${updatedEntries.size} giorno/i per il mese ${currentMonth.fileStamp}."
+                }
+                if (updatedEntries.isNotEmpty()) {
+                    val updatedEntriesByDate = entriesByDate.toMutableMap()
+                    updatedEntries.forEach { updatedEntry ->
+                        updatedEntriesByDate[updatedEntry.date] = updatedEntry
+                    }
+                    entriesByDate = updatedEntriesByDate.toSortedMap(LocalDateComparator)
+                }
+                editorState = null
+                updateMonthCells()
+            }.onFailure {
+                log.e(it) { "Errore durante la copertura del mese ${currentMonth.fileStamp}." }
                 onPersistenceError()
             }
         }
@@ -484,18 +542,35 @@ class TimesheetController(
 
     private fun openEditor(date: LocalDate) {
         log.d { "Apertura editor per il giorno $date." }
-        editorState = entriesByDate[date].toDayEditorUiState(date)
+        editorState = entriesByDate[date]?.toDayEditorUiState(
+            target = DayEditTargetUiState(sourceDate = date),
+            canCoverIncompleteMonth = monthSummary.remainingCompletionMinutes > 0,
+        ) ?: DayEditorUiState(
+            target = DayEditTargetUiState(sourceDate = date),
+            rows = listOf(defaultDraftRow()),
+            errors = listOf(null),
+            canCoverIncompleteMonth = monthSummary.remainingCompletionMinutes > 0,
+        )
     }
 
     private fun openRangeEditor(sourceDate: LocalDate, selectedRange: DateRange) {
         log.d { "Apertura editor drag per l'intervallo ${selectedRange.startDate} - ${selectedRange.endDate}." }
-        editorState = entriesByDate[sourceDate].toDayEditorUiState(
+        editorState = entriesByDate[sourceDate]?.toDayEditorUiState(
             DayEditTargetUiState(
                 sourceDate = sourceDate,
                 startDate = selectedRange.startDate,
                 endDate = selectedRange.endDate,
                 includesWeekend = rangeIncludesWeekend(selectedRange),
             ),
+        ) ?: DayEditorUiState(
+            target = DayEditTargetUiState(
+                sourceDate = sourceDate,
+                startDate = selectedRange.startDate,
+                endDate = selectedRange.endDate,
+                includesWeekend = rangeIncludesWeekend(selectedRange),
+            ),
+            rows = listOf(defaultDraftRow()),
+            errors = listOf(null),
         )
     }
 
@@ -593,6 +668,34 @@ class TimesheetController(
             errors = List(updatedRows.size) { null },
         )
     }
+
+    private fun defaultDraftRow(
+        preferredType: com.tlincompose.domain.model.EntryType = com.tlincompose.domain.model.EntryType.PROJECT,
+        allowSingleGlobalOverride: Boolean = true,
+        workLocation: ActivityWorkLocation = ActivityWorkLocation.SMART_WORKING,
+    ): ActivityDraftUiState {
+        val matchingDefinition = when {
+            allowSingleGlobalOverride -> availableDefinitions.singleOrNull()
+            else -> null
+        } ?: availableDefinitions.filter { it.type == preferredType }.singleOrNull()
+
+        return matchingDefinition?.toDraftUiState(workLocation) ?: ActivityDraftUiState(
+            type = preferredType,
+            workLocation = workLocation,
+        )
+    }
+
+    private fun ActivityDefinition.toDraftUiState(
+        workLocation: ActivityWorkLocation = ActivityWorkLocation.SMART_WORKING,
+    ): ActivityDraftUiState = ActivityDraftUiState(
+        type = type,
+        extCode = extCode,
+        title = title,
+        description = description,
+        projectUrl = projectUrl.orEmpty(),
+        hoursText = formatHours(defaultMinutes),
+        workLocation = workLocation,
+    )
 
     private fun Collection<DailyEntry>.sortedByDate(): List<DailyEntry> =
         sortedWith(compareBy(LocalDateComparator) { it.date })

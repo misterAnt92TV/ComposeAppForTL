@@ -25,6 +25,15 @@ data class PdfEmbeddedFont(
     val missingWidth: Int,
 )
 
+internal fun PdfEmbeddedFont.asTableMonospaceFont(): PdfEmbeddedFont {
+    val zeroGlyphWidth = widths.getOrNull('0'.code - firstChar)
+    val monospaceWidth = zeroGlyphWidth ?: missingWidth
+    return copy(
+        widths = List(widths.size) { monospaceWidth },
+        missingWidth = monospaceWidth,
+    )
+}
+
 internal fun parsePdfEmbeddedFont(resource: PdfFontResource): PdfEmbeddedFont {
     val parser = TrueTypeFontParser(resource.fontBytes)
     return parser.toPdfEmbeddedFont(resource.postScriptName)
@@ -342,4 +351,3 @@ private fun ByteArray.decodeUtf16Be(): String = buildString {
 }
 
 private fun sanitizePdfName(value: String): String = value.filter { it.isLetterOrDigit() || it == '-' || it == '_' }
-

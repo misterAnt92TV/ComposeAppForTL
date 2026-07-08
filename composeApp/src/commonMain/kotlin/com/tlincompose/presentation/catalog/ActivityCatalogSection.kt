@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -23,14 +22,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tlincompose.core.activityCatalogDescription
 import com.tlincompose.core.activityCatalogTitle
-import com.tlincompose.core.applyDefaultExtToCurrentMonth
-import com.tlincompose.core.applyingDefaultExtToCurrentMonth
 import com.tlincompose.core.baseDuration
 import com.tlincompose.core.closeLabel
 import com.tlincompose.core.createdOn
-import com.tlincompose.core.defaultExtActivityDescription
-import com.tlincompose.core.defaultExtActivityTitle
-import com.tlincompose.core.defaultExtWorkModeLabel
 import com.tlincompose.core.deleteLabel
 import com.tlincompose.core.displayName
 import com.tlincompose.core.editLabel
@@ -40,7 +34,6 @@ import com.tlincompose.core.noSavedEntities
 import com.tlincompose.core.updatedOn
 import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.BuiltInActivityDefinitions
-import com.tlincompose.domain.model.DefaultExtWorkMode
 import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.components.AppActionButton
 import com.tlincompose.presentation.components.AppButtonVariant
@@ -53,18 +46,12 @@ internal fun ActivityCatalogSection(
     definitions: List<ActivityDefinition>,
     layoutSpec: AccessibilityLayoutSpec,
     defaultWorkdayMinutes: Int,
-    defaultExtWorkMode: DefaultExtWorkMode,
-    isApplyingDefaultExt: Boolean,
     onCreateDefinition: () -> Unit,
-    onDefaultExtWorkModeChanged: (DefaultExtWorkMode) -> Unit,
-    onApplyDefaultExt: () -> Unit,
     onEditDefinition: (ActivityDefinition) -> Unit,
     onDeleteDefinition: (ActivityDefinition) -> Unit,
     onClose: () -> Unit,
 ) {
     val strings = LocalAppStrings.current
-    val defaultExtDefinition = definitions.firstOrNull { it.extCode == BuiltInActivityDefinitions.DefaultExtCode }
-    val catalogDefinitions = definitions.filterNot { it.extCode == BuiltInActivityDefinitions.DefaultExtCode }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -123,17 +110,7 @@ internal fun ActivityCatalogSection(
                     .fillMaxWidth()
                     .testTag("create-activity-definition-button"),
             )
-            defaultExtDefinition?.let { definition ->
-                DefaultExtActivityCard(
-                    definition = definition,
-                    layoutSpec = layoutSpec,
-                    selectedWorkMode = defaultExtWorkMode,
-                    isApplying = isApplyingDefaultExt,
-                    onWorkModeChanged = onDefaultExtWorkModeChanged,
-                    onApply = onApplyDefaultExt,
-                )
-            }
-            if (catalogDefinitions.isEmpty()) {
+            if (definitions.isEmpty()) {
                 Surface(
                     shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
@@ -146,7 +123,7 @@ internal fun ActivityCatalogSection(
                     )
                 }
             } else {
-                catalogDefinitions.forEach { definition ->
+                definitions.forEach { definition ->
                     ActivityDefinitionCard(
                         definition = definition,
                         layoutSpec = layoutSpec,
@@ -156,77 +133,6 @@ internal fun ActivityCatalogSection(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-@OptIn(ExperimentalLayoutApi::class)
-private fun DefaultExtActivityCard(
-    definition: ActivityDefinition,
-    layoutSpec: AccessibilityLayoutSpec,
-    selectedWorkMode: DefaultExtWorkMode,
-    isApplying: Boolean,
-    onWorkModeChanged: (DefaultExtWorkMode) -> Unit,
-    onApply: () -> Unit,
-) {
-    val strings = LocalAppStrings.current
-    Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.34f),
-        ),
-        shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-                .testTag("default-ext-activity-card"),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                text = strings.defaultExtActivityTitle,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-                text = strings.defaultExtActivityDescription,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                DefaultExtWorkMode.entries.forEach { workMode ->
-                    FilterChip(
-                        selected = selectedWorkMode == workMode,
-                        onClick = { onWorkModeChanged(workMode) },
-                        label = { Text(strings.defaultExtWorkModeLabel(workMode)) },
-                    )
-                }
-            }
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                HeaderInfoPill(text = definition.extCode)
-                HeaderInfoPill(text = strings.baseDuration(formatHours(definition.defaultMinutes)))
-                HeaderInfoPill(text = strings.defaultExtWorkModeLabel(selectedWorkMode))
-            }
-            AppActionButton(
-                text = if (isApplying) {
-                    strings.applyingDefaultExtToCurrentMonth
-                } else {
-                    strings.applyDefaultExtToCurrentMonth
-                },
-                onClick = onApply,
-                enabled = !isApplying,
-                minHeight = layoutSpec.buttonMinHeight,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("apply-default-ext-button"),
-            )
         }
     }
 }

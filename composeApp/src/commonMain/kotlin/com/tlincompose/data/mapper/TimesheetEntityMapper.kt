@@ -2,11 +2,13 @@ package com.tlincompose.data.mapper
 
 import com.tlincompose.data.local.ActivityDefinitionEntity
 import com.tlincompose.data.local.ActivityEntity
+import com.tlincompose.data.local.ActivityWorkLocationEntity
 import com.tlincompose.data.local.DailyEntryEntity
 import com.tlincompose.data.local.EntryTypeEntity
 import com.tlincompose.data.local.ProjectIconPresetEntity
 import com.tlincompose.domain.model.Activity
 import com.tlincompose.domain.model.ActivityDefinition
+import com.tlincompose.domain.model.ActivityWorkLocation
 import com.tlincompose.domain.model.DailyEntry
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ProjectIconPreset
@@ -19,6 +21,7 @@ fun ActivityEntity.toDomain(): Activity =
         description = description,
         projectUrl = projectUrl,
         minutes = minutes,
+        workLocation = workLocation.toDomain(),
     )
 
 fun Activity.toEntity(): ActivityEntity =
@@ -30,6 +33,7 @@ fun Activity.toEntity(): ActivityEntity =
         projectUrl = projectUrl,
         projectLabel = title.takeIf { type == EntryType.PROJECT },
         minutes = minutes,
+        workLocation = workLocation.toEntity(),
     )
 
 fun DailyEntryEntity.toDomain(): DailyEntry =
@@ -56,6 +60,18 @@ fun EntryType.toEntity(): EntryTypeEntity = when (this) {
     EntryType.COURSE -> EntryTypeEntity.COURSE
     EntryType.VACATION -> EntryTypeEntity.VACATION
     EntryType.PERMIT -> EntryTypeEntity.PERMIT
+}
+
+fun ActivityWorkLocationEntity.toDomain(): ActivityWorkLocation = when (this) {
+    ActivityWorkLocationEntity.SMART_WORKING -> ActivityWorkLocation.SMART_WORKING
+    ActivityWorkLocationEntity.OFFICE -> ActivityWorkLocation.OFFICE
+    ActivityWorkLocationEntity.CLIENT_SITE -> ActivityWorkLocation.CLIENT_SITE
+}
+
+fun ActivityWorkLocation.toEntity(): ActivityWorkLocationEntity = when (this) {
+    ActivityWorkLocation.SMART_WORKING -> ActivityWorkLocationEntity.SMART_WORKING
+    ActivityWorkLocation.OFFICE -> ActivityWorkLocationEntity.OFFICE
+    ActivityWorkLocation.CLIENT_SITE -> ActivityWorkLocationEntity.CLIENT_SITE
 }
 
 fun ActivityDefinitionEntity.toDomain(): ActivityDefinition =
