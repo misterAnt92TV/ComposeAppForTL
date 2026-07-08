@@ -320,14 +320,6 @@ private fun previewMedicalVisitDescription(strings: AppStrings): String = when (
     AppLanguage.SPANISH -> "Visita medica"
 }
 
-private fun previewLightDarkDescription(strings: AppStrings): String = when (strings.language) {
-    AppLanguage.ENGLISH -> "Component cleanup and light/dark preview coverage."
-    AppLanguage.ITALIAN -> "Pulizia dei componenti e aggiunta preview light/dark."
-    AppLanguage.GERMAN -> "Bereinigung der Komponenten und Abdeckung mit Light/Dark-Previews."
-    AppLanguage.FRENCH -> "Nettoyage des composants et couverture des previews clair/sombre."
-    AppLanguage.SPANISH -> "Limpieza de componentes y cobertura de previews claro/oscuro."
-}
-
 private fun previewProjectUrl(strings: AppStrings): String = when (strings.language) {
     AppLanguage.ENGLISH -> "https://intranet.tli.local/calendar"
     AppLanguage.ITALIAN -> "https://intranet.tli.local/calendario"

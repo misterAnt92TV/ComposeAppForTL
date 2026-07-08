@@ -2,15 +2,15 @@
 agp = "8.9.3"
 kotlin = "2.2.0"
 compose-multiplatform = "1.10.3"
-activity-compose = "1.10.1"
-coroutines = "1.10.2"
-datetime = "0.7.1"
-serialization = "1.9.0"
+activity-compose = "1.13.0"
+coroutines = "1.11.0"
+datetime = "0.8.0"
+serialization = "1.11.0"
 kermit = "2.1.0"
-koin = "4.1.1"
+koin = "4.2.2"
 compose-material-icons = "1.7.3"
 androidsvg = "1.4"
-batik = "1.17"
+batik = "1.19"
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -21,13 +21,7 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 
 [libraries]
 androidxActivityCompose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
-composeFoundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
 composeMaterialIconsExtended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "compose-material-icons" }
-composeMaterial3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-multiplatform" }
-composePreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
-composeRuntime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
-composeUi = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
-composeUiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
 coroutinesCore = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 coroutinesSwing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 coroutinesTest = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }

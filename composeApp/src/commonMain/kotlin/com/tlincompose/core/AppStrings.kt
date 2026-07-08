@@ -5,8 +5,6 @@ package com.tlincompose.core
 
 import com.tlincompose.domain.model.AppLanguage
 
-const val APP_VERSION = "v.1.12"
-
 /**
  * Sealed class defining keys for all localizable strings.
  * Each key represents a unique text element with optional parameters.

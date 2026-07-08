@@ -9,6 +9,44 @@ plugins {
     alias(libs.plugins.kotlinSerialization)
 }
 
+val appVersionName = providers.gradleProperty("app.version.name")
+val appVersionCode = providers.gradleProperty("app.version.code").map(String::toInt)
+val desktopPackageVersion = appVersionName.map { versionName ->
+    if (versionName.count { it == '.' } >= 2) {
+        versionName
+    } else {
+        "$versionName.0"
+    }
+}
+val generatedAppVersionDir = layout.buildDirectory.dir("generated/source/appVersion/commonMain/kotlin")
+
+val generateAppVersionSource = tasks.register("generateAppVersionSource") {
+    outputs.dir(generatedAppVersionDir)
+
+    doLast {
+        val outputDir = generatedAppVersionDir.get().asFile
+        val packageDir = outputDir.resolve("com/tlincompose/core")
+        val versionName = appVersionName.get()
+        val versionCode = appVersionCode.get()
+        val displayVersion = "v.$versionName"
+        val packageVersion = desktopPackageVersion.get()
+
+        packageDir.mkdirs()
+        packageDir.resolve("AppVersion.kt").writeText(
+            """
+            package com.tlincompose.core
+
+            object AppVersion {
+                const val NAME = "$versionName"
+                const val CODE = $versionCode
+                const val DISPLAY_NAME = "$displayVersion"
+                const val DESKTOP_PACKAGE_VERSION = "$packageVersion"
+            }
+            """.trimIndent() + "\n",
+        )
+    }
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -26,6 +64,7 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
+            kotlin.srcDir(generatedAppVersionDir)
             dependencies {
                 implementation(libs.composeMaterialIconsExtended)
                 implementation(compose.runtime)
@@ -75,8 +114,8 @@ android {
         applicationId = "com.tlincompose"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.12"
+        versionCode = appVersionCode.get()
+        versionName = appVersionName.get()
     }
 
     compileOptions {
@@ -107,7 +146,7 @@ compose.desktop {
 
         nativeDistributions {
             packageName = "TLInCompose"
-            packageVersion = "1.0.0"
+            packageVersion = desktopPackageVersion.get()
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             linux {
                 iconFile.set(project.file("src/desktopMain/resources/icons/tlincompose-linux.png"))
@@ -120,4 +159,8 @@ compose.desktop {
             }
         }
     }
+}
+
+tasks.matching { it.name.contains("Kotlin") }.configureEach {
+    dependsOn(generateAppVersionSource)
 }

@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.tlincompose.core.APP_VERSION
+import com.tlincompose.core.AppVersion
 import com.tlincompose.core.backupExportErrorMessage
 import com.tlincompose.core.backupImportEmptyContentMessage
 import com.tlincompose.core.backupImportInvalidJsonMessage
@@ -234,7 +234,7 @@ internal fun TimesheetScreen(
                     onActivityDragCancelled = controller::cancelActivityDrag,
                 )
                 Text(
-                    text = APP_VERSION,
+                    text = AppVersion.DISPLAY_NAME,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
