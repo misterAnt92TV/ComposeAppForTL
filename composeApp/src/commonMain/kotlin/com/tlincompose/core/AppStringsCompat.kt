@@ -1306,6 +1306,69 @@ fun AppStrings.thirdPartyLibraryContentDescription(name: String): String =
 val AppStrings.thirdPartyLibraryOpenSite: String
     get() = this[StringKey.ThirdPartyLibraryOpenSite]
 
+val AppStrings.developerSectionTitle: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Developer"
+        AppLanguage.ITALIAN -> "Sviluppatore"
+        AppLanguage.GERMAN -> "Entwickler"
+        AppLanguage.FRENCH -> "Developpeur"
+        AppLanguage.SPANISH -> "Desarrollador"
+    }
+
+val AppStrings.developerSectionDescription: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Contact details and availability for suggestions or future improvements."
+        AppLanguage.ITALIAN -> "Dettagli di contatto e disponibilita per suggerimenti o futuri miglioramenti."
+        AppLanguage.GERMAN -> "Kontaktdaten und Verfugbarkeit fur Vorschlage oder zukunftige Verbesserungen."
+        AppLanguage.FRENCH -> "Coordonnees et disponibilite pour des suggestions ou de futures ameliorations."
+        AppLanguage.SPANISH -> "Datos de contacto y disponibilidad para sugerencias o futuras mejoras."
+    }
+
+val AppStrings.developerGithubLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "GitHub"
+        AppLanguage.ITALIAN -> "GitHub"
+        AppLanguage.GERMAN -> "GitHub"
+        AppLanguage.FRENCH -> "GitHub"
+        AppLanguage.SPANISH -> "GitHub"
+    }
+
+val AppStrings.developerEmailLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Email"
+        AppLanguage.ITALIAN -> "Email"
+        AppLanguage.GERMAN -> "E-Mail"
+        AppLanguage.FRENCH -> "E-mail"
+        AppLanguage.SPANISH -> "Correo"
+    }
+
+val AppStrings.developerAvailabilityMessage: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "I am open to suggestions and new developments to keep improving the app."
+        AppLanguage.ITALIAN -> "Sono aperto a suggerimenti e a nuovi sviluppi per migliorare l'app."
+        AppLanguage.GERMAN -> "Ich bin offen fur Vorschlage und neue Entwicklungen, um die App weiter zu verbessern."
+        AppLanguage.FRENCH -> "Je suis ouvert aux suggestions et a de nouveaux developpements pour ameliorer l'application."
+        AppLanguage.SPANISH -> "Estoy abierto a sugerencias y a nuevos desarrollos para mejorar la aplicacion."
+    }
+
+val AppStrings.developerOpenLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Open"
+        AppLanguage.ITALIAN -> "Apri"
+        AppLanguage.GERMAN -> "Offnen"
+        AppLanguage.FRENCH -> "Ouvrir"
+        AppLanguage.SPANISH -> "Abrir"
+    }
+
+val AppStrings.developerCopyLabel: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Copy"
+        AppLanguage.ITALIAN -> "Copia"
+        AppLanguage.GERMAN -> "Kopieren"
+        AppLanguage.FRENCH -> "Copier"
+        AppLanguage.SPANISH -> "Copiar"
+    }
+
 val AppStrings.highContrastTitle: String
     get() = when (language) {
         AppLanguage.ENGLISH -> "High contrast"

@@ -18,6 +18,7 @@ import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.ProjectIconPickerLauncher
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsSection
 import com.tlincompose.presentation.accessibility.AccessibilityTextScaleUiState
+import com.tlincompose.presentation.accessibility.DeveloperContactSection
 import com.tlincompose.presentation.accessibility.PdfExportStyleUiState
 import com.tlincompose.presentation.accessibility.SettingsBackupSection
 import com.tlincompose.presentation.accessibility.SettingsBackupUiState
@@ -340,6 +341,20 @@ private fun SettingsBackupSectionConfirmPreview() {
             onImportBackupSelected = {},
             onConfirmImport = {},
             onDismissImportConfirmation = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun DeveloperContactSectionPreview() {
+    val state = previewAccessibilityState(
+        textScale = AccessibilityTextScaleUiState.LARGE,
+        comfortableSpacing = true,
+    )
+    TLInComposePreviewSurface(state = state, modifier = Modifier.widthIn(max = 560.dp)) {
+        DeveloperContactSection(
+            strings = LocalAppStrings.current,
         )
     }
 }
