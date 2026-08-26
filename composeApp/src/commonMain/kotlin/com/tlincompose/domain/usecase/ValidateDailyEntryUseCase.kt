@@ -33,6 +33,7 @@ class ValidateDailyEntryUseCase {
                 description = row.description.trim(),
                 projectUrl = row.projectUrl?.trim()?.ifBlank { null },
                 minutes = (hours * 60.0).roundToInt(),
+                workLocation = row.workLocation,
             )
         }
 

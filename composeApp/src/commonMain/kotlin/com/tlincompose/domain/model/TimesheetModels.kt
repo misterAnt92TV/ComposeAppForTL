@@ -17,6 +17,12 @@ enum class EntryType {
     ;
 }
 
+enum class ActivityWorkLocation {
+    SMART_WORKING,
+    OFFICE,
+    CLIENT_SITE,
+}
+
 data class Activity(
     val type: EntryType,
     val extCode: String? = null,
@@ -24,6 +30,7 @@ data class Activity(
     val description: String = "",
     val projectUrl: String? = null,
     val minutes: Int,
+    val workLocation: ActivityWorkLocation = ActivityWorkLocation.SMART_WORKING,
 ) {
     val displayLabel: String
         get() = buildString {
@@ -185,6 +192,7 @@ data class ActivityDraftInput(
     val description: String,
     val projectUrl: String?,
     val hoursText: String,
+    val workLocation: ActivityWorkLocation = ActivityWorkLocation.SMART_WORKING,
 )
 
 data class DraftValidationResult(

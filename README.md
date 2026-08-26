@@ -59,12 +59,12 @@ Exported columns:
 
 ## Tech stack
 
-- Kotlin `2.2.0`
+- Kotlin `2.2.21`
 - Compose Multiplatform `1.10.3`
 - Android Gradle Plugin `8.9.3`
-- Kotlin Coroutines `1.10.2`
-- kotlinx-datetime `0.7.1`
-- kotlinx-serialization JSON `1.9.0`
+- Kotlin Coroutines `1.11.0`
+- kotlinx-datetime `0.8.0`
+- kotlinx-serialization JSON `1.11.0`
 - Kermit `2.1.0`
 - Koin `4.1.1`
 - Java toolchain / JVM target `17`

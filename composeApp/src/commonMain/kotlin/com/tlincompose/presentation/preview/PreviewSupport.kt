@@ -12,8 +12,6 @@ import androidx.compose.ui.unit.dp
 import com.tlincompose.core.AppStrings
 import com.tlincompose.core.activitySummaryLabel
 import com.tlincompose.core.appStrings
-import com.tlincompose.core.defaultExtActivityDescription
-import com.tlincompose.core.defaultExtActivityTitle
 import com.tlincompose.core.entryTypeLabel
 import com.tlincompose.core.holidayName
 import com.tlincompose.domain.model.ActivityDefinition
@@ -118,16 +116,6 @@ internal val previewMonthSummary: MonthSummaryUiState = MonthSummaryUiState(
 
 internal fun previewActivityDefinitions(strings: AppStrings): List<ActivityDefinition> = listOf(
     ActivityDefinition(
-        extCode = BuiltInActivityDefinitions.DefaultExtCode,
-        type = EntryType.PROJECT,
-        title = strings.defaultExtActivityTitle,
-        description = strings.defaultExtActivityDescription,
-        defaultMinutes = 480,
-        createdDate = LocalDate(2026, 5, 1),
-        updatedDate = LocalDate(2026, 5, 20),
-        projectIconPreset = ProjectIconPreset.WORK,
-    ),
-    ActivityDefinition(
         extCode = "TLI-204",
         type = EntryType.PROJECT,
         title = previewProjectTitle(strings),
@@ -188,6 +176,7 @@ internal fun previewDayEditorState(strings: AppStrings): DayEditorUiState = DayE
             description = previewComponentsDescription(strings),
             projectUrl = previewProjectUrl(strings),
             hoursText = "6",
+            workLocation = com.tlincompose.domain.model.ActivityWorkLocation.SMART_WORKING,
         ),
         ActivityDraftUiState(
             type = EntryType.PERMIT,
@@ -195,21 +184,23 @@ internal fun previewDayEditorState(strings: AppStrings): DayEditorUiState = DayE
             title = strings.entryTypeLabel(EntryType.PERMIT),
             description = previewMedicalVisitDescription(strings),
             hoursText = "2",
+            workLocation = com.tlincompose.domain.model.ActivityWorkLocation.CLIENT_SITE,
         ),
     ),
     errors = listOf(null, null),
+    canCoverIncompleteMonth = true,
 )
 
 internal fun previewActivityDefinitionEditorState(strings: AppStrings): ActivityDefinitionEditorUiState =
     ActivityDefinitionEditorUiState(
         mode = ActivityDefinitionEditorMode.EDIT,
-        originalExtCode = BuiltInActivityDefinitions.DefaultExtCode,
-        extCode = BuiltInActivityDefinitions.DefaultExtCode,
+        originalExtCode = "TLI-204",
+        extCode = "TLI-204",
         type = EntryType.PROJECT,
-        title = strings.defaultExtActivityTitle,
-        description = strings.defaultExtActivityDescription,
+        title = previewProjectTitle(strings),
+        description = previewProjectDescription(strings),
         durationHoursText = "8",
-        projectIconPreset = ProjectIconPreset.WORK,
+        projectIconPreset = ProjectIconPreset.CODE,
     )
 
 internal fun previewCalendarCells(strings: AppStrings): List<MonthCellUiModel> = buildList {
@@ -327,14 +318,6 @@ private fun previewMedicalVisitDescription(strings: AppStrings): String = when (
     AppLanguage.GERMAN -> "Arzttermin"
     AppLanguage.FRENCH -> "Visite medicale"
     AppLanguage.SPANISH -> "Visita medica"
-}
-
-private fun previewLightDarkDescription(strings: AppStrings): String = when (strings.language) {
-    AppLanguage.ENGLISH -> "Component cleanup and light/dark preview coverage."
-    AppLanguage.ITALIAN -> "Pulizia dei componenti e aggiunta preview light/dark."
-    AppLanguage.GERMAN -> "Bereinigung der Komponenten und Abdeckung mit Light/Dark-Previews."
-    AppLanguage.FRENCH -> "Nettoyage des composants et couverture des previews clair/sombre."
-    AppLanguage.SPANISH -> "Limpieza de componentes y cobertura de previews claro/oscuro."
 }
 
 private fun previewProjectUrl(strings: AppStrings): String = when (strings.language) {

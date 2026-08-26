@@ -7,6 +7,7 @@ import com.tlincompose.TestDispatcherProvider
 import com.tlincompose.core.DateMath
 import com.tlincompose.domain.model.Activity
 import com.tlincompose.domain.model.ActivityDefinition
+import com.tlincompose.domain.model.ActivityWorkLocation
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
 import com.tlincompose.domain.model.DailyEntry
@@ -21,6 +22,7 @@ import com.tlincompose.domain.repository.TimesheetRepository
 import com.tlincompose.domain.usecase.AddActivityToDayUseCase
 import com.tlincompose.domain.usecase.BuildCalendarMonthGridUseCase
 import com.tlincompose.domain.usecase.CalculateMonthWorkSummaryUseCase
+import com.tlincompose.domain.usecase.CoverIncompleteMonthWithActivityUseCase
 import com.tlincompose.domain.usecase.CreateDateRangeUseCase
 import com.tlincompose.domain.usecase.CreateMonthRangeUseCase
 import com.tlincompose.domain.usecase.ExportMonthRangeReportUseCase
@@ -228,6 +230,145 @@ class TimesheetControllerTest {
         assertEquals("month.csv", exportedDocument?.fileName)
     }
 
+    @Test
+    fun selectedWorkLocationIsSavedAndRestoredInDayEditor() = runTest {
+        val month = CalendarMonth.current()
+        val date = month.firstDate
+        val repository = FakeTimesheetRepository()
+        val controller = createController(repository)
+        val definition = ActivityDefinition(
+            extCode = "EXT-0001",
+            type = EntryType.PROJECT,
+            title = "Apollo",
+            description = "Sprint planning",
+            defaultMinutes = 480,
+            createdDate = date,
+            updatedDate = date,
+        )
+
+        advanceUntilIdle()
+
+        controller.onDayTapped(date)
+        controller.updateDraftSelection(index = 0, definition = definition)
+        controller.updateDraftWorkLocation(index = 0, workLocation = ActivityWorkLocation.CLIENT_SITE)
+        controller.saveEditor(
+            language = AppLanguage.ITALIAN,
+            onValidationError = { error("validation should not fail") },
+            onPersistenceError = { error("persistence should not fail") },
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(
+            ActivityWorkLocation.CLIENT_SITE,
+            repository.entries.getValue(date).activities.single().workLocation,
+        )
+
+        controller.onDayTapped(date)
+
+        assertEquals(
+            ActivityWorkLocation.CLIENT_SITE,
+            controller.editorState?.rows?.single()?.workLocation,
+        )
+    }
+
+    @Test
+    fun openingEmptyDayPrefillsSingleConfiguredDefinition() = runTest {
+        val month = CalendarMonth(2026, 7)
+        val date = month.firstDate
+        val repository = FakeTimesheetRepository()
+        val controller = createController(repository)
+        val definition = ActivityDefinition(
+            extCode = "EXT-UNICA",
+            type = EntryType.PROJECT,
+            title = "Commessa unica",
+            description = "Attività predefinita",
+            defaultMinutes = 480,
+            createdDate = date,
+            updatedDate = date,
+        )
+
+        controller.goToMonth(month)
+        advanceUntilIdle()
+        controller.updateAvailableDefinitions(listOf(definition))
+
+        controller.onDayTapped(date)
+
+        val row = assertNotNull(controller.editorState).rows.single()
+        assertEquals("EXT-UNICA", row.extCode)
+        assertEquals("Commessa unica", row.title)
+        assertEquals("8", row.hoursText)
+        assertEquals(EntryType.PROJECT, row.type)
+    }
+
+    @Test
+    fun coverIncompleteMonthFillsOnlyRemainingWorkdayMinutes() = runTest {
+        val month = CalendarMonth(2026, 7)
+        val firstWorkday = month.firstDate
+        val partialWorkday = LocalDate(2026, 7, 2)
+        val completeWorkday = LocalDate(2026, 7, 3)
+        val laterWorkday = LocalDate(2026, 7, 6)
+        val repository = FakeTimesheetRepository(
+            entries = mutableMapOf(
+                partialWorkday to DailyEntry(
+                    date = partialWorkday,
+                    activities = listOf(
+                        Activity(
+                            type = EntryType.COURSE,
+                            extCode = "TRN-01",
+                            title = "Formazione",
+                            minutes = 240,
+                        ),
+                    ),
+                ),
+                completeWorkday to DailyEntry(
+                    date = completeWorkday,
+                    activities = listOf(
+                        Activity(
+                            type = EntryType.PROJECT,
+                            extCode = "KEEP",
+                            title = "Già completo",
+                            minutes = 480,
+                        ),
+                    ),
+                ),
+            ),
+        )
+        val controller = createController(repository)
+        val definition = ActivityDefinition(
+            extCode = "EXT-UNICA",
+            type = EntryType.PROJECT,
+            title = "Commessa unica",
+            description = "Attività predefinita",
+            defaultMinutes = 480,
+            createdDate = firstWorkday,
+            updatedDate = firstWorkday,
+        )
+
+        controller.goToMonth(month)
+        advanceUntilIdle()
+        controller.updateAvailableDefinitions(listOf(definition))
+        controller.onDayTapped(firstWorkday)
+        controller.coverIncompleteMonth(
+            language = AppLanguage.ITALIAN,
+            onValidationError = { error("validation should not fail") },
+            onPersistenceError = { error("persistence should not fail") },
+        )
+
+        advanceUntilIdle()
+
+        assertEquals(0, controller.monthSummary.remainingCompletionMinutes)
+        assertEquals(480, repository.entries.getValue(firstWorkday).activities.single().minutes)
+        assertEquals(2, repository.entries.getValue(partialWorkday).activities.size)
+        assertEquals(240, repository.entries.getValue(partialWorkday).activities.last().minutes)
+        assertEquals("EXT-UNICA", repository.entries.getValue(partialWorkday).activities.last().extCode)
+        assertEquals("KEEP", repository.entries.getValue(completeWorkday).activities.single().extCode)
+        assertEquals(480, repository.entries.getValue(completeWorkday).activities.single().minutes)
+        assertEquals(480, repository.entries.getValue(laterWorkday).activities.single().minutes)
+        assertNull(repository.entries[LocalDate(2026, 7, 4)])
+        assertNull(controller.editorState)
+    }
+
     private fun TestScope.createController(
         repository: FakeTimesheetRepository,
         monthExporter: TimesheetExporter = FakeTimesheetExporter(),
@@ -241,6 +382,9 @@ class TimesheetControllerTest {
             calculateMonthWorkSummary = CalculateMonthWorkSummaryUseCase(),
             validateDailyEntry = ValidateDailyEntryUseCase(),
             addActivityToDay = AddActivityToDayUseCase(repository, SaveDailyEntryUseCase(repository)),
+            coverIncompleteMonthWithActivity = CoverIncompleteMonthWithActivityUseCase(
+                saveDailyEntry = SaveDailyEntryUseCase(repository),
+            ),
             saveDateRangeEntries = SaveDateRangeEntriesUseCase(
                 saveDailyEntry = SaveDailyEntryUseCase(repository),
             ),

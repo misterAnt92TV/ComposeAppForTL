@@ -78,6 +78,8 @@ class DesktopSpreadsheetEncoderTest {
         val sheetXml = zipEntryText(bytes, "xl/worksheets/sheet1.xml")
         assertTrue("xl/styles.xml" in entries)
         assertTrue(sheetXml.contains("mergeCell ref=\"A1:G1\""))
+        assertTrue(sheetXml.contains("Periodo"))
+        assertTrue(sheetXml.contains("Maggio 2026"))
         assertTrue(sheetXml.contains("state=\"frozen\""))
     }
 

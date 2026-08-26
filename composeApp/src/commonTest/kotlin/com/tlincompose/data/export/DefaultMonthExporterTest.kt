@@ -4,6 +4,7 @@ package com.tlincompose.data.export
 
 import co.touchlab.kermit.Logger
 import com.tlincompose.TestDispatcherProvider
+import com.tlincompose.core.appStrings
 import com.tlincompose.domain.model.Activity
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarMonth
@@ -57,7 +58,14 @@ class DefaultMonthExporterTest {
         assertEquals(2, rows.size)
         assertEquals("EXT-0001", rows[0].activityCode)
         assertEquals("Apollo / Apollo Platform", rows[0].activityTitle)
-        assertEquals("05/05/2026 - 06/05/2026, 08/05/2026", rows[0].periodsLabel)
+        assertEquals(
+            "from May 5 to 6, 2026; May 8, 2026",
+            rows[0].periodsLabel(appStrings(AppLanguage.ENGLISH)),
+        )
+        assertEquals(
+            "Apollo (EXT-0001) / Apollo Platform (EXT-0001)",
+            rows[0].activitySummaryLabel(),
+        )
         assertEquals("4 / 8", rows[0].hoursPerDayLabel)
         assertEquals(3, rows[0].days)
         assertEquals(1200, rows[0].totalMinutes)
@@ -86,12 +94,13 @@ class DefaultMonthExporterTest {
         val pdf = exporter.exportMonth(CalendarMonth(2026, 5), entries, ExportFormat.PDF, AppLanguage.ENGLISH)
 
         assertEquals("TLInCompose_2026-05.csv", csv.fileName)
-        assertTrue(csv.bytes.decodeToString().contains("Period"))
+        assertTrue(csv.bytes.decodeToString().contains("\"TLInCompose - May 2026\""))
+        assertTrue(csv.bytes.decodeToString().contains("\"Period\";\"May 2026\""))
         assertTrue(csv.bytes.decodeToString().contains("Exported at"))
         assertTrue(csv.bytes.decodeToString().contains("20/05/2026 16:35"))
         assertTrue(csv.bytes.decodeToString().contains("Recorded days"))
         assertTrue(csv.bytes.decodeToString().contains("\"Activity code\";\"Activity\";\"Type\";\"Periods\";\"Hours/day\";\"Days\";\"Total hours\""))
-        assertTrue(csv.bytes.decodeToString().contains("\"EXT-0002\";\"Ferie\";\"Vacation\";\"01/05/2026\";\"8\";\"1\";\"8\""))
+        assertTrue(csv.bytes.decodeToString().contains("\"EXT-0002\";\"Ferie\";\"Vacation\";\"May 1, 2026\";\"8\";\"1\";\"8\""))
         assertEquals("TLInCompose_2026-05.xlsx", xlsx.fileName)
         assertContentEquals("xlsx".encodeToByteArray(), xlsx.bytes)
         assertEquals("TLInCompose_2026-05.pdf", pdf.fileName)
@@ -126,11 +135,14 @@ class DefaultMonthExporterTest {
         )
 
         assertEquals("TLInCompose_José_García_2026-05.csv", csv.fileName)
+        assertTrue(csv.bytes.decodeToString().contains("\"TLInCompose - Maggio 2026\""))
+        assertTrue(csv.bytes.decodeToString().contains("\"Periodo\";\"Maggio 2026\""))
         assertTrue(csv.bytes.decodeToString().contains("\"Utente\";\"José García\""))
         assertTrue(csv.bytes.decodeToString().contains("\"Sede\";\"Sede Milano\""))
         assertTrue(csv.bytes.decodeToString().contains("\"Dipendente ID\";\"EMP-123\""))
         assertTrue(csv.bytes.decodeToString().contains("\"Person ID\";\"P-456\""))
         assertTrue(csv.bytes.decodeToString().contains("\"EXT-0002\";\"Attività Demo\""))
+        assertTrue(!csv.bytes.decodeToString().contains("\"Report\";\"TLInCompose\""))
     }
 
     @Test
@@ -335,5 +347,28 @@ class DefaultMonthExporterTest {
         assertTrue(detailCsv.contains("\"Activity\";\"EXT-0001 - Apollo\""))
         assertTrue(detailCsv.contains("\"Type\";\"Project\""))
         assertTrue(detailCsv.contains("\"Total hours\";\"8\""))
+    }
+
+    @Test
+    fun compactAndDetailLayoutsRepeatExtOnDifferentActivityNamesOnlyWhenNeeded() = runTest {
+        val rows = groupActivitiesForExport(
+            entries = listOf(
+                DailyEntry(
+                    LocalDate(2026, 7, 1),
+                    listOf(Activity(type = EntryType.PROJECT, extCode = "EXT-0001", title = "Apollo", minutes = 480)),
+                ),
+                DailyEntry(
+                    LocalDate(2026, 7, 2),
+                    listOf(Activity(type = EntryType.PROJECT, extCode = "EXT-0001", title = "Apollo Platform", minutes = 480)),
+                ),
+            ),
+            language = AppLanguage.ENGLISH,
+        )
+
+        assertEquals(1, rows.size)
+        assertEquals(
+            "Apollo (EXT-0001) / Apollo Platform (EXT-0001)",
+            rows.single().activitySummaryLabel(),
+        )
     }
 }

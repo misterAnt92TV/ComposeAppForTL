@@ -15,11 +15,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Android
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Brush
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.Card
@@ -34,14 +37,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tlincompose.core.AppStrings
+import com.tlincompose.core.DeveloperInfo
 import com.tlincompose.core.brandingDescription
 import com.tlincompose.core.brandingLogoContentDescription
 import com.tlincompose.core.brandingTitle
@@ -50,6 +57,13 @@ import com.tlincompose.core.comfortableLayoutDescription
 import com.tlincompose.core.comfortableLayoutTitle
 import com.tlincompose.core.decreaseWorkdayButtonLabel
 import com.tlincompose.core.decreaseWorkdayHours
+import com.tlincompose.core.developerAvailabilityMessage
+import com.tlincompose.core.developerCopyLabel
+import com.tlincompose.core.developerEmailLabel
+import com.tlincompose.core.developerOpenLabel
+import com.tlincompose.core.developerSectionDescription
+import com.tlincompose.core.developerSectionTitle
+import com.tlincompose.core.developerGithubLabel
 import com.tlincompose.core.exportEmployeeIdLabel
 import com.tlincompose.core.exportEmployeeIdPlaceholder
 import com.tlincompose.core.exportMetadataDescription
@@ -684,6 +698,14 @@ internal fun AccessibilitySettingsSection(
             }
         }
 
+        @Composable
+        fun DeveloperSection() {
+            DeveloperContactSection(
+                strings = strings,
+                modifier = Modifier.testTag("developer-section"),
+            )
+        }
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -771,6 +793,7 @@ internal fun AccessibilitySettingsSection(
                                     onConfirmImport = onConfirmImport,
                                     onDismissImportConfirmation = onDismissImportConfirmation,
                                 )
+                                DeveloperSection()
                                 ThirdPartyLibrariesSection()
                                 PrivacySection()
                             }
@@ -797,6 +820,7 @@ internal fun AccessibilitySettingsSection(
                                 onConfirmImport = onConfirmImport,
                                 onDismissImportConfirmation = onDismissImportConfirmation,
                             )
+                            DeveloperSection()
                             ThirdPartyLibrariesSection()
                             PrivacySection()
                         }
@@ -986,6 +1010,134 @@ private fun ThirdPartyLibraryRow(
     }
 }
 
+@Suppress("DEPRECATION")
+@Composable
+internal fun DeveloperContactSection(
+    strings: AppStrings,
+    modifier: Modifier = Modifier,
+) {
+    val clipboardManager = LocalClipboardManager.current
+    val uriHandler = LocalUriHandler.current
+
+    Surface(
+        modifier = modifier,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = strings.developerSectionTitle,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = strings.developerSectionDescription,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            DeveloperContactRow(
+                label = strings.developerGithubLabel,
+                value = DeveloperInfo.GITHUB_USERNAME,
+                openLabel = strings.developerOpenLabel,
+                copyLabel = strings.developerCopyLabel,
+                onOpen = {
+                    runCatching { uriHandler.openUri(DeveloperInfo.GITHUB_URL) }
+                },
+                onCopy = {
+                    clipboardManager.setText(AnnotatedString(DeveloperInfo.GITHUB_URL))
+                },
+                modifier = Modifier.testTag("developer-github-row"),
+            )
+            DeveloperContactRow(
+                label = strings.developerEmailLabel,
+                value = DeveloperInfo.EMAIL,
+                openLabel = strings.developerOpenLabel,
+                copyLabel = strings.developerCopyLabel,
+                onOpen = {
+                    runCatching { uriHandler.openUri(DeveloperInfo.EMAIL_URI) }
+                },
+                onCopy = {
+                    clipboardManager.setText(AnnotatedString(DeveloperInfo.EMAIL))
+                },
+                modifier = Modifier.testTag("developer-email-row"),
+            )
+            Text(
+                text = strings.developerAvailabilityMessage,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+@Composable
+private fun DeveloperContactRow(
+    label: String,
+    value: String,
+    openLabel: String,
+    copyLabel: String,
+    onOpen: () -> Unit,
+    onCopy: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            FlowRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                AppActionButton(
+                    text = openLabel,
+                    onClick = onOpen,
+                    variant = AppButtonVariant.SECONDARY,
+                    minHeight = 44.dp,
+                    minWidth = 112.dp,
+                    maxWidth = 160.dp,
+                    centerLabel = false,
+                    leadingIcon = Icons.AutoMirrored.Outlined.OpenInNew,
+                    testTag = "$label-open-button",
+                )
+                AppActionButton(
+                    text = copyLabel,
+                    onClick = onCopy,
+                    variant = AppButtonVariant.TERTIARY,
+                    minHeight = 44.dp,
+                    minWidth = 112.dp,
+                    maxWidth = 160.dp,
+                    centerLabel = false,
+                    leadingIcon = Icons.Outlined.ContentCopy,
+                    testTag = "$label-copy-button",
+                )
+            }
+        }
+    }
+}
+
 // --- Third party libraries UI models ---
 
 private enum class ThirdPartyLibraryIcon {
@@ -1010,28 +1162,28 @@ private fun thirdPartyLibrariesList(): List<ThirdPartyLibraryUi> = listOf(
     ),
     ThirdPartyLibraryUi(
         name = "Kotlin Coroutines (kotlinx-coroutines-core)",
-        version = "1.10.2",
+        version = "1.11.0",
         websiteUrl = "https://github.com/Kotlin/kotlinx.coroutines",
         icon = ThirdPartyLibraryIcon.KOTLIN,
         module = "org.jetbrains.kotlinx:kotlinx-coroutines-core"
     ),
     ThirdPartyLibraryUi(
         name = "KotlinX Datetime",
-        version = "0.7.1",
+        version = "0.8.0",
         websiteUrl = "https://github.com/Kotlin/kotlinx-datetime",
         icon = ThirdPartyLibraryIcon.KOTLIN,
         module = "org.jetbrains.kotlinx:kotlinx-datetime"
     ),
     ThirdPartyLibraryUi(
         name = "KotlinX Serialization",
-        version = "1.9.0",
+        version = "1.11.0",
         websiteUrl = "https://github.com/Kotlin/kotlinx.serialization",
         icon = ThirdPartyLibraryIcon.KOTLIN,
         module = "org.jetbrains.kotlinx:kotlinx-serialization-json"
     ),
     ThirdPartyLibraryUi(
         name = "Koin (DI)",
-        version = "4.1.1",
+        version = "4.2.2",
         websiteUrl = "https://insert-koin.io/",
         icon = ThirdPartyLibraryIcon.KOIN,
         module = "io.insert-koin:koin-core"

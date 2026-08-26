@@ -18,6 +18,7 @@ import com.tlincompose.presentation.LocalAppStrings
 import com.tlincompose.presentation.ProjectIconPickerLauncher
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsSection
 import com.tlincompose.presentation.accessibility.AccessibilityTextScaleUiState
+import com.tlincompose.presentation.accessibility.DeveloperContactSection
 import com.tlincompose.presentation.accessibility.PdfExportStyleUiState
 import com.tlincompose.presentation.accessibility.SettingsBackupSection
 import com.tlincompose.presentation.accessibility.SettingsBackupUiState
@@ -32,7 +33,6 @@ import com.tlincompose.presentation.components.AppButtonVariant
 import com.tlincompose.presentation.components.BrandingLogoPreview
 import com.tlincompose.presentation.components.HeaderInfoPill
 import com.tlincompose.presentation.components.StatusPill
-import com.tlincompose.domain.model.DefaultExtWorkMode
 import com.tlincompose.presentation.export.ExportDialog
 import com.tlincompose.presentation.header.HeaderSection
 
@@ -128,6 +128,67 @@ private fun HeaderSectionWithoutBrandingLogoPreview() {
             onExport = {},
             onToggleSettings = {},
             isActivityCatalogVisible = false,
+            onToggleActivityCatalog = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun HeaderSectionCompactWithBrandingLogoPreview() {
+    val state = previewAccessibilityState(
+        brandingLogoBase64 = previewBrandingLogoBase64,
+        comfortableSpacing = true,
+    )
+    TLInComposePreviewSurface(
+        state = state,
+        modifier = Modifier.widthIn(max = 460.dp),
+    ) {
+        val strings = LocalAppStrings.current
+        HeaderSection(
+            monthSummary = previewMonthSummary,
+            intervalMessage = strings[StringKey.SelectedMonthsReadyMessage("12/05/2026 - 16/05/2026")],
+            isSelectingRange = false,
+            isExportEnabled = true,
+            accessibilityState = state,
+            brandingLogoBase64 = state.brandingLogoBase64,
+            isSettingsVisible = false,
+            layoutSpec = previewLayoutSpec(state),
+            onToggleRangeSelection = {},
+            onExport = {},
+            onToggleSettings = {},
+            isActivityCatalogVisible = true,
+            onToggleActivityCatalog = {},
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
+private fun HeaderSectionCompactLargeTextPreview() {
+    val state = previewAccessibilityState(
+        brandingLogoBase64 = previewBrandingLogoBase64,
+        comfortableSpacing = true,
+        textScale = AccessibilityTextScaleUiState.LARGE,
+    )
+    TLInComposePreviewSurface(
+        state = state,
+        modifier = Modifier.widthIn(max = 420.dp),
+    ) {
+        val strings = LocalAppStrings.current
+        HeaderSection(
+            monthSummary = previewMonthSummary,
+            intervalMessage = strings[StringKey.SelectedMonthsReadyMessage("12/05/2026 - 16/05/2026")],
+            isSelectingRange = true,
+            isExportEnabled = true,
+            accessibilityState = state,
+            brandingLogoBase64 = state.brandingLogoBase64,
+            isSettingsVisible = false,
+            layoutSpec = previewLayoutSpec(state),
+            onToggleRangeSelection = {},
+            onExport = {},
+            onToggleSettings = {},
+            isActivityCatalogVisible = true,
             onToggleActivityCatalog = {},
         )
     }
@@ -286,6 +347,20 @@ private fun SettingsBackupSectionConfirmPreview() {
 
 @PreviewLightDark
 @Composable
+private fun DeveloperContactSectionPreview() {
+    val state = previewAccessibilityState(
+        textScale = AccessibilityTextScaleUiState.LARGE,
+        comfortableSpacing = true,
+    )
+    TLInComposePreviewSurface(state = state, modifier = Modifier.widthIn(max = 560.dp)) {
+        DeveloperContactSection(
+            strings = LocalAppStrings.current,
+        )
+    }
+}
+
+@PreviewLightDark
+@Composable
 private fun ActivityCatalogSectionPreview() {
     val state = previewAccessibilityState()
     TLInComposePreviewSurface(state = state) {
@@ -294,11 +369,7 @@ private fun ActivityCatalogSectionPreview() {
             definitions = previewActivityDefinitions(strings),
             layoutSpec = previewLayoutSpec(state),
             defaultWorkdayMinutes = state.standardWorkdayMinutes,
-            defaultExtWorkMode = DefaultExtWorkMode.OFFICE,
-            isApplyingDefaultExt = false,
             onCreateDefinition = {},
-            onDefaultExtWorkModeChanged = {},
-            onApplyDefaultExt = {},
             onEditDefinition = {},
             onDeleteDefinition = {},
             onClose = {},
@@ -322,7 +393,9 @@ private fun DayEditorDialogPreview() {
             onTypeChanged = { _, _ -> },
             onDefinitionSelected = { _, _ -> },
             onHoursChanged = { _, _ -> },
+            onWorkLocationChanged = { _, _ -> },
             onSave = {},
+            onCoverIncompleteMonth = {},
         )
     }
 }

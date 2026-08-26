@@ -5,8 +5,6 @@ package com.tlincompose.core
 
 import com.tlincompose.domain.model.AppLanguage
 
-const val APP_VERSION = "v.1.12"
-
 /**
  * Sealed class defining keys for all localizable strings.
  * Each key represents a unique text element with optional parameters.
@@ -30,6 +28,14 @@ sealed class StringKey {
     object ThirdPartyLibraryOpenSite : StringKey()
     data class ThirdPartyLibraryContentDescription(val name: String) : StringKey()
     // --- Fine sezione ---
+
+    object DeveloperSectionTitle : StringKey()
+    object DeveloperSectionDescription : StringKey()
+    object DeveloperGithubLabel : StringKey()
+    object DeveloperEmailLabel : StringKey()
+    object DeveloperAvailabilityMessage : StringKey()
+    object DeveloperOpenLabel : StringKey()
+    object DeveloperCopyLabel : StringKey()
 
     // Android save/IO system messages
     object SaveCancelledMessage : StringKey()
@@ -110,6 +116,13 @@ class AppStrings(val language: AppLanguage) {
         StringKey.ThirdPartyLibraryOpenSite -> "Apri sito"
         is StringKey.ThirdPartyLibraryContentDescription -> "Pagina ufficiale di ${key.name}"
         // --- Fine sezione ---
+        StringKey.DeveloperSectionTitle -> "Sviluppatore"
+        StringKey.DeveloperSectionDescription -> "Informazioni di contatto e disponibilita per migliorare l'app."
+        StringKey.DeveloperGithubLabel -> "GitHub"
+        StringKey.DeveloperEmailLabel -> "Email"
+        StringKey.DeveloperAvailabilityMessage -> "Sono aperto a suggerimenti e a nuovi sviluppi per migliorare l'app."
+        StringKey.DeveloperOpenLabel -> "Apri"
+        StringKey.DeveloperCopyLabel -> "Copia"
     }
 }
 

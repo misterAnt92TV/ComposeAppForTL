@@ -10,11 +10,8 @@ import com.tlincompose.domain.model.ActivityDefinition
 import com.tlincompose.domain.model.ActivityDefinitionDraftInput
 import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.BuiltInActivityDefinitions
-import com.tlincompose.domain.model.CalendarMonth
-import com.tlincompose.domain.model.DefaultExtWorkMode
 import com.tlincompose.domain.model.EntryType
 import com.tlincompose.domain.model.ProjectIconPreset
-import com.tlincompose.domain.usecase.ApplyDefaultExtActivityToMonthUseCase
 import com.tlincompose.domain.usecase.DeleteActivityDefinitionUseCase
 import com.tlincompose.domain.usecase.EnsureDefaultActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.GenerateNextExtCodeUseCase
@@ -37,7 +34,6 @@ class ActivityCatalogController(
     private val saveActivityDefinition: SaveActivityDefinitionUseCase,
     private val syncActivitiesWithDefinition: SyncActivitiesWithDefinitionUseCase,
     private val deleteActivityDefinition: DeleteActivityDefinitionUseCase,
-    private val applyDefaultExtActivityToMonth: ApplyDefaultExtActivityToMonthUseCase,
     dispatcherProvider: DispatcherProvider,
     logger: Logger,
 ) {
@@ -56,12 +52,6 @@ class ActivityCatalogController(
         private set
 
     var definitionPendingDelete by mutableStateOf<ActivityDefinition?>(null)
-        private set
-
-    var defaultExtWorkMode by mutableStateOf(DefaultExtWorkMode.OFFICE)
-        private set
-
-    var isApplyingDefaultExt by mutableStateOf(false)
         private set
 
     init {
@@ -185,36 +175,6 @@ class ActivityCatalogController(
 
     fun updateLanguage(language: AppLanguage) {
         currentLanguage = language
-    }
-
-    fun updateDefaultExtWorkMode(workMode: DefaultExtWorkMode) {
-        defaultExtWorkMode = workMode
-    }
-
-    fun applyDefaultExtToCurrentMonth(
-        month: CalendarMonth,
-        onSuccess: (Int) -> Unit,
-        onFailure: () -> Unit,
-    ) {
-        if (isApplyingDefaultExt) return
-        val defaultDefinition = definitions.firstOrNull { it.extCode == BuiltInActivityDefinitions.DefaultExtCode }
-        isApplyingDefaultExt = true
-        scope.launch {
-            runCatching {
-                applyDefaultExtActivityToMonth(
-                    month = month,
-                    workMode = defaultExtWorkMode,
-                    definition = defaultDefinition,
-                )
-            }.onSuccess { appliedDays ->
-                isApplyingDefaultExt = false
-                onSuccess(appliedDays)
-            }.onFailure {
-                isApplyingDefaultExt = false
-                log.e(it) { "Impossibile applicare l'attività EXT di default al mese ${month.fileStamp}." }
-                onFailure()
-            }
-        }
     }
 
     fun saveEditor(

@@ -15,13 +15,10 @@ import com.tlincompose.core.exportGeneratedAtValue
 import com.tlincompose.core.exportHoursPerDayCompactLabel
 import com.tlincompose.core.exportHoursPerDayLabel
 import com.tlincompose.core.exportNoActivitiesForSelectedPeriod
-import com.tlincompose.core.exportPeriodLabel
 import com.tlincompose.core.exportPeriodsLabel
-import com.tlincompose.core.exportRecordedDaysLabel
 import com.tlincompose.core.exportTotalHoursCompactLabel
 import com.tlincompose.core.exportTotalHoursLabel
 import com.tlincompose.core.exportTypeLabel
-import com.tlincompose.core.exportUserLabel
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.labeledValue
 import com.tlincompose.domain.model.PdfExportStyle
@@ -83,11 +80,11 @@ object PdfReportWriter {
         return buildPdf(objects)
     }
 
-    private fun buildLines(report: ExportReport, title: String): List<String> {
+    private fun buildLines(report: ExportReport, title: String): List<PdfLine> {
         val language = report.language
         val strings = appStrings(language)
         val lines = buildCommonHeaderLines(report, title, strings).toMutableList()
-        lines += ""
+        lines += PdfLine("")
         lines += when (report.pdfExportStyle) {
             PdfExportStyle.RETRO -> buildRetroTableLines(report.rows, strings)
             PdfExportStyle.SIMPLE_TABLE -> buildSimpleTableLines(report.rows, strings)
@@ -97,52 +94,22 @@ object PdfReportWriter {
         return lines
     }
 
-    private fun retroPdfColumns(strings: AppStrings): List<PdfColumn> = listOf(
-        PdfColumn(strings.exportActivityCodeLabel, 10),
-        PdfColumn(strings.exportActivityLabel, 16),
-        PdfColumn(strings.exportTypeLabel, 10),
-        PdfColumn(strings.exportPeriodsLabel, 15),
-        PdfColumn(strings.exportHoursPerDayCompactLabel, 8, alignment = PdfColumnAlignment.END),
-        PdfColumn(strings.exportDaysLabel, 4, alignment = PdfColumnAlignment.END),
-        PdfColumn(strings.exportTotalHoursCompactLabel, 7, alignment = PdfColumnAlignment.END),
-    )
-
-    private fun simplePdfColumns(strings: AppStrings): List<PdfColumn> = listOf(
-        PdfColumn(strings.exportActivityLabel, 18),
-        PdfColumn(strings.exportActivityCodeLabel, 10),
-        PdfColumn(strings.exportPeriodsLabel, 19),
-        PdfColumn(strings.exportTypeLabel, 10),
+    private fun structuredPdfColumns(strings: AppStrings): List<PdfColumn> = listOf(
+        PdfColumn(strings.exportActivityLabel, 50),
+        PdfColumn(strings.exportTypeLabel, 12),
         PdfColumn(strings.exportHoursPerDayCompactLabel, 8, alignment = PdfColumnAlignment.END),
         PdfColumn(strings.exportDaysLabel, 5, alignment = PdfColumnAlignment.END),
-        PdfColumn(strings.exportTotalHoursCompactLabel, 10, alignment = PdfColumnAlignment.END),
+        PdfColumn(strings.exportTotalHoursCompactLabel, 9, alignment = PdfColumnAlignment.END),
     )
 
-    private fun formatTableSeparator(columns: List<PdfColumn>): String = buildString {
-        append("+")
-        columns.forEach { column ->
-            append("-".repeat(column.width + 2))
-            append("+")
-        }
-    }
-
-    private fun formatSimpleTableSeparator(columns: List<PdfColumn>): String = buildString {
+    private fun formatSimpleTableSeparator(
+        columns: List<PdfColumn>,
+        separatorChar: Char = '-',
+    ): String = buildString {
         columns.forEachIndexed { index, column ->
             if (index > 0) append("  ")
-            append("-".repeat(column.width))
+            append(separatorChar.toString().repeat(column.width))
         }
-    }
-
-    private fun formatTableRow(
-        columns: List<PdfColumn>,
-        values: List<String>,
-    ): List<String> {
-        return formatAlignedRow(
-            columns = columns,
-            values = values,
-            prefix = "| ",
-            separator = " | ",
-            suffix = " |",
-        )
     }
 
     private fun formatSimpleTableRow(
@@ -195,113 +162,148 @@ object PdfReportWriter {
         report: ExportReport,
         title: String,
         strings: AppStrings,
-    ): List<String> = buildList {
-        add(title)
+    ): List<PdfLine> = buildList {
+        add(PdfLine(title))
         report.metadataRows(strings).forEach { row ->
-            add(strings.labeledValue(row.label, row.value))
+            add(PdfLine(strings.labeledValue(row.label, row.value)))
         }
     }
 
-    private fun buildRetroTableLines(rows: List<ExportRow>, strings: AppStrings): List<String> {
-        val columns = retroPdfColumns(strings)
-        val tableSeparator = formatTableSeparator(columns)
-        return buildList {
-            add(tableSeparator)
-            addAll(formatTableRow(columns, columns.map(PdfColumn::header)))
-            add(tableSeparator)
-            rows.forEach { row ->
-                addAll(formatTableRow(columns, row.toRetroPdfRowValues()))
-                add(tableSeparator)
-            }
-            if (rows.isEmpty()) {
-                add(strings.exportNoActivitiesForSelectedPeriod)
-            }
-        }
-    }
+    private fun buildRetroTableLines(rows: List<ExportRow>, strings: AppStrings): List<PdfLine> =
+        buildStructuredTableLines(
+            rows = rows,
+            strings = strings,
+            headerSeparatorChar = '=',
+            rowSeparatorChar = '-',
+        )
 
-    private fun buildSimpleTableLines(rows: List<ExportRow>, strings: AppStrings): List<String> {
-        val columns = simplePdfColumns(strings)
-        val separator = formatSimpleTableSeparator(columns)
-        return buildList {
-            addAll(formatSimpleTableRow(columns, columns.map(PdfColumn::header)))
-            add(separator)
-            rows.forEach { row ->
-                addAll(formatSimpleTableRow(columns, row.toSimplePdfRowValues()))
-            }
-            if (rows.isEmpty()) {
-                add(strings.exportNoActivitiesForSelectedPeriod)
-            }
-        }
-    }
+    private fun buildSimpleTableLines(rows: List<ExportRow>, strings: AppStrings): List<PdfLine> =
+        buildStructuredTableLines(
+            rows = rows,
+            strings = strings,
+            headerSeparatorChar = '-',
+            rowSeparatorChar = null,
+        )
 
-    private fun buildCompactListLines(rows: List<ExportRow>, strings: AppStrings): List<String> = buildList {
+    private fun buildStructuredTableLines(
+        rows: List<ExportRow>,
+        strings: AppStrings,
+        headerSeparatorChar: Char,
+        rowSeparatorChar: Char?,
+    ): List<PdfLine> {
         if (rows.isEmpty()) {
-            add(strings.exportNoActivitiesForSelectedPeriod)
+            return listOf(PdfLine(strings.exportNoActivitiesForSelectedPeriod))
+        }
+
+        val columns = structuredPdfColumns(strings)
+        val headerSeparator = formatSimpleTableSeparator(columns, separatorChar = headerSeparatorChar)
+        val rowSeparator = rowSeparatorChar?.toString()?.repeat(PDF_CONTENT_WIDTH)
+
+        return buildList {
+            addAll(formatSimpleTableRow(columns, columns.map(PdfColumn::header)).map(PdfLine.Companion::table))
+            add(PdfLine(headerSeparator, PdfLineRole.TABLE))
+            rows.forEachIndexed { index, row ->
+                addAll(formatSimpleTableRow(columns, row.toStructuredPdfRowValues()).map(PdfLine.Companion::table))
+                addAll(
+                    formatSecondaryTableLines(
+                        label = strings.exportPeriodsLabel,
+                        value = row.periodsLabel(strings),
+                    ).map(PdfLine.Companion::table),
+                )
+                if (index != rows.lastIndex) {
+                    if (rowSeparator != null) {
+                        add(PdfLine(rowSeparator, PdfLineRole.TABLE))
+                    } else {
+                        add(PdfLine(""))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun buildCompactListLines(rows: List<ExportRow>, strings: AppStrings): List<PdfLine> = buildList {
+        if (rows.isEmpty()) {
+            add(PdfLine(strings.exportNoActivitiesForSelectedPeriod))
             return@buildList
         }
         rows.forEachIndexed { index, row ->
-            add(row.heading())
-            addAll(wrapLabeledValue(strings.exportTypeLabel, row.typeLabel))
-            addAll(wrapLabeledValue(strings.exportPeriodsLabel, row.periodsLabel))
+            add(PdfLine(row.heading()))
+            addAll(wrapLabeledValue(strings.exportTypeLabel, row.typeLabel).map(::PdfLine))
+            addAll(wrapLabeledValue(strings.exportPeriodsLabel, row.periodsLabel(strings)).map(::PdfLine))
             addAll(
                 wrapText(
                     "${strings.exportHoursPerDayLabel}: ${row.hoursPerDayLabel}   " +
                         "${strings.exportDaysLabel}: ${row.days}   " +
                         "${strings.exportTotalHoursLabel}: ${formatHours(row.totalMinutes)}",
-                ),
+                ).map(::PdfLine),
             )
             if (index != rows.lastIndex) {
-                add("")
+                add(PdfLine(""))
             }
         }
     }
 
-    private fun buildDetailBlockLines(rows: List<ExportRow>, strings: AppStrings): List<String> = buildList {
+    private fun buildDetailBlockLines(rows: List<ExportRow>, strings: AppStrings): List<PdfLine> = buildList {
         if (rows.isEmpty()) {
-            add(strings.exportNoActivitiesForSelectedPeriod)
+            add(PdfLine(strings.exportNoActivitiesForSelectedPeriod))
             return@buildList
         }
         val divider = "=".repeat(92)
         rows.forEach { row ->
-            add(divider)
-            addAll(wrapText(row.heading()))
-            addAll(wrapLabeledValue(strings.exportTypeLabel, row.typeLabel))
-            addAll(wrapLabeledValue(strings.exportPeriodsLabel, row.periodsLabel))
-            addAll(wrapLabeledValue(strings.exportHoursPerDayLabel, row.hoursPerDayLabel))
-            addAll(wrapLabeledValue(strings.exportDaysLabel, row.days.toString()))
-            addAll(wrapLabeledValue(strings.exportTotalHoursLabel, formatHours(row.totalMinutes)))
+            add(PdfLine(divider))
+            addAll(wrapText(row.heading()).map(::PdfLine))
+            addAll(wrapLabeledValue(strings.exportTypeLabel, row.typeLabel).map(::PdfLine))
+            addAll(wrapLabeledValue(strings.exportPeriodsLabel, row.periodsLabel(strings)).map(::PdfLine))
+            addAll(wrapLabeledValue(strings.exportHoursPerDayLabel, row.hoursPerDayLabel).map(::PdfLine))
+            addAll(wrapLabeledValue(strings.exportDaysLabel, row.days.toString()).map(::PdfLine))
+            addAll(wrapLabeledValue(strings.exportTotalHoursLabel, formatHours(row.totalMinutes)).map(::PdfLine))
         }
-        add(divider)
+        add(PdfLine(divider))
     }
 
     private fun wrapLabeledValue(label: String, value: String): List<String> =
         wrapText("$label: $value")
 
-    private fun ExportRow.toRetroPdfRowValues(): List<String> = listOf(
-        activityCode,
-        activityTitle,
+    private fun formatSecondaryTableLines(label: String, value: String): List<String> {
+        val prefix = "  $label: "
+        val continuationPrefix = " ".repeat(prefix.length)
+        return wrapText(
+            text = value,
+            width = PDF_CONTENT_WIDTH - prefix.length,
+        ).mapIndexed { index, line ->
+            if (index == 0) {
+                prefix + line
+            } else {
+                continuationPrefix + line
+            }
+        }
+    }
+
+    private fun ExportRow.toStructuredPdfRowValues(): List<String> = listOf(
+        tableActivityLabel(),
         typeLabel,
-        periodsLabel,
         hoursPerDayLabel,
         days.toString(),
         formatHours(totalMinutes),
     )
 
-    private fun ExportRow.toSimplePdfRowValues(): List<String> = listOf(
-        activityTitle,
-        activityCode,
-        periodsLabel,
-        typeLabel,
-        hoursPerDayLabel,
-        days.toString(),
-        formatHours(totalMinutes),
-    )
+    private fun ExportRow.tableActivityLabel(): String =
+        if (activityCode == "-") {
+            activitySummaryLabel()
+        } else {
+            "${activitySummaryLabel()} ($activityCode)"
+        }
 
     private fun ExportRow.heading(): String =
         if (activityCode == "-") {
-            activityTitle
+            activitySummaryLabel()
         } else {
-            "$activityCode - $activityTitle"
+            val summary = activitySummaryLabel()
+            if (summary.contains("($activityCode)")) {
+                summary
+            } else {
+                "$activityCode - $summary"
+            }
         }
 
     private fun padOrTrim(
@@ -321,7 +323,7 @@ object PdfReportWriter {
         return padded
     }
 
-    private fun wrapText(text: String, width: Int = 92): List<String> {
+    private fun wrapText(text: String, width: Int = PDF_CONTENT_WIDTH): List<String> {
         val sanitized = text
         if (sanitized.length <= width) return listOf(sanitized)
 
@@ -337,7 +339,7 @@ object PdfReportWriter {
     }
 
     private fun buildPageContent(
-        lines: List<String>,
+        lines: List<PdfLine>,
         font: PdfEmbeddedFont,
         logoPlacement: PdfLogoPlacement?,
     ): String = buildString {
@@ -353,7 +355,12 @@ object PdfReportWriter {
         append("10 TL\n")
         lines.forEachIndexed { index, line ->
             append("(")
-            append(escapePdfText(line, font))
+            append(
+                escapePdfText(
+                    text = line.text,
+                    font = font,
+                ),
+            )
             append(") Tj\n")
             if (index != lines.lastIndex) {
                 append("T*\n")
@@ -524,6 +531,20 @@ private data class PdfLogoPlacement(
     val textStartY: Float,
 )
 
+private enum class PdfLineRole {
+    REGULAR,
+    TABLE,
+}
+
+private data class PdfLine(
+    val text: String,
+    val role: PdfLineRole = PdfLineRole.REGULAR,
+) {
+    companion object {
+        fun table(text: String): PdfLine = PdfLine(text = text, role = PdfLineRole.TABLE)
+    }
+}
+
 private data class PdfColumn(
     val header: String,
     val width: Int,
@@ -534,3 +555,5 @@ private enum class PdfColumnAlignment {
     START,
     END,
 }
+
+private const val PDF_CONTENT_WIDTH = 92

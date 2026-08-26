@@ -12,6 +12,13 @@ enum class EntryTypeEntity {
 }
 
 @Serializable
+enum class ActivityWorkLocationEntity {
+    SMART_WORKING,
+    OFFICE,
+    CLIENT_SITE,
+}
+
+@Serializable
 data class ActivityEntity(
     val type: EntryTypeEntity,
     val extCode: String? = null,
@@ -20,6 +27,7 @@ data class ActivityEntity(
     val projectUrl: String? = null,
     val projectLabel: String? = null,
     val minutes: Int,
+    val workLocation: ActivityWorkLocationEntity = ActivityWorkLocationEntity.SMART_WORKING,
 )
 
 @Serializable

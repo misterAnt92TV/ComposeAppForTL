@@ -41,19 +41,27 @@ class PdfReportWriterTest {
     }
 
     @Test
-    fun retroStyleKeepsPipeBasedTable() {
+    fun retroStyleUsesStructuredProfessionalTable() {
         val pdfText = buildPdfText(PdfExportStyle.RETRO)
 
-        assertTrue(pdfText.contains("| Activity"))
-        assertTrue(pdfText.contains("+--------------"))
+        assertTrue(pdfText.contains("Activity"))
+        assertTrue(pdfText.contains("\\(EXT-0001\\)"))
+        assertTrue(pdfText.contains("Periods: from May 5 to 6, 2026"))
+        assertTrue(pdfText.contains("=================================================="))
+        assertFalse(pdfText.contains("| Activity"))
+        assertFalse(pdfText.contains("/F2 8 Tf"))
     }
 
     @Test
-    fun simpleTableStyleRemovesPipes() {
+    fun simpleTableStyleKeepsCleanAlignedRows() {
         val pdfText = buildPdfText(PdfExportStyle.SIMPLE_TABLE)
 
         assertTrue(pdfText.contains("Activity"))
-        assertFalse(pdfText.contains("+--------------"))
+        assertTrue(pdfText.contains("\\(EXT-0001\\)"))
+        assertTrue(pdfText.contains("Periods: from May 5 to 6, 2026"))
+        assertFalse(pdfText.contains("============================================================================================"))
+        assertFalse(pdfText.contains("| Activity"))
+        assertFalse(pdfText.contains("/F2 8 Tf"))
     }
 
     @Test
@@ -67,6 +75,7 @@ class PdfReportWriterTest {
         assertTrue(compactText.contains("Person ID: P-456"))
         assertTrue(compactText.contains("Attivit\\340"))
         assertTrue(detailText.contains("============================================================================================"))
+        assertFalse(compactText.contains("/F2 8 Tf"))
     }
 }
 
