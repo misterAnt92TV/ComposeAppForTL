@@ -1162,28 +1162,28 @@ private fun thirdPartyLibrariesList(): List<ThirdPartyLibraryUi> = listOf(
     ),
     ThirdPartyLibraryUi(
         name = "Kotlin Coroutines (kotlinx-coroutines-core)",
-        version = "1.10.2",
+        version = "1.11.0",
         websiteUrl = "https://github.com/Kotlin/kotlinx.coroutines",
         icon = ThirdPartyLibraryIcon.KOTLIN,
         module = "org.jetbrains.kotlinx:kotlinx-coroutines-core"
     ),
     ThirdPartyLibraryUi(
         name = "KotlinX Datetime",
-        version = "0.7.1",
+        version = "0.8.0",
         websiteUrl = "https://github.com/Kotlin/kotlinx-datetime",
         icon = ThirdPartyLibraryIcon.KOTLIN,
         module = "org.jetbrains.kotlinx:kotlinx-datetime"
     ),
     ThirdPartyLibraryUi(
         name = "KotlinX Serialization",
-        version = "1.9.0",
+        version = "1.11.0",
         websiteUrl = "https://github.com/Kotlin/kotlinx.serialization",
         icon = ThirdPartyLibraryIcon.KOTLIN,
         module = "org.jetbrains.kotlinx:kotlinx-serialization-json"
     ),
     ThirdPartyLibraryUi(
         name = "Koin (DI)",
-        version = "4.1.1",
+        version = "4.2.2",
         websiteUrl = "https://insert-koin.io/",
         icon = ThirdPartyLibraryIcon.KOIN,
         module = "io.insert-koin:koin-core"

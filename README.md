@@ -87,14 +87,14 @@ Output principali:
 
 ## Stack tecnico
 
-- Kotlin `2.2.0`
+- Kotlin `2.2.21`
 - Compose Multiplatform `1.10.3`
 - Android Gradle Plugin `8.9.3`
-- Kotlin Coroutines `1.10.2`
-- kotlinx-datetime `0.7.1`
-- kotlinx-serialization JSON `1.9.0`
+- Kotlin Coroutines `1.11.0`
+- kotlinx-datetime `0.8.0`
+- kotlinx-serialization JSON `1.11.0`
 - Kermit `2.1.0`
-- Koin `4.1.1`
+- Koin `4.2.2`
 - Toolchain Java / JVM target `17`
 
 Target supportati:
@@ -190,6 +190,27 @@ Packaging Desktop (OS corrente):
 ```bash
 GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:packageDistributionForCurrentOS
 ```
+
+### Windows (PowerShell)
+
+Prerequisiti: JDK 17 nel `PATH` oppure `JAVA_HOME`, Android SDK configurato tramite Android Studio o `ANDROID_HOME`/`ANDROID_SDK_ROOT`.
+
+Per usare una cache Gradle locale al progetto nella sessione PowerShell:
+
+```powershell
+$env:GRADLE_USER_HOME = "$PWD\.gradle-local"
+```
+
+Comandi verificati per Windows:
+
+```powershell
+\.\gradlew.bat :composeApp:compileKotlinDesktop
+\.\gradlew.bat :composeApp:assembleDebug
+\.\gradlew.bat :composeApp:packageMsi
+\.\gradlew.bat :composeApp:allTests
+```
+
+Il packaging MSI usa l'icona Windows `composeApp/src/desktopMain/resources/icons/tlincompose.ico`; non richiede tool o script Unix.
 
 Build e install Android:
 
