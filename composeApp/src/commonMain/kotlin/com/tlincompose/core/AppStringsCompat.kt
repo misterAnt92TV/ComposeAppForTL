@@ -1423,6 +1423,51 @@ val AppStrings.focusModeDescription: String
         AppLanguage.SPANISH -> "Reduce el texto secundario y muestra menos detalles superfluos cuando quieres una pantalla más limpia."
     }
 
+val AppStrings.reduceMotionTitle: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Reduce motion"
+        AppLanguage.ITALIAN -> "Riduci animazioni"
+        AppLanguage.GERMAN -> "Bewegungen reduzieren"
+        AppLanguage.FRENCH -> "Réduire les animations"
+        AppLanguage.SPANISH -> "Reducir animaciones"
+    }
+
+val AppStrings.reduceMotionDescription: String
+    get() = when (language) {
+        AppLanguage.ENGLISH -> "Uses minimal transitions and avoids unnecessary movement."
+        AppLanguage.ITALIAN -> "Usa transizioni minime ed evita movimenti non necessari."
+        AppLanguage.GERMAN -> "Verwendet minimale Übergänge und vermeidet unnötige Bewegungen."
+        AppLanguage.FRENCH -> "Utilise des transitions minimales et évite les mouvements inutiles."
+        AppLanguage.SPANISH -> "Usa transiciones mínimas y evita movimientos innecesarios."
+    }
+
+val AppStrings.appConfigurationTitle: String get() = when (language) {
+    AppLanguage.ENGLISH -> "App configuration"
+    AppLanguage.ITALIAN -> "Configurazione app"
+    AppLanguage.GERMAN -> "App-Konfiguration"
+    AppLanguage.FRENCH -> "Configuration de l’application"
+    AppLanguage.SPANISH -> "Configuración de la aplicación"
+}
+val AppStrings.appConfigurationDescription: String get() = when (language) {
+    AppLanguage.ENGLISH -> "Export or import app settings and activity definitions in JSON."
+    AppLanguage.ITALIAN -> "Esporta o importa le impostazioni e le attività dell’app in formato JSON."
+    AppLanguage.GERMAN -> "App-Einstellungen und Aktivitätsdefinitionen im JSON-Format exportieren oder importieren."
+    AppLanguage.FRENCH -> "Exportez ou importez les réglages et les activités de l’application au format JSON."
+    AppLanguage.SPANISH -> "Exporta o importa la configuración y las actividades de la aplicación en formato JSON."
+}
+val AppStrings.appConfigurationWarning: String get() = when (language) {
+    AppLanguage.ENGLISH -> "Timesheet entries are not included and will not be changed."
+    AppLanguage.ITALIAN -> "Le registrazioni del timesheet non sono incluse e non verranno modificate."
+    AppLanguage.GERMAN -> "Timesheet-Einträge sind nicht enthalten und werden nicht geändert."
+    AppLanguage.FRENCH -> "Les entrées du timesheet ne sont pas incluses et ne seront pas modifiées."
+    AppLanguage.SPANISH -> "Los registros del timesheet no están incluidos y no se modificarán."
+}
+val AppStrings.appConfigurationExport: String get() = when (language) { AppLanguage.ENGLISH -> "Export"; AppLanguage.ITALIAN -> "Esporta"; AppLanguage.GERMAN -> "Exportieren"; AppLanguage.FRENCH -> "Exporter"; AppLanguage.SPANISH -> "Exportar" }
+val AppStrings.appConfigurationImport: String get() = when (language) { AppLanguage.ENGLISH -> "Import"; AppLanguage.ITALIAN -> "Importa"; AppLanguage.GERMAN -> "Importieren"; AppLanguage.FRENCH -> "Importer"; AppLanguage.SPANISH -> "Importar" }
+val AppStrings.appConfigurationSuccess: String get() = when (language) { AppLanguage.ENGLISH -> "Configuration imported successfully."; AppLanguage.ITALIAN -> "Configurazione importata correttamente."; AppLanguage.GERMAN -> "Konfiguration erfolgreich importiert."; AppLanguage.FRENCH -> "Configuration importée avec succès."; AppLanguage.SPANISH -> "Configuración importada correctamente." }
+val AppStrings.appConfigurationImportError: String get() = when (language) { AppLanguage.ENGLISH -> "Unable to import configuration."; AppLanguage.ITALIAN -> "Impossibile importare la configurazione."; AppLanguage.GERMAN -> "Konfiguration konnte nicht importiert werden."; AppLanguage.FRENCH -> "Impossible d’importer la configuration."; AppLanguage.SPANISH -> "No se puede importar la configuración." }
+val AppStrings.appConfigurationExportError: String get() = when (language) { AppLanguage.ENGLISH -> "Unable to export configuration."; AppLanguage.ITALIAN -> "Impossibile esportare la configurazione."; AppLanguage.GERMAN -> "Konfiguration konnte nicht exportiert werden."; AppLanguage.FRENCH -> "Impossible d’exporter la configuration."; AppLanguage.SPANISH -> "No se puede exportar la configuración." }
+
 val AppStrings.activityCatalogTitle: String
     get() = when (language) {
         AppLanguage.ENGLISH -> "EXT activity catalog"

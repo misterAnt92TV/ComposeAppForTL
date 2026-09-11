@@ -8,6 +8,7 @@ import com.tlincompose.core.DispatcherProvider
 import com.tlincompose.data.export.DefaultMonthExporter
 import com.tlincompose.data.export.PdfFontProvider
 import com.tlincompose.data.local.JsonAppBackupRepository
+import com.tlincompose.data.local.JsonAppConfigurationRepository
 import com.tlincompose.data.local.JsonAccessibilityPreferencesRepository
 import com.tlincompose.data.local.JsonActivityDefinitionRepository
 import com.tlincompose.data.local.JsonTimesheetRepository
@@ -15,6 +16,7 @@ import com.tlincompose.data.local.StorageDriver
 import com.tlincompose.domain.repository.AccessibilityPreferencesRepository
 import com.tlincompose.domain.repository.ActivityDefinitionRepository
 import com.tlincompose.domain.repository.AppBackupRepository
+import com.tlincompose.domain.repository.AppConfigurationRepository
 import com.tlincompose.domain.repository.TimesheetExporter
 import com.tlincompose.domain.repository.TimesheetRepository
 import com.tlincompose.domain.usecase.AddActivityToDayUseCase
@@ -26,12 +28,14 @@ import com.tlincompose.domain.usecase.CoverIncompleteMonthWithActivityUseCase
 import com.tlincompose.domain.usecase.DeleteActivityDefinitionUseCase
 import com.tlincompose.domain.usecase.EnsureDefaultActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.ExportAppBackupUseCase
+import com.tlincompose.domain.usecase.ExportAppConfigurationUseCase
 import com.tlincompose.domain.usecase.ExportDateRangeReportUseCase
 import com.tlincompose.domain.usecase.ExportMonthRangeReportUseCase
 import com.tlincompose.domain.usecase.ExportMonthReportUseCase
 import com.tlincompose.domain.usecase.FilterExportEntriesUseCase
 import com.tlincompose.domain.usecase.GenerateNextExtCodeUseCase
 import com.tlincompose.domain.usecase.ImportAppBackupUseCase
+import com.tlincompose.domain.usecase.ImportAppConfigurationUseCase
 import com.tlincompose.domain.usecase.LoadAccessibilityPreferencesUseCase
 import com.tlincompose.domain.usecase.LoadActivityDefinitionsUseCase
 import com.tlincompose.domain.usecase.LoadMonthEntriesUseCase
@@ -46,6 +50,7 @@ import com.tlincompose.presentation.TimesheetController
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsController
 import com.tlincompose.presentation.accessibility.SettingsBackupController
 import com.tlincompose.presentation.catalog.ActivityCatalogController
+import com.tlincompose.presentation.configuration.AppConfigurationController
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -101,6 +106,7 @@ private val dataModule = module {
             logger = get(),
         )
     }
+    single<AppConfigurationRepository> { JsonAppConfigurationRepository(get(), get()) }
     single<TimesheetExporter> {
         DefaultMonthExporter(
             dispatcherProvider = get(),
@@ -126,6 +132,8 @@ private val domainModule = module {
     single { SaveAccessibilityPreferencesUseCase(get()) }
     single { ExportAppBackupUseCase(get(), get(), get(), get()) }
     single { ImportAppBackupUseCase(get(), get(), get(), get()) }
+    single { ExportAppConfigurationUseCase(get(), get(), get()) }
+    single { ImportAppConfigurationUseCase(get(), get(), get()) }
     single { ValidateActivityDefinitionUseCase() }
     single { ValidateDailyEntryUseCase() }
     single { SaveDailyEntryUseCase(get()) }
@@ -185,4 +193,5 @@ private val presentationModule = module {
             logger = get(),
         )
     }
+    factory { AppConfigurationController(get(), get(), get(), get()) }
 }

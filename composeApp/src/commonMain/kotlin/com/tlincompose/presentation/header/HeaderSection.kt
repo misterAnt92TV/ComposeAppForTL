@@ -22,10 +22,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -429,6 +433,11 @@ private fun MonthSummaryCard(
     val targetHoursText = formatHours(summary.targetCompletionMinutes)
     val remainingHoursText = formatHours(summary.remainingCompletionMinutes)
     val standardHoursText = formatHours(standardWorkdayMinutes)
+    val animatedProgress by animateFloatAsState(
+        targetValue = summary.completionFraction,
+        animationSpec = tween(durationMillis = 220),
+        label = "month-progress",
+    )
 
     Surface(
         modifier = Modifier
@@ -484,7 +493,7 @@ private fun MonthSummaryCard(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             LinearProgressIndicator(
-                progress = { summary.completionFraction },
+                progress = { animatedProgress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(androidx.compose.foundation.shape.RoundedCornerShape(999.dp))
@@ -544,6 +553,13 @@ private fun SettingsToggleButton(
                 imageVector = Icons.Filled.Settings,
                 contentDescription = null,
                 tint = contentColor,
+                modifier = Modifier.rotate(
+                    animateFloatAsState(
+                        targetValue = if (isSettingsVisible) 90f else 0f,
+                        animationSpec = tween(180),
+                        label = "settings-rotation",
+                    ).value,
+                ),
             )
         }
     }

@@ -26,6 +26,7 @@ data class AccessibilitySettingsUiState(
     val highContrast: Boolean = false,
     val comfortableSpacing: Boolean = true,
     val focusMode: Boolean = false,
+    val reduceMotion: Boolean = false,
     val themeMode: ThemeModeUiState = ThemeModeUiState.SYSTEM,
     val language: com.tlincompose.domain.model.AppLanguage = com.tlincompose.domain.model.AppLanguage.ENGLISH,
     val standardWorkdayMinutes: Int = com.tlincompose.domain.model.DefaultWorkdayMinutes,

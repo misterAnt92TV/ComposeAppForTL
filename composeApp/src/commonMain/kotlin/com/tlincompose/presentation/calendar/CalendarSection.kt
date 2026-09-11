@@ -66,6 +66,7 @@ import com.tlincompose.core.displayLabel
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.insideSelectedRangePhrase
 import com.tlincompose.core.moreActivities
+import com.tlincompose.core.monthFieldLabel
 import com.tlincompose.core.nextMonth
 import com.tlincompose.core.openDayDetail
 import com.tlincompose.core.outsideCurrentMonthPhrase
@@ -214,7 +215,7 @@ private fun MonthSelectorBar(
             IconButton(
                 onClick = onPreviousMonth,
                 modifier = Modifier
-                    .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                    .sizeIn(minWidth = 44.dp, minHeight = 44.dp)
                     .testTag("previous-month-icon-button"),
             ) {
                 Icon(
@@ -226,7 +227,11 @@ private fun MonthSelectorBar(
             Text(
                 text = month.displayLabel(strings.language),
                 modifier = Modifier
-                    .clickable(onClick = onOpenPicker)
+                    .clickable(
+                        role = Role.Button,
+                        onClickLabel = strings.monthFieldLabel,
+                        onClick = onOpenPicker,
+                    )
                     .padding(horizontal = 12.dp)
                     .weight(1f),
                 style = MaterialTheme.typography.headlineSmall,
@@ -238,7 +243,7 @@ private fun MonthSelectorBar(
             IconButton(
                 onClick = onNextMonth,
                 modifier = Modifier
-                    .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                    .sizeIn(minWidth = 44.dp, minHeight = 44.dp)
                     .testTag("next-month-icon-button"),
             ) {
                 Icon(
@@ -307,7 +312,7 @@ private fun DayCell(
         totalHours = totalHoursText,
         limitHours = dailyLimitText,
     )
-    val borderColor = when {
+    val targetBorderColor = when {
         cell.isActivityDropTarget -> MaterialTheme.colorScheme.primary
         cell.isActivityDragSource -> MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
         cell.isOverDailyLimit -> MaterialTheme.colorScheme.error
@@ -316,7 +321,7 @@ private fun DayCell(
         cell.holidayLabel != null -> MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
         else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.22f)
     }
-    val backgroundColor = when {
+    val targetBackgroundColor = when {
         cell.isActivityDropTarget -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.88f)
         cell.isActivityDragSource -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
         cell.isOverDailyLimit -> MaterialTheme.colorScheme.errorContainer.copy(
@@ -329,6 +334,8 @@ private fun DayCell(
         cell.isWeekend -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.42f)
         else -> MaterialTheme.colorScheme.surface
     }
+    val borderColor = targetBorderColor
+    val backgroundColor = targetBackgroundColor
     val rangeLabel = when {
         cell.isRangeStart && cell.isRangeEnd -> strings.rangeLabelBoth
         cell.isRangeStart -> strings.rangeLabelStart

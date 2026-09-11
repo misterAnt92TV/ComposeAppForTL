@@ -166,6 +166,34 @@ export GRADLE_USER_HOME=$(pwd)/.gradle-local
 
 ## Build e run
 
+### Installer Desktop e test
+
+Gli script `create-desktop-installer` offrono un'interfaccia uniforme per verificare il progetto e creare il pacchetto Desktop della piattaforma corrente.
+
+Prerequisiti: macOS o Windows, JDK 17 e il Gradle Wrapper. Java 25 non è compatibile con Gradle 8.11.1; la diagnostica segnala esplicitamente questa configurazione.
+
+Su macOS:
+
+```bash
+./scripts/create-desktop-installer.sh help
+./scripts/create-desktop-installer.sh doctor
+./scripts/create-desktop-installer.sh test
+./scripts/create-desktop-installer.sh package
+./scripts/create-desktop-installer.sh all
+```
+
+Su Windows PowerShell:
+
+```powershell
+.\scripts\create-desktop-installer.ps1 help
+.\scripts\create-desktop-installer.ps1 doctor
+.\scripts\create-desktop-installer.ps1 test
+.\scripts\create-desktop-installer.ps1 package
+.\scripts\create-desktop-installer.ps1 all
+```
+
+Comandi disponibili: `help`, `doctor`, `test`, `package`, `all` e `clean`. Il comando `package` crea rispettivamente un DMG macOS o un MSI Windows. Output e log vengono salvati in `build/reports/`; gli installer sono prodotti sotto `composeApp/build/compose/binaries/`. Signing Windows e notarizzazione macOS non sono inclusi.
+
 Build completa:
 
 ```bash
