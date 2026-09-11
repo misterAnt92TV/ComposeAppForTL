@@ -1,59 +1,45 @@
 # TLInCompose
 
-`TLInCompose` e un'app Kotlin Multiplatform con Compose Multiplatform per la gestione di un timesheet mensile, con target Android e Desktop.
+`TLInCompose` is a Kotlin Multiplatform app built with Compose Multiplatform to manage a monthly timesheet on Android and Desktop.
 
-L'obiettivo del progetto e offrire un flusso rapido per inserire attivita giornaliere, controllare il mese corrente ed esportare report in formati condivisibili.
+## 🌍 README in other languages
 
-## Icone applicazione
+- 🇮🇹 Italiano: [README.it.md](README.it.md)
+- 🇫🇷 Français: [README.fr.md](README.fr.md)
+- 🇩🇪 Deutsch: [README.de.md](README.de.md)
+- 🇪🇸 Español: [README.es.md](README.es.md)
 
-| Icona | Anteprima |
-| --- | --- |
-| Icona principale | ![Icona principale TLInCompose](artwork/icons/tlincompose-app-icon.svg) |
-| Foreground icon | ![Foreground icon TLInCompose](artwork/icons/tlincompose-app-icon-foreground.svg) |
+## Overview
 
-Mini didascalie:
-- `tlincompose-app-icon.svg`: icona completa usata per branding e distribuzione.
-- `tlincompose-app-icon-foreground.svg`: livello foreground utile per pipeline adaptive icon.
+TLInCompose provides a fast workflow to:
 
-## Feature principali
+- track daily activities in a monthly calendar
+- navigate previous/next month
+- manage multiple activities per day
+- export reports in `CSV`, `XLSX`, and `PDF`
 
-- Calendario mensile con navigazione mese precedente/successivo.
-- Griglia mese sempre a 6 settimane (`42` celle), con inizio settimana al lunedi.
-- Gestione multi-attivita per giorno.
-- Validazioni input coerenti con i tipi di attivita.
-- Export su mese visibile o intervallo personalizzato in `CSV`, `XLSX`, `PDF`.
-- Raggruppamento automatico export per giorni consecutivi con stessa tripletta (`tipo`, `valore`, `minuti/giorno`).
+## Functional rules
 
-## Regole funzionali
+- App language: Italian
+- Reference timezone: `Europe/Rome`
+- Week starts on Monday
+- Supported holidays: Italian national fixed holidays, `Easter`, and `Easter Monday`
 
-- Lingua applicativa: italiano.
-- Timezone di riferimento: `Europe/Rome`.
-- Festivita supportate: nazionali italiane fisse, `Pasqua` e `Pasquetta`.
+Activity types:
 
-Tipi di attivita:
-- `PROJECT`: richiede descrizione libera obbligatoria.
-- `VACATION`: supporta inserimento anche parziale in ore.
-- `PERMIT`: supporta inserimento anche parziale in ore.
-
-Regole di inserimento:
-- Le righe vuote sono ignorate.
-- Le ore devono essere maggiori di zero.
-- Le ore sono convertite in minuti per il dominio applicativo.
+- `PROJECT`: requires a free-text description
+- `VACATION`: supports partial hours
+- `PERMIT`: supports partial hours
 
 ## Export
 
-Formati supportati:
-- `CSV`
-- `XLSX`
-- `PDF`
+Supported export scope:
 
-Flusso intervallo:
-1. Tap su `Seleziona intervallo`.
-2. Selezione data iniziale.
-3. Selezione data finale.
-4. Scelta formato `CSV`, `XLSX` o `PDF`.
+- visible month
+- custom date range
 
-Naming file:
+Default naming:
+
 - `TLInCompose_YYYY-MM.csv`
 - `TLInCompose_YYYY-MM.xlsx`
 - `TLInCompose_YYYY-MM.pdf`
@@ -61,31 +47,17 @@ Naming file:
 - `TLInCompose_YYYY-MM-DD_YYYY-MM-DD.xlsx`
 - `TLInCompose_YYYY-MM-DD_YYYY-MM-DD.pdf`
 
-Colonne esportate:
-- `Data inizio`
-- `Data fine`
-- `Tipo`
-- `Valore`
-- `Ore/giorno`
-- `Giorni`
-- `Ore totali`
+Exported columns:
 
-## Stato verificato
+- Start date
+- End date
+- Type
+- Value
+- Hours/day
+- Days
+- Total hours
 
-Build completa eseguita con successo il `2026-05-15` tramite:
-
-```bash
-GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew build
-```
-
-Output principali:
-- APK debug: `composeApp/build/outputs/apk/debug/composeApp-debug.apk`
-- APK release unsigned: `composeApp/build/outputs/apk/release/composeApp-release-unsigned.apk`
-- JAR Desktop: `composeApp/build/libs/composeApp-desktop.jar`
-- Report test aggregato: `composeApp/build/reports/tests/allTests/index.html`
-- Report lint Android: `composeApp/build/reports/lint-results-debug.html`
-
-## Stack tecnico
+## Tech stack
 
 - Kotlin `2.2.21`
 - Compose Multiplatform `1.10.3`
@@ -94,71 +66,37 @@ Output principali:
 - kotlinx-datetime `0.8.0`
 - kotlinx-serialization JSON `1.11.0`
 - Kermit `2.1.0`
-- Koin `4.2.2`
-- Toolchain Java / JVM target `17`
+- Koin `4.1.1`
+- Java toolchain / JVM target `17`
 
-Target supportati:
+Supported targets:
+
 - Android (`applicationId`: `com.tlincompose`, `minSdk`: `24`, `targetSdk`: `36`, `compileSdk`: `36`)
-- Desktop JVM (main class: `com.tlincompose.desktop.MainKt`, packaging configurato: `DMG`, `MSI`, `DEB`)
+- Desktop JVM (`com.tlincompose.desktop.MainKt`, packaging: `DMG`, `MSI`, `DEB`)
 
-Persistenza attuale:
-- Android: file interno app `tlincompose-timesheet.json`
-- Desktop: `~/.tlincompose/tlincompose-timesheet.json`
+## Architecture
 
-## Architettura
+The project follows an incremental clean architecture:
 
-Il progetto segue una clean architecture semplice e incrementale:
+- `com.tlincompose.presentation`: composables, theme, UI state holders, dialogs, UI wiring
+- `com.tlincompose.presentation.calendar`: presentation state and domain-to-UI mapping
+- `com.tlincompose.domain.model`: pure domain models
+- `com.tlincompose.domain.repository`: repository and export contracts
+- `com.tlincompose.domain.usecase`: focused use cases for calendar, validation, load/save, export
+- `com.tlincompose.data.local`: storage driver, serializable DTOs, JSON repository
+- `com.tlincompose.data.mapper`: explicit entity-to-domain mappers
+- `com.tlincompose.data.export`: export grouping, CSV/PDF writers, platform-specific XLSX encoder
+- `com.tlincompose.core`: shared date/format/dispatcher utilities
 
-- `com.tlincompose.presentation`: composable, tema, state holder, dialog, wiring UI.
-- `com.tlincompose.presentation.calendar`: `UiState` e mapper da domain a presentation.
-- `com.tlincompose.domain.model`: modelli applicativi puri.
-- `com.tlincompose.domain.repository`: contratti repository ed export.
-- `com.tlincompose.domain.usecase`: use case focalizzati su calendario, validazione, caricamento, salvataggio, export.
-- `com.tlincompose.data.local`: storage driver, DTO serializzabili, repository JSON.
-- `com.tlincompose.data.mapper`: mapper espliciti tra entity e model di dominio.
-- `com.tlincompose.data.export`: raggruppamento export, writer CSV/PDF e encoder XLSX platform-specific.
-- `com.tlincompose.core`: date math, formatting, dispatcher condivisi.
+## Build and run
 
-Principi applicati:
-- Logica business fuori dai composable.
-- Controller di presentation usato come coordinatore leggero.
-- Separazione esplicita tra model `data`, `domain`, `presentation`.
-- Adapter Android/Desktop isolati nei source set di piattaforma.
+Prerequisites:
 
-## Test
-
-Copertura attuale verificata in `commonTest`:
-- use case di calendario, caricamento, salvataggio, validazione
-- use case di creazione intervallo ed export per intervallo
-- mapper entity locali -> model di dominio
-- repository JSON con storage in-memory
-- regressioni su naming e raggruppamento export
-
-## GitHub Copilot custom agent
-
-Per rendere visibili i profili dedicati nel tool GitHub Copilot, il repository include:
-
-- `.github/copilot-instructions.md` (baseline/autorevole per comportamento Copilot)
-- `.github/chatmodes/tlincompose.chatmode.md`
-- `.github/chatmodes/tlincompose-testing.chatmode.md`
-- `.github/agents/tlincompose-agent.md`
-- `.github/agents/tlincompose-testing-agent.md`
-
-Se i nuovi profili non compaiono subito, ricarica la finestra dell'IDE o riapri la sessione Copilot.
-
-Regola pratica di manutenzione:
-- aggiorna prima `.github/copilot-instructions.md`
-- poi sincronizza `AGENTS.md` e `.aider*.json` quando necessario
-- mantieni `agents/` e `chatmodes/` sintetici e coerenti con la baseline
-
-## Setup locale
-
-Prerequisiti:
 - JDK `17`
-- Android SDK installato
-- Device Android collegato o emulatore avviato (solo per installazione/esecuzione Android)
+- Android SDK
+- Android device or emulator (for Android run/install)
 
-Impostazione consigliata per cache Gradle locale progetto:
+Recommended local Gradle cache:
 
 ```bash
 export GRADLE_USER_HOME=$(pwd)/.gradle-local
@@ -200,7 +138,8 @@ Build completa:
 GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew build
 ```
 
-Task utili:
+Useful tasks:
+
 - `:composeApp:build`
 - `:composeApp:test`
 - `:composeApp:allTests`
@@ -213,34 +152,7 @@ GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:run
 GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:desktopRun
 ```
 
-Packaging Desktop (OS corrente):
-
-```bash
-GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:packageDistributionForCurrentOS
-```
-
-### Windows (PowerShell)
-
-Prerequisiti: JDK 17 nel `PATH` oppure `JAVA_HOME`, Android SDK configurato tramite Android Studio o `ANDROID_HOME`/`ANDROID_SDK_ROOT`.
-
-Per usare una cache Gradle locale al progetto nella sessione PowerShell:
-
-```powershell
-$env:GRADLE_USER_HOME = "$PWD\.gradle-local"
-```
-
-Comandi verificati per Windows:
-
-```powershell
-\.\gradlew.bat :composeApp:compileKotlinDesktop
-\.\gradlew.bat :composeApp:assembleDebug
-\.\gradlew.bat :composeApp:packageMsi
-\.\gradlew.bat :composeApp:allTests
-```
-
-Il packaging MSI usa l'icona Windows `composeApp/src/desktopMain/resources/icons/tlincompose.ico`; non richiede tool o script Unix.
-
-Build e install Android:
+Android build/install:
 
 ```bash
 GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:assembleDebug
@@ -248,34 +160,23 @@ GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:installDebug
 adb shell am start -n com.tlincompose/.MainActivity
 ```
 
-Uninstall Android:
+Build Mac OS DMG:
 
 ```bash
-GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:uninstallDebug
+GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:packageDmg
 ```
 
-Test strumentati Android:
+Generated DMG path:
 
-```bash
-GRADLE_USER_HOME=$(pwd)/.gradle-local ./gradlew :composeApp:connectedDebugAndroidTest
-```
+`/home/runner/work/ComposeAppForTL/ComposeAppForTL/composeApp/build/compose/binaries/main/dmg/`
 
-## Roadmap breve
+## Developer
 
-- Aggiungere nome utente all'avvio applicativo, da usare anche in export.
-- Aggiungere il nome utente dentro i file esportati.
-- Spostare visualizzazione attivita/export su tab dedicate.
-- Spostare sezione impostazioni su tab dedicata.
-- Aggiungere preferenze default per ore giornaliere, nome utente e timezone.
-- Completare revisione stringhe con placeholder dinamici e coerenza ortografica.
+- GitHub: [@misterAnt92TV](https://github.com/misterAnt92TV)
+- Email: `simone.formica@emeal.nttdata.com`
 
-## Licenza
+## License
 
-Questo progetto e distribuito sotto licenza **Apache License 2.0**.
+This project is licensed under the **Apache License 2.0**.
 
-In sintesi:
-- puoi usare, modificare e distribuire il software anche per scopi commerciali;
-- devi includere una copia della licenza e mantenere gli avvisi di copyright/attribuzione;
-- il software e fornito "AS IS", senza garanzie.
-
-Testo completo della licenza: [`LICENSE`](LICENSE) oppure `http://www.apache.org/licenses/LICENSE-2.0`.
+Full license text: [`LICENSE`](LICENSE) or <http://www.apache.org/licenses/LICENSE-2.0>.
