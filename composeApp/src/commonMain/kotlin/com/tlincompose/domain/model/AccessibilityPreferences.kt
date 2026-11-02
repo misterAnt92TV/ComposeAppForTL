@@ -32,6 +32,7 @@ data class AccessibilityPreferences(
     val highContrast: Boolean = false,
     val comfortableSpacing: Boolean = true,
     val focusMode: Boolean = false,
+    val reduceMotion: Boolean = false,
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val standardWorkdayMinutes: Int = DefaultWorkdayMinutes,

@@ -21,6 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.error
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.tlincompose.core.cancelLabel
 import com.tlincompose.core.customIconActive
@@ -130,7 +132,13 @@ internal fun ActivityDefinitionEditorDialog(
                 OutlinedTextField(
                     value = state.extCode,
                     onValueChange = onExtCodeChanged,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            state.extCodeError?.let { message ->
+                                Modifier.semantics { error(message) }
+                            } ?: Modifier,
+                        ),
                     label = { Text(strings.extCodeLabel) },
                     isError = state.extCodeError != null,
                     enabled = !state.isProtectedDefinition,
@@ -153,7 +161,13 @@ internal fun ActivityDefinitionEditorDialog(
                 OutlinedTextField(
                     value = state.title,
                     onValueChange = onTitleChanged,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            state.titleError?.let { message ->
+                                Modifier.semantics { error(message) }
+                            } ?: Modifier,
+                        ),
                     label = { Text(strings.titleFieldLabel) },
                     placeholder = { Text(strings.titlePlaceholder) },
                     isError = state.titleError != null,
@@ -177,7 +191,13 @@ internal fun ActivityDefinitionEditorDialog(
                 OutlinedTextField(
                     value = state.durationHoursText,
                     onValueChange = onDurationChanged,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            state.durationError?.let { message ->
+                                Modifier.semantics { error(message) }
+                            } ?: Modifier,
+                        ),
                     label = { Text(strings.defaultDurationHoursLabel) },
                     placeholder = { Text(strings.hoursPlaceholder) },
                     isError = state.durationError != null,
@@ -300,7 +320,13 @@ internal fun ActivityDefinitionEditorDialog(
                 OutlinedTextField(
                     value = state.projectUrl,
                     onValueChange = onProjectUrlChanged,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            state.projectUrlError?.let { message ->
+                                Modifier.semantics { error(message) }
+                            } ?: Modifier,
+                        ),
                     label = { Text(strings.projectUrlLabel) },
                     placeholder = { Text(strings.projectUrlPlaceholder) },
                     isError = state.projectUrlError != null,

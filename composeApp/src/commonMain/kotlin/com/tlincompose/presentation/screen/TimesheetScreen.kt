@@ -10,6 +10,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +34,9 @@ import com.tlincompose.core.backupImportInvalidJsonMessage
 import com.tlincompose.core.backupImportPersistenceErrorMessage
 import com.tlincompose.core.backupImportSuccessMessage
 import com.tlincompose.core.backupImportUnsupportedVersionMessage
+import com.tlincompose.core.appConfigurationExportError
+import com.tlincompose.core.appConfigurationImportError
+import com.tlincompose.core.appConfigurationSuccess
 import com.tlincompose.core.checkDayFieldsBeforeSaving
 import com.tlincompose.core.checkEntityFieldsBeforeSaving
 import com.tlincompose.core.chooseLighterImage
@@ -57,6 +67,8 @@ import com.tlincompose.presentation.catalog.ActivityCatalogController
 import com.tlincompose.presentation.catalog.ActivityCatalogSection
 import com.tlincompose.presentation.catalog.ActivityDefinitionEditorDialog
 import com.tlincompose.presentation.catalog.DeleteActivityDefinitionDialog
+import com.tlincompose.presentation.configuration.AppConfigurationController
+import com.tlincompose.presentation.configuration.AppConfigurationDialog
 import com.tlincompose.presentation.export.ExportDialog
 import com.tlincompose.presentation.header.HeaderSection
 import com.tlincompose.presentation.layout.accessibilityLayoutSpec
@@ -66,12 +78,14 @@ internal fun TimesheetScreen(
     controller: TimesheetController,
     activityCatalogController: ActivityCatalogController,
     settingsBackupController: SettingsBackupController,
+    appConfigurationController: AppConfigurationController,
     accessibilityState: AccessibilitySettingsUiState,
     onThemeModeChanged: (ThemeModeUiState) -> Unit,
     onTextScaleChanged: (AccessibilityTextScaleUiState) -> Unit,
     onHighContrastChanged: (Boolean) -> Unit,
     onComfortableSpacingChanged: (Boolean) -> Unit,
     onFocusModeChanged: (Boolean) -> Unit,
+    onReduceMotionChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onStandardWorkdayChanged: (Int) -> Unit,
     onExportUserFullNameChanged: (String) -> Unit,
@@ -137,7 +151,11 @@ internal fun TimesheetScreen(
                         isActivityCatalogVisible = !isActivityCatalogVisible
                     },
                 )
-                if (isSettingsVisible) {
+                AnimatedVisibility(
+                    visible = isSettingsVisible,
+                    enter = if (accessibilityState.reduceMotion) EnterTransition.None else fadeIn() + expandVertically(),
+                    exit = if (accessibilityState.reduceMotion) ExitTransition.None else fadeOut() + shrinkVertically(),
+                ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -153,6 +171,7 @@ internal fun TimesheetScreen(
                             onHighContrastChanged = onHighContrastChanged,
                             onComfortableSpacingChanged = onComfortableSpacingChanged,
                             onFocusModeChanged = onFocusModeChanged,
+                            onReduceMotionChanged = onReduceMotionChanged,
                             onLanguageChanged = onLanguageChanged,
                             onStandardWorkdayChanged = onStandardWorkdayChanged,
                             onExportUserFullNameChanged = onExportUserFullNameChanged,
@@ -192,7 +211,11 @@ internal fun TimesheetScreen(
                         )
                     }
                 }
-                if (isActivityCatalogVisible) {
+                AnimatedVisibility(
+                    visible = isActivityCatalogVisible,
+                    enter = if (accessibilityState.reduceMotion) EnterTransition.None else fadeIn() + expandVertically(),
+                    exit = if (accessibilityState.reduceMotion) ExitTransition.None else fadeOut() + shrinkVertically(),
+                ) {
                     Box(modifier = Modifier.testTag("activity-catalog-panel")) {
                         ActivityCatalogSection(
                             definitions = activityCatalogController.definitions,
@@ -366,6 +389,26 @@ internal fun TimesheetScreen(
                     },
                 )
             },
+        )
+    }
+    if (appConfigurationController.uiState.isDialogVisible) {
+        AppConfigurationDialog(
+            state = appConfigurationController.uiState,
+            layoutSpec = layoutSpec,
+            jsonFilePickerLauncher = jsonFilePickerLauncher,
+            onExport = {
+                appConfigurationController.export(
+                    onSuccess = { document ->
+                        fileSaveLauncher.save(document)
+                        appConfigurationController.dismissDialog()
+                    },
+                    onFailure = { showMessage(strings.appConfigurationExportError) },
+                )
+            },
+            onImportSelected = appConfigurationController::prepareImport,
+            onConfirmImport = { appConfigurationController.confirmImport({ onRefreshAfterBackupImport(); showMessage(strings.appConfigurationSuccess) }, { showMessage(strings.appConfigurationImportError) }) },
+            onDismissImport = appConfigurationController::dismissImport,
+            onDismiss = appConfigurationController::dismissDialog,
         )
     }
 }

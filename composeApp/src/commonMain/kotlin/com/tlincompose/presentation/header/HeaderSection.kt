@@ -22,10 +22,15 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -118,6 +123,7 @@ internal fun HeaderSection(
                         CompactHeaderTopSection(
                             brandingLogoBase64 = brandingLogoBase64,
                             isSettingsVisible = isSettingsVisible,
+                            reduceMotion = accessibilityState.reduceMotion,
                             layoutSpec = layoutSpec,
                             isActivityCatalogVisible = isActivityCatalogVisible,
                             onToggleSettings = onToggleSettings,
@@ -127,6 +133,7 @@ internal fun HeaderSection(
                         WideHeaderTopSection(
                             brandingLogoBase64 = brandingLogoBase64,
                             isSettingsVisible = isSettingsVisible,
+                            reduceMotion = accessibilityState.reduceMotion,
                             layoutSpec = layoutSpec,
                             isActivityCatalogVisible = isActivityCatalogVisible,
                             onToggleSettings = onToggleSettings,
@@ -151,6 +158,7 @@ internal fun HeaderSection(
                 MonthSummaryCard(
                     summary = monthSummary,
                     standardWorkdayMinutes = accessibilityState.standardWorkdayMinutes,
+                    reduceMotion = accessibilityState.reduceMotion,
                     layoutSpec = layoutSpec,
                 )
                 BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
@@ -239,6 +247,7 @@ internal fun HeaderSection(
 private fun WideHeaderTopSection(
     brandingLogoBase64: String?,
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     layoutSpec: AccessibilityLayoutSpec,
     isActivityCatalogVisible: Boolean,
     onToggleSettings: () -> Unit,
@@ -260,6 +269,7 @@ private fun WideHeaderTopSection(
             WideHeaderControlsRow(
                 brandingLogoBase64 = brandingLogoBase64,
                 isSettingsVisible = isSettingsVisible,
+                reduceMotion = reduceMotion,
                 onToggleSettings = onToggleSettings,
             )
             ActivityCatalogToggleButton(
@@ -277,6 +287,7 @@ private fun WideHeaderTopSection(
 private fun CompactHeaderTopSection(
     brandingLogoBase64: String?,
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     layoutSpec: AccessibilityLayoutSpec,
     isActivityCatalogVisible: Boolean,
     onToggleSettings: () -> Unit,
@@ -293,6 +304,7 @@ private fun CompactHeaderTopSection(
         CompactHeaderControlsRow(
             brandingLogoBase64 = brandingLogoBase64,
             isSettingsVisible = isSettingsVisible,
+            reduceMotion = reduceMotion,
             onToggleSettings = onToggleSettings,
         )
         ActivityCatalogToggleButton(
@@ -336,6 +348,7 @@ private fun HeaderIdentityBlock(
 private fun WideHeaderControlsRow(
     brandingLogoBase64: String?,
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     onToggleSettings: () -> Unit,
 ) {
     Row(
@@ -347,6 +360,7 @@ private fun WideHeaderControlsRow(
         )
         SettingsToggleButton(
             isSettingsVisible = isSettingsVisible,
+            reduceMotion = reduceMotion,
             onClick = onToggleSettings,
         )
     }
@@ -356,6 +370,7 @@ private fun WideHeaderControlsRow(
 private fun CompactHeaderControlsRow(
     brandingLogoBase64: String?,
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     onToggleSettings: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
@@ -364,6 +379,7 @@ private fun CompactHeaderControlsRow(
         )
         SettingsToggleButton(
             isSettingsVisible = isSettingsVisible,
+            reduceMotion = reduceMotion,
             onClick = onToggleSettings,
             modifier = Modifier.align(Alignment.CenterEnd),
         )
@@ -421,6 +437,7 @@ private fun ActivityCatalogToggleButton(
 private fun MonthSummaryCard(
     summary: MonthSummaryUiState,
     standardWorkdayMinutes: Int,
+    reduceMotion: Boolean,
     layoutSpec: AccessibilityLayoutSpec,
 ) {
     val strings = LocalAppStrings.current
@@ -429,6 +446,11 @@ private fun MonthSummaryCard(
     val targetHoursText = formatHours(summary.targetCompletionMinutes)
     val remainingHoursText = formatHours(summary.remainingCompletionMinutes)
     val standardHoursText = formatHours(standardWorkdayMinutes)
+    val animatedProgress by animateFloatAsState(
+        targetValue = summary.completionFraction,
+        animationSpec = if (reduceMotion) snap() else tween(durationMillis = 220),
+        label = "month-progress",
+    )
 
     Surface(
         modifier = Modifier
@@ -484,7 +506,7 @@ private fun MonthSummaryCard(
                 color = MaterialTheme.colorScheme.onSurface,
             )
             LinearProgressIndicator(
-                progress = { summary.completionFraction },
+                progress = { animatedProgress },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(androidx.compose.foundation.shape.RoundedCornerShape(999.dp))
@@ -508,6 +530,7 @@ private fun MonthSummaryCard(
 @Composable
 private fun SettingsToggleButton(
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -544,6 +567,13 @@ private fun SettingsToggleButton(
                 imageVector = Icons.Filled.Settings,
                 contentDescription = null,
                 tint = contentColor,
+                modifier = Modifier.rotate(
+                    animateFloatAsState(
+                        targetValue = if (isSettingsVisible) 90f else 0f,
+                        animationSpec = if (reduceMotion) snap() else tween(180),
+                        label = "settings-rotation",
+                    ).value,
+                ),
             )
         }
     }

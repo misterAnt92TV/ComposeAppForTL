@@ -34,6 +34,7 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +44,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -66,6 +75,7 @@ import com.tlincompose.core.displayLabel
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.insideSelectedRangePhrase
 import com.tlincompose.core.moreActivities
+import com.tlincompose.core.monthFieldLabel
 import com.tlincompose.core.nextMonth
 import com.tlincompose.core.openDayDetail
 import com.tlincompose.core.outsideCurrentMonthPhrase
@@ -110,6 +120,7 @@ internal fun CalendarSection(
 ) {
     val strings = LocalAppStrings.current
     val cellBounds = remember { mutableStateMapOf<LocalDate, Rect>() }
+    val cellFocusRequesters = remember { mutableMapOf<LocalDate, FocusRequester>() }
     val showMonthDialog = remember { mutableStateOf(false) }
     val selectedMonth = remember(month) { mutableStateOf(month) }
 
@@ -145,16 +156,31 @@ internal fun CalendarSection(
                     .testTag("calendar-grid"),
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    grid.chunked(7).forEach { week ->
+                    grid.chunked(7).forEachIndexed { weekIndex, week ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            week.forEach { cell ->
+                            week.forEachIndexed { dayIndex, cell ->
+                                val cellIndex = weekIndex * 7 + dayIndex
+                                val focusRequester = remember(cell.date) { FocusRequester() }
+                                DisposableEffect(cell.date, focusRequester) {
+                                    cellFocusRequesters[cell.date] = focusRequester
+                                    onDispose {
+                                        if (cellFocusRequesters[cell.date] == focusRequester) {
+                                            cellFocusRequesters.remove(cell.date)
+                                        }
+                                    }
+                                }
                                 DayCell(
                                     cell = cell,
                                     accessibilityState = accessibilityState,
                                     layoutSpec = layoutSpec,
+                                    focusRequester = focusRequester,
+                                    onMoveFocus = { dayOffset ->
+                                        val targetDate = grid.getOrNull(cellIndex + dayOffset)?.date
+                                        targetDate?.let(cellFocusRequesters::get)?.requestFocus() ?: false
+                                    },
                                     onClick = { onDaySelected(cell.date) },
                                     onBoundsChanged = { bounds ->
                                         cellBounds[cell.date] = bounds
@@ -214,7 +240,7 @@ private fun MonthSelectorBar(
             IconButton(
                 onClick = onPreviousMonth,
                 modifier = Modifier
-                    .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                    .sizeIn(minWidth = 44.dp, minHeight = 44.dp)
                     .testTag("previous-month-icon-button"),
             ) {
                 Icon(
@@ -226,7 +252,11 @@ private fun MonthSelectorBar(
             Text(
                 text = month.displayLabel(strings.language),
                 modifier = Modifier
-                    .clickable(onClick = onOpenPicker)
+                    .clickable(
+                        role = Role.Button,
+                        onClickLabel = strings.monthFieldLabel,
+                        onClick = onOpenPicker,
+                    )
                     .padding(horizontal = 12.dp)
                     .weight(1f),
                 style = MaterialTheme.typography.headlineSmall,
@@ -238,7 +268,7 @@ private fun MonthSelectorBar(
             IconButton(
                 onClick = onNextMonth,
                 modifier = Modifier
-                    .sizeIn(minWidth = 32.dp, minHeight = 32.dp)
+                    .sizeIn(minWidth = 44.dp, minHeight = 44.dp)
                     .testTag("next-month-icon-button"),
             ) {
                 Icon(
@@ -286,6 +316,8 @@ private fun DayCell(
     cell: MonthCellUiModel,
     accessibilityState: AccessibilitySettingsUiState,
     layoutSpec: AccessibilityLayoutSpec,
+    focusRequester: FocusRequester,
+    onMoveFocus: (Int) -> Boolean,
     onClick: () -> Unit,
     onBoundsChanged: (Rect) -> Unit,
     onDayDragStarted: (LocalDate) -> Unit,
@@ -301,13 +333,15 @@ private fun DayCell(
 ) {
     val strings = LocalAppStrings.current
     val cellTopLeft = remember(cell.date) { mutableStateOf(Offset.Zero) }
+    val isFocused = remember(cell.date) { mutableStateOf(false) }
     val totalHoursText = formatHours(cell.totalMinutes)
     val dailyLimitText = formatHours(cell.dailyLimitMinutes)
     val overLimitMessage = strings.dailyHoursExceededMessage(
         totalHours = totalHoursText,
         limitHours = dailyLimitText,
     )
-    val borderColor = when {
+    val targetBorderColor = when {
+        isFocused.value -> MaterialTheme.colorScheme.onSurface
         cell.isActivityDropTarget -> MaterialTheme.colorScheme.primary
         cell.isActivityDragSource -> MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
         cell.isOverDailyLimit -> MaterialTheme.colorScheme.error
@@ -316,7 +350,7 @@ private fun DayCell(
         cell.holidayLabel != null -> MaterialTheme.colorScheme.primary.copy(alpha = 0.42f)
         else -> MaterialTheme.colorScheme.outline.copy(alpha = 0.22f)
     }
-    val backgroundColor = when {
+    val targetBackgroundColor = when {
         cell.isActivityDropTarget -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.88f)
         cell.isActivityDragSource -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
         cell.isOverDailyLimit -> MaterialTheme.colorScheme.errorContainer.copy(
@@ -329,6 +363,8 @@ private fun DayCell(
         cell.isWeekend -> MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.42f)
         else -> MaterialTheme.colorScheme.surface
     }
+    val borderColor = targetBorderColor
+    val backgroundColor = targetBackgroundColor
     val rangeLabel = when {
         cell.isRangeStart && cell.isRangeEnd -> strings.rangeLabelBoth
         cell.isRangeStart -> strings.rangeLabelStart
@@ -340,10 +376,14 @@ private fun DayCell(
 
     Surface(
         modifier = modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged { isFocused.value = it.isFocused }
             .aspectRatio(0.92f)
             .heightIn(min = layoutSpec.dayCellMinHeight)
             .border(
-                width = if (accessibilityState.highContrast || cell.isToday || cell.isRangeStart || cell.isRangeEnd) {
+                width = if (isFocused.value) {
+                    3.dp
+                } else if (accessibilityState.highContrast || cell.isToday || cell.isRangeStart || cell.isRangeEnd) {
                     2.dp
                 } else if (cell.isOverDailyLimit) {
                     2.dp
@@ -372,6 +412,19 @@ private fun DayCell(
                 onClickLabel = strings.openDayDetail(cell.date),
                 onClick = onClick,
             )
+            .onKeyEvent { event ->
+                if (event.type != KeyEventType.KeyDown) {
+                    return@onKeyEvent false
+                }
+                val dayOffset = when (event.key) {
+                    Key.DirectionLeft -> -1
+                    Key.DirectionRight -> 1
+                    Key.DirectionUp -> -7
+                    Key.DirectionDown -> 7
+                    else -> return@onKeyEvent false
+                }
+                onMoveFocus(dayOffset)
+            }
             .onGloballyPositioned { coordinates ->
                 val bounds = coordinates.boundsInRoot()
                 cellTopLeft.value = bounds.topLeft
@@ -573,6 +626,7 @@ internal fun buildDayCellContentDescription(
     }
     if (cell.activityCount > 0) {
         parts += strings.activityCountPhrase(cell.activityCount)
+        parts += cell.activityItems.map(CalendarActivityUiModel::summary)
     }
     if (cell.isRangeStart && cell.isRangeEnd) {
         parts += strings.rangeStartAndEndPhrase

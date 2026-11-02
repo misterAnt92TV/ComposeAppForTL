@@ -27,6 +27,7 @@ import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.presentation.accessibility.AccessibilitySettingsController
 import com.tlincompose.presentation.accessibility.SettingsBackupController
 import com.tlincompose.presentation.catalog.ActivityCatalogController
+import com.tlincompose.presentation.configuration.AppConfigurationController
 import com.tlincompose.presentation.layout.appBackgroundBrush
 import com.tlincompose.presentation.screen.TimesheetScreen
 import kotlinx.coroutines.launch
@@ -61,14 +62,16 @@ fun App() {
         val accessibilityController = koinInject<AccessibilitySettingsController>()
         val activityCatalogController = koinInject<ActivityCatalogController>()
         val settingsBackupController = koinInject<SettingsBackupController>()
+        val appConfigurationController = koinInject<AppConfigurationController>()
         val appLogger = koinInject<Logger>()
 
-        DisposableEffect(controller, accessibilityController, activityCatalogController, settingsBackupController) {
+        DisposableEffect(controller, accessibilityController, activityCatalogController, settingsBackupController, appConfigurationController) {
             onDispose {
                 controller.dispose()
                 accessibilityController.dispose()
                 activityCatalogController.dispose()
                 settingsBackupController.dispose()
+                appConfigurationController.dispose()
             }
         }
 
@@ -101,12 +104,14 @@ fun App() {
                             controller = controller,
                             activityCatalogController = activityCatalogController,
                             settingsBackupController = settingsBackupController,
+                            appConfigurationController = appConfigurationController,
                             accessibilityState = accessibilityController.uiState,
                             onThemeModeChanged = accessibilityController::updateThemeMode,
                             onTextScaleChanged = accessibilityController::updateTextScale,
                             onHighContrastChanged = accessibilityController::updateHighContrast,
                             onComfortableSpacingChanged = accessibilityController::updateComfortableSpacing,
                             onFocusModeChanged = accessibilityController::updateFocusMode,
+                            onReduceMotionChanged = accessibilityController::updateReduceMotion,
                             onLanguageChanged = accessibilityController::updateLanguage,
                             onStandardWorkdayChanged = accessibilityController::updateStandardWorkdayMinutes,
                             onExportUserFullNameChanged = accessibilityController::updateExportUserFullName,

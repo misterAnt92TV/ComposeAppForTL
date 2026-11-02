@@ -59,6 +59,10 @@ class AccessibilitySettingsController(
         updatePreferences { copy(focusMode = enabled) }
     }
 
+    fun updateReduceMotion(enabled: Boolean) {
+        updatePreferences { copy(reduceMotion = enabled) }
+    }
+
     fun updateThemeMode(themeMode: ThemeModeUiState) {
         updatePreferences { copy(themeMode = themeMode) }
     }

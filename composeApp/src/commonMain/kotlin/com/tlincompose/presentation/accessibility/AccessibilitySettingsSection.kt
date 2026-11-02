@@ -76,6 +76,8 @@ import com.tlincompose.core.exportUserFullNameLabel
 import com.tlincompose.core.exportUserFullNamePlaceholder
 import com.tlincompose.core.focusModeDescription
 import com.tlincompose.core.focusModeTitle
+import com.tlincompose.core.reduceMotionDescription
+import com.tlincompose.core.reduceMotionTitle
 import com.tlincompose.core.formatHours
 import com.tlincompose.core.highContrastDescription
 import com.tlincompose.core.highContrastTitle
@@ -125,6 +127,7 @@ internal fun AccessibilitySettingsSection(
     onHighContrastChanged: (Boolean) -> Unit,
     onComfortableSpacingChanged: (Boolean) -> Unit,
     onFocusModeChanged: (Boolean) -> Unit,
+    onReduceMotionChanged: (Boolean) -> Unit,
     onLanguageChanged: (AppLanguage) -> Unit,
     onStandardWorkdayChanged: (Int) -> Unit,
     onExportUserFullNameChanged: (String) -> Unit,
@@ -399,6 +402,15 @@ internal fun AccessibilitySettingsSection(
                     stackTrailingControl = isNarrowWidth,
                     onCheckedChange = onFocusModeChanged,
                     modifier = Modifier.testTag("focus-mode-toggle"),
+                )
+                AccessibilityOptionRow(
+                    title = strings.reduceMotionTitle,
+                    description = strings.reduceMotionDescription,
+                    checked = state.reduceMotion,
+                    layoutSpec = layoutSpec,
+                    stackTrailingControl = isNarrowWidth,
+                    onCheckedChange = onReduceMotionChanged,
+                    modifier = Modifier.testTag("reduce-motion-toggle"),
                 )
             }
         }

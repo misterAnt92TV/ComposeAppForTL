@@ -39,6 +39,7 @@ data class AccessibilityPreferencesStore(
     val highContrast: Boolean = false,
     val comfortableSpacing: Boolean = true,
     val focusMode: Boolean = false,
+    val reduceMotion: Boolean = false,
     val themeMode: AppThemeModeEntity = AppThemeModeEntity.SYSTEM,
     val language: AppLanguageEntity = AppLanguageEntity.ENGLISH,
     val standardWorkdayMinutes: Int = com.tlincompose.domain.model.DefaultWorkdayMinutes,
