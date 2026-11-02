@@ -5,11 +5,53 @@ import com.tlincompose.domain.model.AppLanguage
 import com.tlincompose.domain.model.CalendarDay
 import com.tlincompose.domain.model.DailyEntry
 import com.tlincompose.domain.model.EntryType
+import com.tlincompose.core.appStrings
 import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class CalendarUiMapperTest {
+    @Test
+    fun dayCellContentDescriptionIncludesActivitySummaries() {
+        val cell = MonthCellUiModel(
+            date = LocalDate(2026, 6, 15),
+            inCurrentMonth = true,
+            isWeekend = false,
+            isToday = false,
+            holidayLabel = null,
+            activityItems = listOf(
+                CalendarActivityUiModel(
+                    activityIndex = 0,
+                    entryType = EntryType.PROJECT,
+                    summary = "Analisi, 4h",
+                ),
+                CalendarActivityUiModel(
+                    activityIndex = 1,
+                    entryType = EntryType.VACATION,
+                    summary = "Ferie, 2h",
+                ),
+            ),
+            activityCount = 2,
+            totalMinutes = 360,
+            dailyLimitMinutes = 480,
+            isOverDailyLimit = false,
+            isRangeStart = false,
+            isRangeEnd = false,
+            isInSelectedRange = false,
+            isActivityDragSource = false,
+            isActivityDropTarget = false,
+        )
+
+        val description = buildDayCellContentDescription(
+            cell = cell,
+            strings = appStrings(AppLanguage.ITALIAN),
+        )
+
+        assertTrue("Analisi, 4h" in description)
+        assertTrue("Ferie, 2h" in description)
+    }
+
     @Test
     fun activityTypesAreKeptInCalendarItemsForDefaultIcons() {
         val date = LocalDate(2026, 6, 15)

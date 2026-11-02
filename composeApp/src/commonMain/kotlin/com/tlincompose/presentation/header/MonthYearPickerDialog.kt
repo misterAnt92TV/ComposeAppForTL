@@ -18,6 +18,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tlincompose.core.cancelLabel
@@ -61,7 +64,13 @@ internal fun MonthYearPickerDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { isMonthMenuExpanded = true }) {
+                    OutlinedButton(
+                        onClick = { isMonthMenuExpanded = true },
+                        modifier = Modifier.semantics {
+                            contentDescription = strings.monthFieldLabel
+                            stateDescription = strings.monthNames[selectedMonthNumber - 1]
+                        },
+                    ) {
                         Text(strings.monthNames[selectedMonthNumber - 1])
                     }
                     DropdownMenu(
@@ -85,7 +94,13 @@ internal fun MonthYearPickerDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = { isYearMenuExpanded = true }) {
+                    OutlinedButton(
+                        onClick = { isYearMenuExpanded = true },
+                        modifier = Modifier.semantics {
+                            contentDescription = strings.yearFieldLabel
+                            stateDescription = selectedYear.toString()
+                        },
+                    ) {
                         Text(selectedYear.toString())
                     }
                     DropdownMenu(

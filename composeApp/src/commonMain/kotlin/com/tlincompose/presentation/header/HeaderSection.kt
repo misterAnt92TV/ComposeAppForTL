@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.rotate
 import androidx.compose.material3.MaterialTheme
@@ -122,6 +123,7 @@ internal fun HeaderSection(
                         CompactHeaderTopSection(
                             brandingLogoBase64 = brandingLogoBase64,
                             isSettingsVisible = isSettingsVisible,
+                            reduceMotion = accessibilityState.reduceMotion,
                             layoutSpec = layoutSpec,
                             isActivityCatalogVisible = isActivityCatalogVisible,
                             onToggleSettings = onToggleSettings,
@@ -131,6 +133,7 @@ internal fun HeaderSection(
                         WideHeaderTopSection(
                             brandingLogoBase64 = brandingLogoBase64,
                             isSettingsVisible = isSettingsVisible,
+                            reduceMotion = accessibilityState.reduceMotion,
                             layoutSpec = layoutSpec,
                             isActivityCatalogVisible = isActivityCatalogVisible,
                             onToggleSettings = onToggleSettings,
@@ -155,6 +158,7 @@ internal fun HeaderSection(
                 MonthSummaryCard(
                     summary = monthSummary,
                     standardWorkdayMinutes = accessibilityState.standardWorkdayMinutes,
+                    reduceMotion = accessibilityState.reduceMotion,
                     layoutSpec = layoutSpec,
                 )
                 BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
@@ -243,6 +247,7 @@ internal fun HeaderSection(
 private fun WideHeaderTopSection(
     brandingLogoBase64: String?,
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     layoutSpec: AccessibilityLayoutSpec,
     isActivityCatalogVisible: Boolean,
     onToggleSettings: () -> Unit,
@@ -264,6 +269,7 @@ private fun WideHeaderTopSection(
             WideHeaderControlsRow(
                 brandingLogoBase64 = brandingLogoBase64,
                 isSettingsVisible = isSettingsVisible,
+                reduceMotion = reduceMotion,
                 onToggleSettings = onToggleSettings,
             )
             ActivityCatalogToggleButton(
@@ -281,6 +287,7 @@ private fun WideHeaderTopSection(
 private fun CompactHeaderTopSection(
     brandingLogoBase64: String?,
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     layoutSpec: AccessibilityLayoutSpec,
     isActivityCatalogVisible: Boolean,
     onToggleSettings: () -> Unit,
@@ -297,6 +304,7 @@ private fun CompactHeaderTopSection(
         CompactHeaderControlsRow(
             brandingLogoBase64 = brandingLogoBase64,
             isSettingsVisible = isSettingsVisible,
+            reduceMotion = reduceMotion,
             onToggleSettings = onToggleSettings,
         )
         ActivityCatalogToggleButton(
@@ -340,6 +348,7 @@ private fun HeaderIdentityBlock(
 private fun WideHeaderControlsRow(
     brandingLogoBase64: String?,
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     onToggleSettings: () -> Unit,
 ) {
     Row(
@@ -351,6 +360,7 @@ private fun WideHeaderControlsRow(
         )
         SettingsToggleButton(
             isSettingsVisible = isSettingsVisible,
+            reduceMotion = reduceMotion,
             onClick = onToggleSettings,
         )
     }
@@ -360,6 +370,7 @@ private fun WideHeaderControlsRow(
 private fun CompactHeaderControlsRow(
     brandingLogoBase64: String?,
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     onToggleSettings: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxWidth()) {
@@ -368,6 +379,7 @@ private fun CompactHeaderControlsRow(
         )
         SettingsToggleButton(
             isSettingsVisible = isSettingsVisible,
+            reduceMotion = reduceMotion,
             onClick = onToggleSettings,
             modifier = Modifier.align(Alignment.CenterEnd),
         )
@@ -425,6 +437,7 @@ private fun ActivityCatalogToggleButton(
 private fun MonthSummaryCard(
     summary: MonthSummaryUiState,
     standardWorkdayMinutes: Int,
+    reduceMotion: Boolean,
     layoutSpec: AccessibilityLayoutSpec,
 ) {
     val strings = LocalAppStrings.current
@@ -435,7 +448,7 @@ private fun MonthSummaryCard(
     val standardHoursText = formatHours(standardWorkdayMinutes)
     val animatedProgress by animateFloatAsState(
         targetValue = summary.completionFraction,
-        animationSpec = tween(durationMillis = 220),
+        animationSpec = if (reduceMotion) snap() else tween(durationMillis = 220),
         label = "month-progress",
     )
 
@@ -517,6 +530,7 @@ private fun MonthSummaryCard(
 @Composable
 private fun SettingsToggleButton(
     isSettingsVisible: Boolean,
+    reduceMotion: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -556,7 +570,7 @@ private fun SettingsToggleButton(
                 modifier = Modifier.rotate(
                     animateFloatAsState(
                         targetValue = if (isSettingsVisible) 90f else 0f,
-                        animationSpec = tween(180),
+                        animationSpec = if (reduceMotion) snap() else tween(180),
                         label = "settings-rotation",
                     ).value,
                 ),
